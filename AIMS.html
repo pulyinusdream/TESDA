@@ -430,7 +430,7 @@
         <div id="inventory" class="module hidden">
             <div class="card">
                 <div style="display:flex; justify-content:space-between; margin-bottom:20px; gap: 20px;">
-                    <input type="text" id="invSearch" placeholder="🔍 Search item..." onkeyup="renderInventory()">
+                    <input type="text" id="invSearch" placeholder="🔍 Search item..." onkeyup="renderInventoryDebounced()">
                     <button class="action-btn admin-only" style="white-space: nowrap;" onclick="openModal('modalAdd')">+ Add New Item</button>
                 </div>
                 <table class="data-table" id="tblInventory">
@@ -5764,6 +5764,16 @@ mgmtChildren.push(
     function getPrintHeader() { return `<div class="print-header-container"><img src="Logo.bmp" class="print-logo" alt="Logo"><div class="print-text">TECHNICAL EDUCATION AND SKILLS DEVELOPMENT AUTHORITY<br>ALBAY PROVINCIAL OFFICE<br>Rawis, Legazpi City</div></div>`; }
     function getLocalDate() { return new Date().toISOString().split('T')[0]; }
     const DATA_CACHE = Object.create(null);
+    const DEBOUNCE_TIMERS = {};
+
+    function debounce(key, func, delay = 300) {
+        if (DEBOUNCE_TIMERS[key]) clearTimeout(DEBOUNCE_TIMERS[key]);
+        DEBOUNCE_TIMERS[key] = setTimeout(func, delay);
+    }
+
+    function renderInventoryDebounced() {
+        debounce('renderInventory', renderInventory, 300);
+    }
 
     function getData(key) {
         if (DATA_CACHE[key] !== undefined) return DATA_CACHE[key];
@@ -5816,7 +5826,7 @@ mgmtChildren.push(
     function safeFloat(n) { const clean = String(n).replace(/[^0-9.-]/g, ''); const f = parseFloat(clean); return isNaN(f) ? 0 : f; }
     function fmtMoney(n) { return 'P ' + safeFloat(n).toLocaleString('en-US',{minimumFractionDigits:2}); }
     function injectChartJS() { if(document.getElementById('chartjs-script')) return; const script = document.createElement('script'); script.id = 'chartjs-script'; script.src = "https://cdn.jsdelivr.net/npm/chart.js"; script.onload = () => { CHARTS_LOADED = true; refreshAll(); }; document.head.appendChild(script); }
-    function setupDynamicUI() { const container = document.querySelector('#inventory .card > div'); if (container && !document.getElementById('invFilter')) { const sel = document.createElement('select'); sel.id = 'invFilter'; sel.style.maxWidth = '150px'; sel.innerHTML = `<option value="">All Status</option><option value="Normal">Normal</option><option value="Critical">Critical</option><option value="No Stock">No Stock</option>`; sel.onchange = renderInventory; container.insertBefore(sel, container.lastElementChild); } const dash = document.getElementById('dashboard'); if(dash && !document.getElementById('dashCharts')) { const chartDiv = document.createElement('div'); chartDiv.id = 'dashCharts'; chartDiv.className = 'card grid-2'; chartDiv.innerHTML = `<div style="height:350px; position:relative; width:100%;"><h3 style="margin-top:0; color:#1e293b;">Top 20 Issued Items</h3><canvas id="chartTopItems"></canvas></div><div style="height:350px; position:relative; width:100%;"><h3 style="margin-top:0; color:#1e293b;">Requests by Division</h3><canvas id="chartDivisions"></canvas></div>`; dash.appendChild(chartDiv); } initializeRISForm(); }
+    function setupDynamicUI() { const container = document.querySelector('#inventory .card > div'); if (container && !document.getElementById('invFilter')) { const sel = document.createElement('select'); sel.id = 'invFilter'; sel.style.maxWidth = '150px'; sel.innerHTML = `<option value="">All Status</option><option value="Normal">Normal</option><option value="Critical">Critical</option><option value="No Stock">No Stock</option>`; sel.onchange = renderInventoryDebounced; container.insertBefore(sel, container.lastElementChild); } const dash = document.getElementById('dashboard'); if(dash && !document.getElementById('dashCharts')) { const chartDiv = document.createElement('div'); chartDiv.id = 'dashCharts'; chartDiv.className = 'card grid-2'; chartDiv.innerHTML = `<div style="height:350px; position:relative; width:100%;"><h3 style="margin-top:0; color:#1e293b;">Top 20 Issued Items</h3><canvas id="chartTopItems"></canvas></div><div style="height:350px; position:relative; width:100%;"><h3 style="margin-top:0; color:#1e293b;">Requests by Division</h3><canvas id="chartDivisions"></canvas></div>`; dash.appendChild(chartDiv); } initializeRISForm(); }
     
     function initializeRISForm() {
 
