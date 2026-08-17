@@ -1,0 +1,23 @@
+"use strict";
+TAESF.NTTC.ApplicationReviewView=(()=>{
+  function esc(s){return String(s??"").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;"}[c]));}
+  function render(applicant,application,documents){
+    const nc=application.credentials.nc||{},tmc=application.credentials.tmc||{},d=application.applicationDetails||{};
+    const ncExpiry=TAESF.NTTC.PrerequisiteValidator.expectedValidity(nc.issuedOn),tmExpiry=TAESF.NTTC.PrerequisiteValidator.expectedValidity(tmc.issuedOn);
+    const docRows=documents.map(x=>{const guide=x.modality?TAESF.NTTC.DocumentService.modalityGuide(x.modality):null;return `<li><strong>${esc(TAESF.NTTC.DocumentService.label(x.documentType))}</strong><span>${esc(x.title||x.fileName)}${guide?`<small>${esc(guide.label)} • ${Number(x.systemEquivalentHours||0).toLocaleString()} system-estimated equivalent hour(s)</small>`:""}</span></li>`;}).join("");
+    return `<main class="application-shell">
+      <header class="application-topbar"><div class="app-brand"><img src="../../assets/Logo.png" alt="TESDA Logo"><div><span>NEXUS • NTTC ONLINE PRE-SCREENING</span><strong>TESDA Albay Provincial Office</strong></div></div><div class="applicant-menu"><div class="applicant-meta"><strong>${esc(applicant.fullName||[applicant.firstName,applicant.lastName].join(" "))}</strong><span>${esc(applicant.learnerId||"")}</span></div><button id="myApplications" class="secondary icon-button">My Applications</button><button id="logoutApplicant" class="secondary icon-button">Exit</button></div></header>
+      <section class="application-banner"><img class="nexus-watermark" src="../../assets/Logo.png" alt="" aria-hidden="true"><div><span class="eyebrow light">APPLICATION WIZARD</span><h1>Review before online submission</h1><p>Check the encoded information and uploaded files before sending them to the CAC focal for initial documentary review.</p></div><span class="status-pill strong">READY TO REVIEW</span></section>
+      <nav class="modern-stepper"><div class="step done"><b>1</b><span>Profile</span></div><div class="step done"><b>2</b><span>Prerequisites</span></div><div class="step done"><b>3</b><span>Documents</span></div><div class="step active"><b>4</b><span>Review</span></div></nav>
+      <section class="review-grid">
+        <div class="review-card"><span class="eyebrow">Applicant</span><h3>${esc(applicant.fullName||"")}</h3><dl><div><dt>Learner ID</dt><dd>${esc(applicant.learnerId)}</dd></div><div><dt>Email</dt><dd>${esc(applicant.email)}</dd></div><div><dt>Mobile</dt><dd>${esc(applicant.mobile)}</dd></div></dl></div>
+        <div class="review-card"><span class="eyebrow">Application</span><h3>${esc(application.qualificationTitle)}</h3><dl><div><dt>TVI / Institution</dt><dd>${esc(d.tviName)}</dd></div><div><dt>Employment Status</dt><dd>${esc(d.employmentStatus)}</dd></div><div><dt>Teaching Experience</dt><dd>${esc(d.yearsTeaching||"0")} year(s)</dd></div></dl></div>
+        <div class="review-card"><span class="eyebrow">National Certificate</span><h3>${esc(nc.certificateNumber)}</h3><dl><div><dt>Level</dt><dd>${esc(nc.level)}</dd></div><div><dt>Date Issued</dt><dd>${esc(nc.issuedOn)}</dd></div><div><dt>Expected 5-Year Validity</dt><dd>${esc(ncExpiry)}</dd></div></dl></div>
+        <div class="review-card"><span class="eyebrow">Trainers Methodology</span><h3>${esc(tmc.certificateNumber)}</h3><dl><div><dt>Level</dt><dd>TM I</dd></div><div><dt>Date Issued</dt><dd>${esc(tmc.issuedOn)}</dd></div><div><dt>Expected 5-Year Validity</dt><dd>${esc(tmExpiry)}</dd></div></dl></div>
+        <div class="review-card span-review"><div class="side-head"><div><span class="eyebrow">Documents</span><h3>${documents.length} uploaded file${documents.length===1?"":"s"}</h3></div></div><ul class="review-docs">${docRows}</ul></div>
+      </section>
+      <section class="submit-panel"><div><strong>Before you submit</strong><p>This online submission is for initial documentary review only. The CAC focal may return findings for correction. A notarized hard-copy application will be submitted later only after the online documents are found complete and proper.</p></div><label class="attest"><input id="submissionAttestation" type="checkbox"> <span>I confirm that the information and uploaded copies are complete and correct to the best of my knowledge.</span></label><div id="reviewMessage" class="message" hidden></div><div class="form-actions split"><button id="backDocuments" class="secondary" type="button">← Back to documents</button><button id="submitOnlineApplication" class="primary modern-primary" type="button" disabled>Submit for initial review <span>→</span></button></div></section>
+    </main>`;
+  }
+  return Object.freeze({render});
+})();

@@ -1,0 +1,2 @@
+"use strict";
+NEXUS_SAM.Modules.Batch.Repository = (()=>{const KEY="batches";function all(){return NEXUS_SAM.Services.Storage.load(KEY,[]);}function save(rows){NEXUS_SAM.Services.Storage.save(KEY,rows);}function upsert(row){const rows=all();const i=rows.findIndex(x=>x.batchId===row.batchId);if(i>=0)rows[i]=row;else rows.unshift(row);save(rows);return row;}function remove(id){save(all().filter(x=>x.batchId!==id));}function get(id){return all().find(x=>x.batchId===id)||null;}return Object.freeze({all,upsert,remove,get});})();

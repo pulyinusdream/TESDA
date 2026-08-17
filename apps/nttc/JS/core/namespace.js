@@ -1,0 +1,12 @@
+"use strict";
+window.TAESF = window.TAESF || {};
+TAESF.Core = TAESF.Core || {};
+TAESF.Configuration = TAESF.Configuration || {};
+TAESF.Services = TAESF.Services || {};
+TAESF.Modules = TAESF.Modules || {};
+TAESF.Models = TAESF.Models || {};
+TAESF.Repositories = TAESF.Repositories || {};
+TAESF.Controllers = TAESF.Controllers || {};
+TAESF.State = TAESF.State || {};
+TAESF.Storage = TAESF.Storage || {};
+TAESF.NTTC = TAESF.NTTC || {};

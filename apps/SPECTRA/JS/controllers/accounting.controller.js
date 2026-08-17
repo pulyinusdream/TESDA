@@ -1,0 +1,14 @@
+"use strict";
+NEXUS_SPECTRA.Controllers.Accounting=(()=>{
+ let current="";
+ function rows(){return NEXUS_SPECTRA.Repository.Transactions.all().filter(r=>r.status==="ACCOUNTING_REVIEW"||r.physicalHolder==="ACCOUNTING_REVIEW").sort((a,b)=>(b.updatedAt||"").localeCompare(a.updatedAt||""));}
+ async function refresh(){NEXUS_SPECTRA.Views.Accounting.queue(rows());await NEXUS_SPECTRA.Views.Accounting.detail(current);}
+ function open(no){current=no;refresh();if(NEXUS_SPECTRA.Controllers.RoleRouter?.show)NEXUS_SPECTRA.Controllers.RoleRouter.show("review-detail");else document.getElementById("accountingReviewPanel")?.scrollIntoView({behavior:"smooth",block:"start"});}
+ function saveReviewer(){NEXUS_SPECTRA.Services.Accounting.saveReviewer(current,document.getElementById("accountingReviewer")?.value||"");NEXUS_SPECTRA.Views.App.notify("Accounting reviewer saved.","success");refresh();}
+ function saveChecklist(){document.querySelectorAll("[data-acc-check]").forEach(sel=>{const id=sel.dataset.accCheck,remarks=document.querySelector(`[data-acc-remarks="${CSS.escape(id)}"]`)?.value||"";NEXUS_SPECTRA.Services.Accounting.update(current,id,sel.value,remarks);});NEXUS_SPECTRA.Views.App.notify("Accounting checklist saved.","success");refresh();}
+ function payroll(){const tx=NEXUS_SPECTRA.Repository.Transactions.get(current),r=NEXUS_SPECTRA.Services.Accounting.ensure(current),by=document.getElementById("accountingReviewer")?.value||r.reviewer||"";NEXUS_SPECTRA.Services.Payroll.open(tx,{accountingBy:by});NEXUS_SPECTRA.Services.Accounting.markPayroll(current,by);NEXUS_SPECTRA.Views.App.notify("Provincial Office payroll opened and marked generated.","success");refresh();}
+ function forward(){saveChecklist();NEXUS_SPECTRA.Services.Accounting.saveReviewer(current,document.getElementById("accountingReviewer")?.value||"");const result=NEXUS_SPECTRA.Services.Accounting.forwardBudget(current);if(!result.ok){NEXUS_SPECTRA.Views.App.notify(result.errors[0],"error");return;}NEXUS_SPECTRA.Views.App.notify("Accounting Review verified. Forwarded to Budget/Obligation.","success");current="";NEXUS_SPECTRA.Controllers.App.refresh();refresh();}
+ async function click(e){const o=e.target.closest("[data-acc-open]");if(o)return open(o.dataset.accOpen);if(e.target.closest("[data-acc-save-reviewer]"))return saveReviewer();if(e.target.closest("[data-acc-save-checklist]"))return saveChecklist();if(e.target.closest("[data-acc-payroll]"))return payroll();if(e.target.closest("[data-acc-forward]"))return forward();const d=e.target.closest("[data-online-doc]");if(d)return NEXUS_SPECTRA.Services.Documents.open(d.dataset.onlineDoc);}
+ function initialize(){document.getElementById("accountingQueueBody").addEventListener("click",click);document.getElementById("accountingReviewDetail").addEventListener("click",click);refresh();}
+ return Object.freeze({initialize,refresh});
+})();

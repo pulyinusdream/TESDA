@@ -1,0 +1,10 @@
+"use strict";
+NEXUS_SAM.Modules.Reports.POController = (()=>{
+ const id=()=>document.getElementById("poBatchId").value;
+ function collect(){const old=NEXUS_SAM.Modules.Reports.Service.defaultProfile(id());return {...old,poCertifiedBy:document.getElementById("poCertifiedBy").value.trim(),poApprovedBy:document.getElementById("poApprovedBy").value.trim(),poAccountingBy:document.getElementById("poAccountingBy").value.trim(),poDisbursingBy:document.getElementById("poDisbursingBy").value.trim()};}
+ function refresh(){NEXUS_SAM.Modules.Reports.POView.batches(NEXUS_SAM.Modules.Batch.Service.list());const p=id()?NEXUS_SAM.Modules.Reports.Service.defaultProfile(id()):{};NEXUS_SAM.Modules.Reports.POView.profile(p);NEXUS_SAM.Modules.Reports.POView.state(NEXUS_SAM.Modules.Reports.Service.build(id()));}
+ function save(){if(!id()){NEXUS_SAM.UI.Notification.warning("Provincial Office details not saved.","Select a finalized batch first.");return;}NEXUS_SAM.Modules.Reports.Service.saveProfile(id(),collect());NEXUS_SAM.UI.Notification.success("Provincial Office payroll details saved.");refresh();}
+ function generate(){if(!id())return;NEXUS_SAM.Modules.Reports.Service.saveProfile(id(),collect());const d=NEXUS_SAM.Modules.Reports.Service.build(id());if(!d.ok){NEXUS_SAM.UI.Notification.warning("Payroll generation is locked.",d.errors[0]||"");return;}NEXUS_SAM.Modules.Reports.Service.openPrint(NEXUS_SAM.Modules.Reports.Service.payrollHtml(d));NEXUS_SAM.UI.Notification.success("Provincial Office payroll opened.","Format follows the uploaded TWSP Appendix 33 payroll layout and contains 3 A4 landscape copies.");}
+ function initialize(){document.getElementById("poBatchId").addEventListener("change",refresh);document.getElementById("btnSavePoProfile").addEventListener("click",save);document.getElementById("btnGeneratePoPayroll").addEventListener("click",generate);refresh();}
+ return Object.freeze({initialize,refresh});
+})();

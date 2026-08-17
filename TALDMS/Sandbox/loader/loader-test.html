@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>TAESF Loader Test</title>
+
+    <link rel="stylesheet" href="../../css/app.css">
+
+</head>
+
+<body>
+
+<div id="status">
+
+Loading Framework...
+
+</div>
+
+<script src="../../js/loader/loader.config.js"></script>
+
+<script src="../../js/loader/framework.loader.js"></script>
+
+<script src="../../js/loader/module.loader.js"></script>
+
+<script src="../../js/loader/script.loader.js"></script>
+
+<script src="../../js/loader/loader.js"></script>
+
+<script>
+
+TAESF.Loader.loadFramework(function(){
+
+    TAESF.Loader.loadModule("employee", function(){
+
+        document.getElementById("status").innerHTML =
+
+            TAESF.Modules.Employee.Views.List.render();
+
+    });
+
+});
+
+</script>
+
+</body>
+
+</html>

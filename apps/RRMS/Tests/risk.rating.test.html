@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>RRMS Rating Tests</title></head>
+<body>
+<pre id="results"></pre>
+<script src="../JS/core/namespace.js"></script>
+<script src="../JS/config/app.config.js"></script>
+<script src="../JS/config/constants.js"></script>
+<script src="../JS/core/utilities/risk.rating.utility.js"></script>
+<script>
+const expected = {
+  "1x1":"LOW", "1x2":"LOW", "1x3":"LOW", "1x4":"MEDIUM",
+  "2x1":"LOW", "2x2":"MEDIUM", "2x3":"MEDIUM", "2x4":"HIGH",
+  "3x1":"LOW", "3x2":"MEDIUM", "3x3":"HIGH", "3x4":"VERY_HIGH",
+  "4x1":"MEDIUM", "4x2":"HIGH", "4x3":"VERY_HIGH", "4x4":"VERY_HIGH"
+};
+const lines = [];
+let passed = 0;
+Object.entries(expected).forEach(([key, level]) => {
+  const [l, c] = key.split("x").map(Number);
+  const result = NEXUS_RRMS.Utilities.RiskRating.calculate(l, c);
+  const ok = result.level === level;
+  if (ok) passed += 1;
+  lines.push(`${ok ? "PASS" : "FAIL"} ${key} => ${result.level} (expected ${level})`);
+});
+lines.unshift(`${passed}/${Object.keys(expected).length} rating tests passed\n`);
+document.getElementById("results").textContent = lines.join("\n");
+</script>
+</body>
+</html>

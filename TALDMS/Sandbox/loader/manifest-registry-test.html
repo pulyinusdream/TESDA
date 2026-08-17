@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>TAESF Manifest Registry Test</title>
+
+    <style>
+
+        body{
+            font-family:Arial;
+            margin:30px;
+        }
+
+        button{
+            margin:5px;
+            padding:10px 20px;
+        }
+
+        #results{
+
+            margin-top:20px;
+
+            border:1px solid #ccc;
+
+            padding:15px;
+
+            min-height:250px;
+
+            background:#fafafa;
+
+            white-space:pre-wrap;
+
+        }
+
+        .pass{
+
+            color:green;
+            font-weight:bold;
+
+        }
+
+        .fail{
+
+            color:red;
+            font-weight:bold;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<h2>TAESF Manifest Registry Test</h2>
+
+<button onclick="runTests()">Run Tests</button>
+
+<button onclick="clearRegistry()">Clear Registry</button>
+
+<button onclick="clearResults()">Clear Results</button>
+
+<div id="results"></div>
+
+<!-- Framework -->
+
+<script src="../../Framework/logger/logger.js"></script>
+<script src="../../Framework/loader/manifest.registry.js"></script>
+
+<!-- Employee -->
+
+<script src="../../Modules/employee/employee.manifest.js"></script>
+
+<script>
+
+const output =
+document.getElementById("results");
+
+function log(message,css=""){
+
+    output.innerHTML+=
+        `<div class="${css}">${message}</div>`;
+
+}
+
+function clearResults(){
+
+    output.innerHTML="";
+
+}
+
+function clearRegistry(){
+
+    TAESF.Loader.ManifestRegistry.clear();
+
+    log("Registry cleared.","pass");
+
+}
+
+function runTests(){
+
+    clearResults();
+
+    try{
+
+        log("Running Manifest Registry Tests...");
+
+        //---------------------------------
+
+        TAESF.Loader.ManifestRegistry.register(
+
+            TAESF.Modules.Employee.Manifest
+
+        );
+
+        log("Register Manifest","pass");
+
+        //---------------------------------
+
+        let count=
+        TAESF.Loader.ManifestRegistry.count();
+
+        log(
+            "Count = "+count,
+            count===1?"pass":"fail"
+        );
+
+        //---------------------------------
+
+        let exists=
+        TAESF.Loader.ManifestRegistry.exists("employee");
+
+        log(
+            "Exists = "+exists,
+            exists?"pass":"fail"
+        );
+
+        //---------------------------------
+
+        let manifest=
+        TAESF.Loader.ManifestRegistry.get("employee");
+
+        log(
+            "Get Manifest = "+manifest.name,
+            "pass"
+        );
+
+        //---------------------------------
+
+        let all=
+        TAESF.Loader.ManifestRegistry.getAll();
+
+        log(
+            "Total Retrieved = "+all.length,
+            all.length===1?"pass":"fail"
+        );
+
+        //---------------------------------
+
+        try{
+
+            TAESF.Loader.ManifestRegistry.register(
+
+                TAESF.Modules.Employee.Manifest
+
+            );
+
+            log(
+                "Duplicate Registration FAILED",
+                "fail"
+            );
+
+        }
+
+        catch(e){
+
+            log(
+                "Duplicate Registration PASSED",
+                "pass"
+            );
+
+        }
+
+        //---------------------------------
+
+        let removed=
+
+        TAESF.Loader.ManifestRegistry.unregister(
+
+            "employee"
+
+        );
+
+        log(
+            "Unregister = "+removed,
+            removed?"pass":"fail"
+        );
+
+        //---------------------------------
+
+        log(
+            "Final Count = "+
+
+            TAESF.Loader.ManifestRegistry.count(),
+
+            TAESF.Loader.ManifestRegistry.count()===0
+
+            ?"pass":"fail"
+
+        );
+
+    }
+
+    catch(e){
+
+        log(
+
+            e.message,
+
+            "fail"
+
+        );
+
+    }
+
+}
+
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,17 @@
+AIMS NEXUS Identity Hotfix 1
+
+Cause:
+AIMS declares SessionManager and AuthenticationService with top-level const in classic scripts.
+Those names are global lexical bindings, but they are not properties of window.
+
+The first adapter checked:
+window.SessionManager
+window.AuthenticationService
+
+That check never became true. After 120 attempts (about 12 seconds), the adapter redirected
+back to the NEXUS main page. During that wait, the legacy AIMS login remained visible.
+
+Fix:
+- Use direct lexical references: SessionManager and AuthenticationService.
+- Hide the legacy AIMS login immediately after NEXUS authorization succeeds.
+- Continue creating the existing AIMS designated-user session from the NEXUS identity.

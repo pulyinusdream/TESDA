@@ -1,0 +1,74 @@
+/*
+==========================================================
+TAEDS Enterprise Badge System
+Framework Sprint F8.7
+==========================================================
+*/
+
+.badge{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:6px 12px;
+
+    border-radius:999px;
+
+    font-size:.85rem;
+
+    font-weight:600;
+
+}
+
+/* Success */
+
+.badge-success{
+
+    background:#DCFCE7;
+
+    color:#166534;
+
+}
+
+/* Warning */
+
+.badge-warning{
+
+    background:#FEF3C7;
+
+    color:#92400E;
+
+}
+
+/* Danger */
+
+.badge-danger{
+
+    background:#FEE2E2;
+
+    color:#991B1B;
+
+}
+
+/* Info */
+
+.badge-info{
+
+    background:#DBEAFE;
+
+    color:#1D4ED8;
+
+}
+
+/* Neutral */
+
+.badge-secondary{
+
+    background:#E5E7EB;
+
+    color:#374151;
+
+}

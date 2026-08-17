@@ -1,0 +1,43 @@
+/*
+==========================================================
+Enterprise Typography
+==========================================================
+*/
+
+h1{
+
+    font-size:var(--font-size-2xl);
+
+    font-weight:var(--font-bold);
+
+}
+
+h2{
+
+    font-size:var(--font-size-xl);
+
+    font-weight:var(--font-semibold);
+
+}
+
+h3{
+
+    font-size:var(--font-size-lg);
+
+    font-weight:var(--font-semibold);
+
+}
+
+p{
+
+    font-size:var(--font-size-md);
+
+}
+
+small{
+
+    font-size:var(--font-size-sm);
+
+    color:var(--color-text-secondary);
+
+}

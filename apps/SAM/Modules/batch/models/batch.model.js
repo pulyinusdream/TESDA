@@ -1,0 +1,5 @@
+"use strict";
+NEXUS_SAM.Modules.Batch = NEXUS_SAM.Modules.Batch || {};
+NEXUS_SAM.Modules.Batch.Model = Object.freeze({
+ create(input,cost){const now=new Date().toISOString();return {batchId:input.batchId||`SAM-BATCH-${Date.now()}`,rqmNo:input.rqmNo.trim(),rqmCode:input.rqmCode.trim(),scholarshipProgram:input.scholarshipProgram,implementationType:input.implementationType,qualificationCostMasterId:cost.id,qualificationTitle:cost.qualificationTitle,qualificationCode:cost.qualificationCode,socCode:cost.socCode,tvi:input.tvi.trim(),trainer:input.trainer.trim(),trainingStartDate:input.trainingStartDate,trainingEndDate:input.trainingEndDate,numberOfSlots:Number(input.numberOfSlots),approvedTrainingHours:cost.trainingHours,approvedTrainingDays:cost.trainingDays,tsfRate:cost.tsfRate,maximumTsf:cost.maximumTsf,trainingCost:cost.trainingCost,assessmentFee:cost.assessmentFee,costScheduleId:cost.costScheduleId,circularNo:cost.circularNo,status:"SETUP",createdAt:input.createdAt||now,updatedAt:now};}
+});

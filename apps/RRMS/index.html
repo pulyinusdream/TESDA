@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="NEXUS-RRMS Risk and Opportunity Registry, Monitoring and Archiving System">
+    <title>NEXUS-RRMS | TESDA Albay</title>
+    <link rel="stylesheet" href="CSS/app.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="brand">
+            <img src="../../assets/Logo.png" alt="TESDA Logo">
+            <div>
+                <h1>NEXUS-RRMS</h1>
+                <p>Risk and Opportunity Registry, Monitoring and Archiving System</p>
+            </div>
+        </div>
+        <div class="header-meta">
+            <strong>TESDA Albay Provincial Office</strong><br>
+            <span id="formCode"></span><br>
+            <span>CY <span id="currentYear"></span> · <span id="appVersion"></span></span>
+        </div>
+    </header>
+
+    <nav class="app-nav" aria-label="RRMS navigation">
+        <a href="#dashboard">Dashboard</a>
+        <a href="#registry">Risk Registry</a>
+        <a href="../../index.html">Back to NEXUS</a>
+    </nav>
+
+    <main class="app-main">
+        <section id="dashboard" class="grid-summary" aria-label="Registry summary">
+            <article class="card summary-card"><span>Total Records</span><strong data-summary="total">0</strong></article>
+            <article class="card summary-card"><span>Risks</span><strong data-summary="risks">0</strong></article>
+            <article class="card summary-card"><span>Opportunities</span><strong data-summary="opportunities">0</strong></article>
+            <article class="card summary-card"><span>Top Prioritized</span><strong data-summary="topPrioritized">0</strong></article>
+            <article class="card summary-card"><span>Archive Monitoring</span><strong data-summary="archiveMonitoring">0</strong></article>
+            <article class="card summary-card"><span>High / Very High</span><strong data-summary="highAndVeryHigh">0</strong></article>
+        </section>
+
+        <section class="content-grid">
+            <article class="card" id="riskFormPanel">
+                <div class="panel-header">
+                    <h2 id="formTitle">Create Risk or Opportunity</h2>
+                    <p>Creates one permanent registry identity. Annual and quarterly records will be added in succeeding blocks.</p>
+                </div>
+                <div class="panel-body">
+                    <div id="formErrors" class="error-panel" hidden></div>
+                    <form id="riskForm" novalidate>
+                        <input type="hidden" id="editingRiskId" name="editingRiskId">
+                        <input type="hidden" id="currentStatus" name="currentStatus" value="DRAFT">
+                        <div class="form-grid">
+                            <div class="field">
+                                <label class="required" for="recordType">Record Type</label>
+                                <select id="recordType" name="recordType" required></select>
+                            </div>
+                            <div class="field">
+                                <label class="required" for="firstIdentifiedDate">Date First Identified</label>
+                                <input id="firstIdentifiedDate" name="firstIdentifiedDate" type="date" required>
+                            </div>
+                            <div class="field field-full">
+                                <label class="required" for="issueTitle">Key Issue / Issue</label>
+                                <textarea id="issueTitle" name="issueTitle" required></textarea>
+                            </div>
+                            <div class="field field-full" id="riskFields">
+                                <label class="required" for="riskStatement">Risk Statement</label>
+                                <textarea id="riskStatement" name="riskStatement"></textarea>
+                                <small>Describe the effect of uncertainty on the affected objective.</small>
+                            </div>
+                            <div class="field field-full" id="opportunityFields" hidden>
+                                <label class="required" for="opportunityStatement">Opportunity Statement</label>
+                                <textarea id="opportunityStatement" name="opportunityStatement"></textarea>
+                            </div>
+                            <div class="field">
+                                <label class="required" for="contextType">Context Type</label>
+                                <select id="contextType" name="contextType" required></select>
+                            </div>
+                            <div class="field">
+                                <label class="required" for="riskProfile">Risk Profile</label>
+                                <select id="riskProfile" name="riskProfile" required></select>
+                            </div>
+                            <div class="field field-full">
+                                <label class="required">Affected Objective Type</label>
+                                <div id="objectiveTypes" class="checkbox-grid" role="group" aria-label="Affected Objective Type"></div>
+                                <small>Select one or more affected objective types.</small>
+                            </div>
+                            <div class="field">
+                                <label for="objectiveReference">Objective Reference</label>
+                                <input id="objectiveReference" name="objectiveReference" type="text" placeholder="OPCR item, procedure, legal reference">
+                            </div>
+                            <div class="field field-full">
+                                <label class="required" for="objectiveStatement">Affected Objective</label>
+                                <textarea id="objectiveStatement" name="objectiveStatement" required></textarea>
+                            </div>
+                            <div class="field">
+                                <label class="required" for="processCode">Process Code</label>
+                                <input id="processCode" name="processCode" type="text" maxlength="12" placeholder="UTPRAS" required>
+                            </div>
+                            <div class="field">
+                                <label class="required" for="processName">Process Name</label>
+                                <input id="processName" name="processName" type="text" placeholder="Program Registration" required>
+                            </div>
+                            <div class="field">
+                                <label class="required" for="riskOwner">Risk Owner</label>
+                                <input id="riskOwner" name="riskOwner" type="text" required>
+                            </div>
+                            <div class="field">
+                                <label class="required" for="currentClassification">Initial Classification</label>
+                                <select id="currentClassification" name="currentClassification" required></select>
+                            </div>
+                            <div class="field field-full">
+                                <label class="required" for="consultationSummary">Consultation / Validation Summary</label>
+                                <textarea id="consultationSummary" name="consultationSummary" required></textarea>
+                                <small>The RRRO must not be prepared by only one person. Record who was consulted and the result.</small>
+                            </div>
+                        </div>
+
+                        <fieldset id="ratingSection">
+                            <legend>Initial Risk Rating</legend>
+                            <div class="form-grid">
+                                <div class="field">
+                                    <label for="initialLikelihood">Likelihood (1–4)</label>
+                                    <select id="initialLikelihood" name="initialLikelihood">
+                                        <option value="">Select...</option><option value="1">1 — Low</option><option value="2">2 — Medium</option><option value="3">3 — High</option><option value="4">4 — Very High</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label for="initialConsequence">Consequence (1–4)</label>
+                                    <select id="initialConsequence" name="initialConsequence">
+                                        <option value="">Select...</option><option value="1">1 — Low</option><option value="2">2 — Medium</option><option value="3">3 — High</option><option value="4">4 — Very High</option>
+                                    </select>
+                                </div>
+                                <div class="field field-full"><div id="ratingPreview" class="rating-preview"></div></div>
+                                <div class="field field-full">
+                                    <label for="ratingBasis">Initial Rating Basis</label>
+                                    <textarea id="ratingBasis" name="ratingBasis"></textarea>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <div class="form-actions">
+                            <button id="btnResetForm" type="button" class="btn btn-secondary">Reset</button>
+                            <button type="submit" class="btn btn-primary">Save Draft Record</button>
+                        </div>
+                    </form>
+                </div>
+            </article>
+
+            <article class="card" id="registry">
+                <div class="panel-header">
+                    <h2>Permanent Risk and Opportunity Registry</h2>
+                    <p>One permanent identity per distinct risk or opportunity. Draft records are stored locally in this first implementation block.</p>
+                </div>
+                <div class="panel-body">
+                    <div class="table-toolbar">
+                        <input id="riskSearch" type="search" placeholder="Search Risk ID, issue, process, owner, or classification">
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Risk ID / Year</th><th>Type</th><th>Issue and Statement</th><th>Process</th><th>Owner</th><th>Rating</th><th>Classification</th><th>Actions</th></tr></thead>
+                            <tbody id="riskTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </article>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="JS/core/namespace.js"></script>
+    <script src="JS/config/app.config.js"></script>
+    <script src="JS/config/constants.js"></script>
+    <script src="JS/config/routes.js"></script>
+    <script src="JS/core/storage/local.storage.js"></script>
+    <script src="JS/core/storage/storage.service.js"></script>
+    <script src="JS/core/utilities/id.utility.js"></script>
+    <script src="JS/core/utilities/date.utility.js"></script>
+    <script src="JS/core/utilities/risk.rating.utility.js"></script>
+    <script src="Modules/risk/models/risk.model.js"></script>
+    <script src="Modules/risk/validation/risk.validator.js"></script>
+    <script src="Modules/risk/repository/risk.repository.js"></script>
+    <script src="Modules/risk/services/audit.service.js"></script>
+    <script src="Modules/risk/services/risk.service.js"></script>
+    <script src="Modules/risk/views/risk.form.view.js"></script>
+    <script src="Modules/risk/views/risk.list.view.js"></script>
+    <script src="Modules/risk/controllers/risk.controller.js"></script>
+    <script src="JS/core/application/app.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => NEXUS_RRMS.Core.Application.initialize());
+    </script>
+</body>
+</html>

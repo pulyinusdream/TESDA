@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+
+<html class="nexus-auth-pending" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+<title>NEXUS | TESDA Albay Network Enterprise Experience for Unified Systems</title>
+<style>
+:root{--blue:#003399;--blue2:#0056b3;--ink:#172033;--glass:rgba(255,255,255,.94)}*{box-sizing:border-box}html,body{margin:0;min-height:100%}body{font-family:"Segoe UI",Arial,sans-serif;background:linear-gradient(rgba(2,12,35,.28),rgba(2,12,35,.55)),url("assets/Background.jpg") center/cover fixed;min-height:100vh;color:var(--ink)}header{position:relative;text-align:center;background:var(--glass);padding:24px 20px 22px;border-bottom:5px solid var(--blue);box-shadow:0 4px 20px #0004}.logo{width:82px}h1{font-size:1.45rem;margin:6px 0}header p{margin:3px;font-weight:700}h2{font-size:2.5rem;letter-spacing:.2em;color:var(--blue);margin:12px 0 3px}.framework{font-weight:800;color:#334155}#datetime{position:absolute;right:28px;top:18px;text-align:right;color:var(--blue);font-weight:800}main{padding:34px;max-width:1500px;margin:auto}.intro{background:var(--glass);padding:16px 20px;border-radius:16px;margin-bottom:24px;text-align:center;box-shadow:0 8px 24px #0002}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}.app-card{background:var(--glass);border:1px solid #ffffff88;border-radius:20px;padding:24px 18px;text-decoration:none;color:inherit;text-align:center;min-height:310px;display:flex;flex-direction:column;align-items:center;box-shadow:0 10px 28px #0003;transition:.25s}.app-card:hover{transform:translateY(-7px);border-color:var(--blue);box-shadow:0 18px 36px rgba(0,51,153,.28)}.app-card.disabled{cursor:not-allowed;opacity:.86}.app-card.disabled:hover{transform:none}.icon-wrap{width:92px;height:92px;margin-bottom:12px}.icon-wrap img,.icon-fallback{width:100%;height:100%;object-fit:contain}.icon-fallback{display:none;place-items:center;font-size:58px;animation:pulse 1.8s infinite}@keyframes pulse{50%{transform:scale(1.08)}}.app-code{font-size:1.55rem;font-weight:900;color:var(--blue)}.app-name{font-size:.92rem;font-weight:800;margin-top:5px;min-height:42px}.app-card p{font-size:.86rem;line-height:1.45;color:#475569;flex:1}.status-badge{padding:7px 12px;border-radius:999px;font-size:.72rem;font-weight:900;text-transform:uppercase}.deployed .status-badge{background:#dcfce7;color:#166534}.implemented .status-badge{background:#dbeafe;color:#1e40af}.ongoing .status-badge{background:#fef3c7;color:#92400e}.proposed .status-badge{background:#f3e8ff;color:#6b21a8}footer{text-align:center;color:#fff;padding:22px;text-shadow:1px 1px 4px #000}@media(max-width:760px){#datetime{position:static;text-align:center;margin-bottom:10px}main{padding:20px 14px}h2{font-size:2rem}}
+</style><meta content="noindex,nofollow" name="robots"/><style>
+html.nexus-auth-pending body{visibility:hidden}
+.nexus-user-panel{position:absolute;left:24px;top:16px;display:flex;align-items:center;gap:10px;text-align:left}
+.nexus-user-avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#003399;color:#fff;font-weight:900;box-shadow:0 4px 12px #0002}
+.nexus-user-meta{line-height:1.2}.nexus-user-name{font-size:.82rem;font-weight:900;color:#172033}.nexus-user-role{font-size:.68rem;font-weight:900;color:#003399;text-transform:uppercase;letter-spacing:.08em}
+.nexus-user-actions{display:flex;gap:7px;margin-left:4px}.nexus-user-actions button{border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:9px;padding:8px 10px;font-weight:800;cursor:pointer}
+.nexus-user-actions button:hover{border-color:#003399;color:#003399}.nexus-user-actions .logout-btn:hover{border-color:#b42318;color:#b42318}
+.nexus-loading{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;background:linear-gradient(135deg,#001d5a,#0059b8);color:#fff;font-weight:900;letter-spacing:.04em}
+.nexus-loading[hidden]{display:none}.nexus-loading-box{text-align:center}.nexus-spinner{width:48px;height:48px;border:5px solid #ffffff55;border-top-color:#fff;border-radius:50%;margin:0 auto 16px;animation:nexusSpin .8s linear infinite}
+@keyframes nexusSpin{to{transform:rotate(360deg)}}
+.app-card.nexus-hidden{display:none!important}
+.app-card.nexus-checking{pointer-events:none;opacity:.65}
+@media(max-width:900px){.nexus-user-panel{position:static;justify-content:center;margin-bottom:12px}.nexus-user-meta{text-align:left}}
+</style></head><body>
+<div class="nexus-loading" id="nexus-loading">
+<div class="nexus-loading-box">
+<div class="nexus-spinner"></div>
+<div>Verifying secure NEXUS access…</div>
+</div>
+</div>
+
+<header>
+<div class="nexus-user-panel" hidden="" id="nexus-user-panel">
+<div class="nexus-user-avatar" id="nexus-user-avatar">NX</div>
+<div class="nexus-user-meta">
+<div class="nexus-user-name" id="nexus-user-name">Authenticated User</div>
+<div class="nexus-user-role" id="nexus-user-role">Role</div>
+</div>
+<div class="nexus-user-actions">
+<button hidden="" id="nexus-admin-button" title="Manage NEXUS access" type="button">Access</button>
+<button class="logout-btn" id="nexus-logout-button" type="button">Sign Out</button>
+</div>
+</div>
+<div id="datetime"><div id="clock"></div><div id="date"></div></div><img alt="TESDA Logo" class="logo" src="assets/Logo.png"/><h1>Technical Education and Skills Development Authority</h1><p>Albay Provincial Office</p><h2>NEXUS</h2><div class="framework">TESDA Albay Network Enterprise Experience for Unified Systems</div></header>
+<main><div class="intro"><strong>NEXUS Application Portfolio</strong><br/><span>Integrated digital systems for administrative, technical, monitoring and support services. Application status is shown on each card.</span></div><section class="grid"><a aria-label="Open ATLAS" class="app-card implemented" data-app-code="ATLAS" data-original-href="apps/ATLAS.html" href="#" target="_self">
+<div class="icon-wrap">
+<img alt="ATLAS animated icon" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'" src="assets/icons/atlas-travel.gif"/>
+<div class="icon-fallback">✈️</div>
+</div>
+<div class="app-code">ATLAS</div>
+<div class="app-name">Albay Travel and Leave Administration System</div>
+<p>Travel, official business, approvals, forms, calendar, validation, dashboards and reports. Leave management will be removed in Version 2 due to the Regional Office system.</p>
+<span class="status-badge">Implemented · Version 2 Priority</span>
+</a><a aria-label="Open AIMS" class="app-card deployed" data-app-code="AIMS" data-original-href="AIMS.html" href="#" target="_self">
+<div class="icon-wrap">
+<img alt="AIMS animated icon" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'" src="assets/icons/aims-inventory.gif"/>
+<div class="icon-fallback">📦</div>
+</div>
+<div class="app-code">AIMS</div>
+<div class="app-name">Albay Inventory Management System</div>
+<p>Assets, supplies, inventory, RIS, ICS, PAR and related reports. Property Sticker module removed.</p>
+<span class="status-badge">Deployed · Stabilization</span>
+</a><a aria-label="Open TITAN" class="app-card implemented" data-app-code="TITAN" data-original-href="apps/TITAN.html" href="#" target="_self">
+<div class="icon-wrap">
+<img alt="TITAN animated icon" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'" src="assets/icons/titan-toolkit.gif"/>
+<div class="icon-fallback">🧰</div>
+</div>
+<div class="app-code">TITAN</div>
+<div class="app-name">Toolkit Inventory and Tracking Allocation Network</div>
+<p>Toolkit inventory, allocation, distribution, release and accountability monitoring.</p>
+<span class="status-badge">Implemented · Version 2 Priority</span>
+</a><a aria-label="Open ARMMS" class="app-card implemented" data-app-code="ARMMS" data-original-href="apps/ARMMS.html" href="#" target="_self">
+<div class="icon-wrap">
+<img alt="ARMMS animated icon" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'" src="assets/icons/armms-map.gif"/>
+<div class="icon-fallback">🗺️</div>
+</div>
+<div class="app-code">ARMMS</div>
+<div class="app-name">Assessment Readiness Monitoring and Mapping System</div>
+<p>Readiness, availability and geographic mapping of registered programs, assessment centers and assessors.</p>
+<span class="status-badge">Implemented · Enhancement Priority</span>
+</a><a aria-label="Open PSP-PRTS" class="app-card implemented" data-app-code="PSP-PRTS" data-original-href="apps/PSP-PRTS.html" href="#" target="_self">
+<div class="icon-wrap">
+<img alt="PSP-PRTS animated icon" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'" src="assets/icons/psp-prts-target.gif"/>
+<div class="icon-fallback">🎯</div>
+</div>
+<div class="app-code">PSP-PRTS</div>
+<div class="app-name">Provincial Skills Priorities–Program Registration Tracking System</div>
+<p>Priority-skills planning and tracking from registration through implementation and results.</p>
+<span class="status-badge">Implemented · Enhancement Priority</span>
+</a><a aria-label="Open AMS" class="app-card ongoing" data-app-code="AMS" data-original-href="apps/AMS.html" href="#" target="_self">
+<div class="icon-wrap">
+<img alt="AMS animated icon" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'" src="assets/icons/ams-assessment.gif"/>
+<div class="icon-fallback">📅</div>
+</div>
+<div class="app-code">AMS</div>
+<div class="app-name">Assessment Monitoring System</div>
+<p>Assessment scheduling, centers, assessors, representatives, results and compliance.</p>
+<span class="status-badge">Ongoing · Priority Implementation</span>
+</a><a aria-label="Open ITSM" class="app-card ongoing" data-app-code="ITSM" data-original-href="apps/ITSM.html" href="#" target="_self">
+<div class="icon-wrap">
+<img alt="ITSM animated icon" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'" src="assets/icons/itsm-support.gif"/>
+<div class="icon-fallback">🛠️</div>
+</div>
+<div class="app-code">ITSM</div>
+<div class="app-name">Information Technology Service Management</div>
+<p>Preventive maintenance, service requests, incidents, repairs, backup, network and infrastructure.</p>
+<span class="status-badge">Ongoing · Priority Implementation</span>
+</a><a aria-label="Open ORACLE" class="app-card ongoing" data-app-code="ORACLE" data-original-href="apps/ORACLE.html" href="#" target="_self">
+<div class="icon-wrap">
+<img alt="ORACLE animated icon" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'" src="assets/icons/oracle-records.gif"/>
+<div class="icon-fallback">🗄️</div>
+</div>
+<div class="app-code">ORACLE</div>
+<div class="app-name">Organized Record Archive &amp; Centralized Location Engine</div>
+<p>Records inventory, physical location, borrowing, return, retention, appraisal and retrieval.</p>
+<span class="status-badge">Ongoing · Priority Implementation</span>
+</a><a aria-label="Open PROSPER" class="app-card proposed" data-app-code="PROSPER" data-original-href="concepts/PROSPER.html" href="#" target="_self">
+<div class="icon-wrap">
+<img alt="PROSPER animated icon" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'" src="assets/icons/prosper-procurement.gif"/>
+<div class="icon-fallback">🛒</div>
+</div>
+<div class="app-code">PROSPER</div>
+<div class="app-name">Procurement Operations, Sourcing, Performance and Electronic Registry</div>
+<p>Procurement planning, sourcing, milestones, suppliers, purchase orders, delivery and performance monitoring.</p>
+<span class="status-badge">Proposed · Name for Approval</span>
+</a><a aria-label="Open AFLOW" class="app-card proposed" data-app-code="AFLOW" data-original-href="concepts/AFLOW.html" href="#" target="_self">
+<div class="icon-wrap">
+<img alt="AFLOW animated icon" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'" src="assets/icons/aflow-workflow.gif"/>
+<div class="icon-fallback">🔄</div>
+</div>
+<div class="app-code">AFLOW</div>
+<div class="app-name">Administrative and Financial Logistics Operations Workflow</div>
+<p>Controlled receiving and routing of billings and claims through accounting, records, payment and COA submission.</p>
+<span class="status-badge">Proposed · Name for Approval</span>
+</a><a aria-label="Open TALDMS" class="app-card ongoing" data-app-code="TALDMS" data-original-href="TALDMS/index.html" href="#" target="_self">
+<div class="icon-wrap">
+<img alt="TALDMS animated icon" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'" src="assets/icons/taldms-learning.gif"/>
+<div class="icon-fallback">🎓</div>
+</div>
+<div class="app-code">TALDMS</div>
+<div class="app-name">Training and Learning Development Management System</div>
+<p>Workforce planning, learning interventions, TDOR, TREAP, coaching, competency gaps and knowledge transfer.</p>
+<span class="status-badge">Ongoing · Separate Application</span>
+</a></section></main>
+<footer>© 2026 TESDA Albay Provincial Office | NEXUS | Developed by Laurence Arimado</footer>
+
+<script src="NEXUS/nexus.config.js"></script><script src="NEXUS/nexus.api.js"></script><script src="NEXUS/nexus.session.js"></script><script src="NEXUS/nexus.portal.js"></script><script>
+function tick(){
+  const n=new Date();
+  document.getElementById('clock').textContent=n.toLocaleTimeString('en-PH');
+  document.getElementById('date').textContent=n.toLocaleDateString('en-PH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+tick();setInterval(tick,1000);
+</script></body></html>

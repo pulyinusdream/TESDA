@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TESDA-ALBAY Enterprise ITSM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Table Styles from TESDA Form */
+        .tesda-table { width: 100%; border-collapse: collapse; border: 1px solid #000; font-size: 12px; }
+        .tesda-table th, .tesda-table td { border: 1px solid #000; padding: 6px; }
+        .tesda-table th { background-color: #FDE047; text-align: center; font-weight: bold; }
+    </style>
+</head>
+<body class="h-screen overflow-hidden text-slate-800">
+
+    <div id="login-screen" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-96 border-t-4 border-blue-600">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 text-blue-600 text-2xl font-bold">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">TESDA-ALBAY ITSM</h2>
+                <p class="text-slate-500 text-sm">Official Maintenance & Repair System</p>
+            </div>
+            <input type="text" id="login-user" placeholder="Username" class="w-full mb-3 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+            <input type="password" id="login-pass" placeholder="Password" class="w-full mb-6 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+            <button onclick="auth.login()" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700 transition shadow-lg">Secure Login</button>
+            <div class="mt-4 text-xs text-center text-slate-400">
+                System: user/user123 | admin/admin123
+            </div>
+        </div>
+    </div>
+
+    <div id="app-container" class="flex h-screen hidden">
+        <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-xl z-20">
+            <div class="h-20 flex items-center px-6 border-b border-slate-800 bg-slate-900">
+                <div class="flex items-center gap-3">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/TESDA_Logo.svg/1200px-TESDA_Logo.svg.png" class="h-8 w-auto bg-white rounded-full p-0.5">
+                    <span class="font-bold text-sm tracking-wide">TESDA ITSM</span>
+                </div>
+            </div>
+            <nav class="flex-1 py-6 space-y-1 px-3">
+                <button onclick="router.load('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors text-slate-400 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-gauge-high w-6"></i> Dashboard
+                </button>
+                <button onclick="router.load('tickets')" id="nav-tickets" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors text-slate-400 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-list-check w-6"></i> Incident Console
+                </button>
+                <button onclick="router.load('assets')" id="nav-assets" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors text-slate-400 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-cubes-stacked w-6"></i> AIMS Assets
+                </button>
+                <div class="my-4 border-t border-slate-800"></div>
+                <button onclick="router.load('maintenance')" id="nav-maintenance" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors text-slate-400 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-calendar-check w-6"></i> Maintenance Plan
+                </button>
+                <button onclick="router.load('repair_history')" id="nav-repair_history" class="nav-item w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors text-slate-400 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-file-invoice-dollar w-6"></i> Repair History
+                </button>
+            </nav>
+            <div class="p-4 border-t border-slate-800 bg-slate-800/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold" id="user-avatar">U</div>
+                    <div>
+                        <p id="user-display-name" class="text-sm font-bold truncate w-32">User</p>
+                        <p id="user-display-role" class="text-xs text-slate-400">Role</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col relative overflow-hidden bg-slate-50">
+            <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shadow-sm">
+                <h1 id="page-title" class="text-xl font-bold text-slate-800">Executive Dashboard</h1>
+                <div class="flex items-center gap-4">
+                    <div id="loader" class="hidden flex items-center text-blue-600 bg-blue-50 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
+                        <i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Syncing...
+                    </div>
+                    <button onclick="ui.openModal('repairModal')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md transition flex items-center gap-2">
+                        <i class="fa-solid fa-wrench"></i> Request Repair
+                    </button>
+                </div>
+            </header>
+            <div id="app-content" class="flex-1 overflow-auto p-8 fade-in"></div>
+        </main>
+    </div>
+
+    <div id="repairModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl w-[600px] max-h-[90vh] overflow-auto transform transition-all">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-lg text-slate-800">Formal Request for Repair</h3>
+                <button onclick="ui.closeModal('repairModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 flex justify-between items-center">
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase font-bold">Requesting Officer</p>
+                        <p id="req-from" class="font-bold text-slate-800">LOADING...</p>
+                        <p id="req-title" class="text-xs text-slate-600">LOADING...</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-slate-500 uppercase font-bold">Date</p>
+                        <p class="font-bold text-slate-800" id="req-date">Today</p>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Select Asset</label>
+                    <select id="req-asset" class="w-full border-slate-300 rounded-lg shadow-sm px-3 py-2 border bg-white focus:ring-2 focus:ring-blue-500"></select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Type</label>
+                        <select id="req-type" class="w-full border px-3 py-2 rounded-lg"><option>Hardware</option><option>Software</option><option>Network</option></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Priority</label>
+                        <select id="req-priority" class="w-full border px-3 py-2 rounded-lg"><option>Medium</option><option>High</option><option>Critical</option></select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Detailed Description (Nature of Defect)</label>
+                    <textarea id="req-desc" rows="3" class="w-full border px-3 py-2 rounded-lg" placeholder="Describe the issue..."></textarea>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-slate-50 text-right border-t border-slate-100">
+                <button onclick="actions.submitRepair()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 shadow-sm transition">Submit Request</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🔴 PASTE YOUR WEB APP URL HERE 🔴
+        const API_URL = "https://script.google.com/macros/s/AKfycbwxxMUuIfWGSZlQpvh-cUTBEmP_06lnFXVSmZsbowtODoac7VsyQmj0hDdQxtYv6a22EA/exec";
+
+        let currentUser = null;
+
+        const auth = {
+    async login() {
+        const u = document.getElementById('login-user').value;
+        const p = document.getElementById('login-pass').value;
+        ui.loading(true);
+        try {
+            // FIX: Use your existing api.post method instead of a raw GET fetch
+            const res = await api.post('login', { username: u, password: p });
+            
+            if (res.success) {
+                currentUser = res.user; // FIX: Access res.user based on backend response
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('hidden');
+                document.getElementById('user-display-name').innerText = currentUser.name;
+                document.getElementById('user-display-role').innerText = currentUser.role;
+                document.getElementById('user-avatar').innerText = currentUser.name.charAt(0);
+                document.getElementById('req-date').innerText = new Date().toLocaleDateString();
+                router.load('dashboard');
+            } else { 
+                alert("Login Failed: " + (res.message || "Invalid Credentials")); 
+            }
+        } catch(e) { 
+            console.error(e); // Good for debugging
+            alert("Server Connection Failed"); 
+        } 
+        finally { ui.loading(false); }
+    }
+};
+
+        const api = {
+            async get(action, params = "") {
+                ui.loading(true);
+                try {
+                    const role = currentUser ? `&role=${currentUser.role}` : '';
+                    const res = await fetch(`${API_URL}?action=${action}${role}${params}`);
+                    return await res.json();
+                } catch (e) { return []; } finally { ui.loading(false); }
+            },
+            async post(action, payload) {
+                ui.loading(true);
+                try {
+                    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action, payload }) });
+                    return await res.json();
+                } finally { ui.loading(false); }
+            }
+        };
+
+        const ui = {
+            loading(show) { document.getElementById('loader').classList.toggle('hidden', !show); },
+            openModal(id) { document.getElementById(id).classList.remove('hidden'); },
+            closeModal(id) { document.getElementById(id).classList.add('hidden'); },
+            render(html) {
+                const c = document.getElementById('app-content');
+                c.innerHTML = html;
+                c.classList.remove('fade-in'); void c.offsetWidth; c.classList.add('fade-in');
+            },
+            setActiveNav(id) {
+                document.querySelectorAll('.nav-item').forEach(el => {
+                    el.classList.remove('bg-blue-600', 'text-white', 'shadow-lg');
+                    el.classList.add('text-slate-400');
+                });
+                const active = document.getElementById(`nav-${id}`);
+                if(active) { active.classList.add('bg-blue-600', 'text-white', 'shadow-lg'); active.classList.remove('text-slate-400'); }
+            }
+        };
+
+        const router = {
+            currentData: null,
+            async load(view) {
+                ui.setActiveNav(view);
+                
+                if (view === 'dashboard') {
+                    document.getElementById('page-title').innerText = "Executive Dashboard";
+                    const data = await api.get('getDashboard');
+                    views.dashboard(data);
+                } 
+                else if (view === 'tickets') {
+                    document.getElementById('page-title').innerText = "Incident Console";
+                    const data = await api.get('getTickets');
+                    views.tickets(data);
+                }
+                else if (view === 'maintenance') {
+                    document.getElementById('page-title').innerText = "TESDA Maintenance Schedule CY 2026";
+                    const plan = await api.get('getMaintenancePlan');
+                    views.maintenance(plan);
+                }
+                else if (view === 'repair_history') {
+                    document.getElementById('page-title').innerText = "Consolidated Repair History (SPLC/PPELC)";
+                    const history = await api.get('getRepairHistory');
+                    views.repairHistory(history);
+                }
+                else if (view === 'assets') {
+                    document.getElementById('page-title').innerText = "AIMS Asset Registry";
+                    const assets = await api.get('getAssets');
+                    this.currentData = assets;
+                    views.assets(assets.filter(a => a.category === "IT Equipment")); // Default to IT Equipment
+                    
+                    // Pre-fill dropdown for modal
+                    const opts = assets.map(a => `<option value="${a.id}">${a.name} (${a.id})</option>`).join('');
+                    document.getElementById('req-asset').innerHTML = opts;
+                    document.getElementById('req-from').innerText = currentUser.name;
+                    document.getElementById('req-title').innerText = currentUser.title;
+                }
+            }
+        };
+
+        const views = {
+            dashboard(data) {
+                ui.render(`
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                            <p class="text-xs font-bold text-slate-400 uppercase">Open Incidents</p>
+                            <p class="text-3xl font-bold text-blue-600">${data.open_tickets}</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                            <p class="text-xs font-bold text-slate-400 uppercase">Pending Repairs</p>
+                            <p class="text-3xl font-bold text-red-600">${data.pending_repairs}</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                            <p class="text-xs font-bold text-slate-400 uppercase">SLA Compliance</p>
+                            <p class="text-3xl font-bold text-green-600">${data.sla_compliance}%</p>
+                        </div>
+                         <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                            <p class="text-xs font-bold text-slate-400 uppercase">IT Assets</p>
+                            <p class="text-3xl font-bold text-purple-600">${data.total_assets}</p>
+                        </div>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 p-6 rounded-xl">
+                        <h3 class="font-bold text-blue-800 mb-2">System Status</h3>
+                        <p class="text-sm text-blue-700">System is fully operational. All modules (Incident, Maintenance, AIMS Sync) are active.</p>
+                    </div>
+                `);
+            },
+            tickets(tickets) {
+                 const rows = tickets.map(t => `
+                    <tr class="hover:bg-slate-50 border-b border-slate-100 transition">
+                        <td class="py-4 px-6 font-medium text-blue-600">${t.id}</td>
+                        <td class="py-4 px-6 font-medium text-slate-800">${t.title}</td>
+                        <td class="py-4 px-6"><span class="px-2 py-1 rounded text-xs font-bold bg-slate-100 text-slate-600">${t.priority}</span></td>
+                        <td class="py-4 px-6 text-sm text-slate-500">${t.asset}</td>
+                        <td class="py-4 px-6"><span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-bold">${t.status}</span></td>
+                        <td class="py-4 px-6 text-sm text-slate-500">${new Date(t.created).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+                ui.render(`
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
+                                <tr>
+                                    <th class="py-4 px-6">ID</th>
+                                    <th class="py-4 px-6">Title</th>
+                                    <th class="py-4 px-6">Priority</th>
+                                    <th class="py-4 px-6">Asset</th>
+                                    <th class="py-4 px-6">Status</th>
+                                    <th class="py-4 px-6">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                `);
+            },
+            maintenance(plan) {
+                const rows = plan.map(p => `
+                    <tr>
+                        <td class="font-bold">${p.category}</td>
+                        <td>${p.component}</td>
+                        <td>${p.task}</td>
+                        <td class="text-center font-bold bg-slate-50">${p.freq.d || '-'}</td>
+                        <td class="text-center font-bold bg-slate-50">${p.freq.w || '-'}</td>
+                        <td class="text-center font-bold bg-slate-50">${p.freq.m || '-'}</td>
+                        <td class="text-center font-bold bg-slate-50">${p.freq.a || '-'}</td>
+                        <td class="text-center"><button onclick="actions.logMaintenance('${p.component}')" class="text-blue-600 hover:underline text-xs">Log</button></td>
+                    </tr>
+                `).join('');
+                ui.render(`
+                    <div class="bg-white p-6 rounded-xl shadow-sm overflow-x-auto">
+                        <table class="tesda-table">
+                            <thead>
+                                <tr><th rowspan="2">ARTICLES</th><th colspan="1">COMPONENT</th><th rowspan="2" style="width: 40%">TASK</th><th colspan="4">FREQUENCY</th><th rowspan="2">ACTION</th></tr>
+                                <tr><th>Specific</th><th>D</th><th>W</th><th>M</th><th>A</th></tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                `);
+            },
+            repairHistory(history) {
+                const rows = history.map(h => `
+                    <tr class="hover:bg-slate-50 border-b">
+                        <td class="p-3 font-mono text-xs text-blue-600">${h.ticket_id}</td>
+                        <td class="p-3 font-mono text-xs">${h.asset_id}</td>
+                        <td class="p-3 text-sm">${h.nature}</td>
+                        <td class="p-3 text-sm font-bold text-right">${h.amount}</td>
+                        <td class="p-3 text-sm"><span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-bold">${h.status}</span></td>
+                        <td class="p-3 text-sm text-slate-500">${h.requested_by}</td>
+                    </tr>
+                `).join('');
+                ui.render(`
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="p-4 border-b bg-slate-50 flex justify-between items-center"><h3 class="font-bold">Consolidated Repair History</h3></div>
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-100 text-xs uppercase font-bold text-slate-600"><tr><th class="p-3">ID</th><th class="p-3">Asset</th><th class="p-3">Nature of Repair</th><th class="p-3 text-right">Amount</th><th class="p-3">Status</th><th class="p-3">Requester</th></tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                `);
+            },
+            assets(assets) {
+                const grid = assets.map(a => `
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 group hover:border-blue-300 transition">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="p-1.5 bg-blue-50 text-blue-600 rounded"><i class="fa-solid fa-cube"></i></div>
+                            <span class="text-[10px] bg-slate-100 px-2 py-1 rounded font-mono">${a.id}</span>
+                        </div>
+                        <h4 class="font-bold text-sm truncate mb-1" title="${a.name}">${a.name}</h4>
+                        <div class="text-xs text-slate-500 mb-3">${a.category}</div>
+                        <div class="flex gap-2">
+                             <button onclick="router.load('repair_history')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs py-1.5 rounded font-medium">History</button>
+                             <button class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs py-1.5 rounded font-medium">Details</button>
+                        </div>
+                    </div>
+                `).join('');
+                ui.render(`
+                    <div class="mb-6 flex justify-between items-center">
+                        <h2 class="font-bold text-slate-700">AIMS Asset Registry</h2>
+                        <select onchange="filterAssets(this.value)" class="border rounded px-3 py-2 text-sm bg-white">
+                            <option value="IT Equipment" selected>IT Equipment Only</option>
+                            <option value="General Equipment">General Equipment</option>
+                            <option value="All">All Assets</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">${grid}</div>
+                `);
+            }
+        };
+
+        function filterAssets(cat) {
+            const all = router.currentData;
+            if(cat === 'All') views.assets(all);
+            else views.assets(all.filter(a => a.category === cat));
+        }
+
+        const actions = {
+            async submitRepair() {
+                const payload = {
+                    user: currentUser.name, role: currentUser.role,
+                    asset_id: document.getElementById('req-asset').value,
+                    type: document.getElementById('req-type').value, priority: document.getElementById('req-priority').value,
+                    desc: document.getElementById('req-desc').value
+                };
+                const res = await api.post('submitRepairRequest', payload);
+                if(res.success) { alert("Ticket " + res.ticket_id + " Created."); ui.closeModal('repairModal'); router.load('repair_history'); }
+            },
+            async logMaintenance(task) {
+                if(!confirm("Log completion for: " + task + "?")) return;
+                await api.post('submitMaintenanceLog', { user: currentUser.name, role: currentUser.role, asset_id: "General", tasks: task, remarks: "Logged" });
+                alert("Logged.");
+            }
+        };
+    </script>
+</body>
+</html>

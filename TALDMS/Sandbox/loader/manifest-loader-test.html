@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>TAESF Manifest Loader Test</title>
+
+<style>
+
+body{
+
+font-family:Arial;
+
+margin:30px;
+
+}
+
+button{
+
+padding:10px 20px;
+
+margin:5px;
+
+}
+
+#results{
+
+margin-top:20px;
+
+border:1px solid #ccc;
+
+padding:15px;
+
+background:#fafafa;
+
+min-height:220px;
+
+white-space:pre-wrap;
+
+}
+
+.pass{
+
+color:green;
+
+font-weight:bold;
+
+}
+
+.fail{
+
+color:red;
+
+font-weight:bold;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>TAESF Manifest Loader Test</h2>
+
+<button onclick="runLoaderTest()">Run Test</button>
+
+<button onclick="clearResults()">Clear Results</button>
+
+<div id="results"></div>
+
+<script src="../../Framework/logger/logger.js"></script>
+
+<script src="../../Framework/loader/manifest.registry.js"></script>
+
+<script src="../../Framework/loader/manifest.loader.js"></script>
+
+<script src="../../Modules/employee/employee.manifest.js"></script>
+
+<script>
+
+const output=document.getElementById("results");
+
+function log(msg,css=""){
+
+output.innerHTML+=
+`<div class="${css}">${msg}</div>`;
+
+}
+
+function clearResults(){
+
+output.innerHTML="";
+
+}
+
+function runLoaderTest(){
+
+clearResults();
+
+try{
+
+TAESF.Loader.ManifestRegistry.clear();
+
+TAESF.Loader.ManifestLoader.load(
+
+TAESF.Modules.Employee.Manifest
+
+);
+
+log("Manifest Loaded","pass");
+
+let count=
+
+TAESF.Loader.ManifestRegistry.count();
+
+log(
+
+"Registry Count = "+count,
+
+count===1?"pass":"fail"
+
+);
+
+let manifest=
+
+TAESF.Loader.ManifestRegistry.get("employee");
+
+log(
+
+"Module = "+manifest.name,
+
+"pass"
+
+);
+
+log(
+
+"Controller = "+manifest.controller,
+
+"pass"
+
+);
+
+log(
+
+"Dependencies = "+manifest.dependencies.length,
+
+"pass"
+
+);
+
+}
+
+catch(e){
+
+log(
+
+e.message,
+
+"fail"
+
+);
+
+}
+
+}
+
+</script>
+
+</body>
+
+</html>

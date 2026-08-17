@@ -1,0 +1,11 @@
+ATLAS: assets/icons/atlas-travel.gif
+AIMS: assets/icons/aims-inventory.gif
+TITAN: assets/icons/titan-toolkit.gif
+ARMMS: assets/icons/armms-map.gif
+PSP-PRTS: assets/icons/psp-prts-target.gif
+AMS: assets/icons/ams-assessment.gif
+ITSM: assets/icons/itsm-support.gif
+ORACLE: assets/icons/oracle-records.gif
+PROSPER: assets/icons/prosper-procurement.gif
+AFLOW: assets/icons/aflow-workflow.gif
+TALDMS: assets/icons/taldms-learning.gif

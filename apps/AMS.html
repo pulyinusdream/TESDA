@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMS - Assessment Monitoring System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #2c3e50; 
+            --accent: #3498db; 
+            --success: #27ae60; 
+            --warning: #f1c40f; 
+            --danger: #e74c3c; 
+            --bg: #f8f9fa; 
+            --text-main: #34495e;
+            --border: #e0e0e0;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; height: 100vh; color: var(--text-main); }
+        
+        /* NAVBAR */
+        nav { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-bottom: 1px solid var(--border); }
+        .brand { font-weight: 800; font-size: 1.4rem; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .user-pill { background: #eff6ff; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; color: var(--accent); border: 1px solid #dbeafe; cursor: pointer; }
+
+        /* LAYOUT */
+        .container { display: flex; flex: 1; overflow: hidden; }
+        .sidebar { width: 280px; background: white; padding: 25px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
+        .main { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
+
+        /* WIDGETS */
+        .widget-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #95a5a6; font-weight: 700; margin-bottom: 10px; }
+        .stat-card { background: #f1f2f6; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+        .stat-num { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .stat-label { font-size: 0.8rem; color: #7f8c8d; }
+
+        /* CALENDAR */
+        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; flex: 1; }
+        .cal-day-header { text-align: center; font-weight: 600; color: #95a5a6; padding-bottom: 10px; }
+        .cal-cell { background: white; border: 1px solid var(--border); border-radius: 8px; min-height: 120px; padding: 10px; transition: 0.2s; cursor: pointer; position: relative; }
+        .cal-cell:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); border-color: var(--accent); }
+        .chip { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; margin-top: 5px; font-weight: 600; display: block; border-left: 3px solid transparent; background: #f8f9fa; }
+        .chip.pending { border-left-color: var(--warning); color: #d35400; background: #fff8e1; }
+        .chip.accepted { border-left-color: var(--success); color: #00695c; background: #e0f2f1; }
+        .chip.cancelled { border-left-color: var(--danger); color: #c0392b; background: #fadbd8; text-decoration: line-through; }
+
+        /* MODALS */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(33, 43, 54, 0.6); backdrop-filter: blur(2px); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-card { background: white; width: 95%; max-width: 1400px; height: 90vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.1); }
+        .modal-head { background: white; padding: 20px 30px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .modal-body { padding: 0; overflow: auto; flex: 1; background: #f8f9fa; }
+
+        /* TABLE & INPUTS */
+        .monitoring-table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        .monitoring-table th { background: white; color: #7f8c8d; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; padding: 15px; text-align: left; border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 10; }
+        .monitoring-table td { padding: 12px 15px; border-bottom: 1px solid var(--border); background: white; vertical-align: top; }
+        .monitoring-table tr:hover td { background: #f8faff; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 6px; font-size: 0.85rem; outline: none; box-sizing: border-box; }
+        input:focus, select:focus { border-color: var(--accent); }
+        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+
+        /* BUTTONS */
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-accent { background: var(--accent); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-ghost { background: transparent; color: #7f8c8d; }
+        
+        /* LOGIN */
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .login-box { background: white; padding: 40px; border-radius: 12px; width: 350px; text-align: center; }
+
+        /* BATCH SCHEDULE TABLE */
+        .batch-table { width:100%; border-collapse: collapse; margin-top:10px; }
+        .batch-table th { background:#eee; font-size:0.75rem; padding:8px; text-align:left; }
+        .batch-table td { border-bottom:1px solid #eee; padding:8px; }
+        
+        /* ACTION ICONS - STATIC (NO MOVEMENT) */
+        .action-cell { display: flex; gap: 15px; align-items: center; }
+        .action-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; opacity: 0.8; transition: opacity 0.2s; }
+        .action-item:hover { opacity: 1; }
+        .action-icon { font-size: 1.2rem; }
+        .action-label { font-size: 0.6rem; text-transform: uppercase; color: #7f8c8d; margin-top: 2px; }
+        .action-item:hover .action-label { color: var(--accent); font-weight: bold; }
+        
+        /* OVERRIDE BUTTONS (BEAUTIFUL) */
+        .ovr-btn { padding: 6px 12px; font-size: 0.75rem; border-radius: 4px; border: none; color: white; cursor: pointer; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-right: 5px; }
+        .ovr-accept { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+        .ovr-ob { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .ovr-adv { background: linear-gradient(135deg, #f39c12, #d35400); }
+        .ovr-resched { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .ovr-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
+
+        /* CUSTOM NOTIFICATION STYLES */
+        #custom-alert-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
+        .custom-alert-box { background: white; padding: 25px; border-radius: 12px; width: 320px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .custom-alert-icon { font-size: 3rem; margin-bottom: 10px; display: block; }
+        .custom-alert-msg { font-size: 1rem; color: #34495e; margin-bottom: 20px; line-height: 1.5; }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* BEAUTIFIED NOTIFICATIONS WIDGET */
+        .notif-card { background: white; border-radius: 8px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 4px solid var(--danger); display: flex; justify-content: space-between; align-items: center; }
+        .notif-info { flex: 1; }
+        .notif-title { font-weight: bold; color: var(--danger); font-size: 0.9rem; margin-bottom: 4px; }
+        .notif-sub { font-size: 0.75rem; color: #7f8c8d; }
+
+        /* BEAUTIFIED DETAILS GRID */
+        .details-grid { display: grid; grid-template-columns: 140px 1fr; gap: 10px; padding: 10px; }
+        .dg-label { font-weight: 600; color: #7f8c8d; text-align: right; padding-right: 15px; }
+        .dg-val { font-weight: 600; color: var(--primary); }
+        .dg-row { display: contents; }
+        .dg-row:nth-child(even) .dg-val { background: #f8f9fa; padding: 4px; border-radius: 4px; }
+
+        @media print { 
+            body * { visibility: hidden; } 
+            #print-container { display: block; position: absolute; left: 0; top: 0; width: 100%; visibility: visible; }
+            #print-container * { visibility: visible; } 
+            .a4-page { width: 210mm; margin: 0 auto; background: white; padding: 20mm; font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.15; color: black; } 
+            .endo-table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 20px; }
+            .endo-table th, .endo-table td { border: 1px solid black; padding: 5px; text-align: center; vertical-align: middle; font-size: 10pt; }
+            .endo-header { font-weight: bold; background: #eee; }
+            .sig-block { margin-top: 40px; display: flex; justify-content: space-between; }
+            .sig-line { width: 200px; border-top: 1px solid black; margin-top: 40px; text-align: center; font-weight: bold; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="login-overlay">
+    <div class="login-box">
+        <h2 style="color:var(--primary); margin-bottom: 5px;">AMS Login</h2>
+        <p style="color:#7f8c8d; margin-bottom: 20px;">Assessment Monitoring System</p>
+        <div style="text-align:left; margin-bottom: 15px;">
+            <label style="font-size:0.8rem; font-weight:700; color:#34495e;">Select User</label>
+            <select id="login-user" style="width:100%; margin-top:5px; padding:10px;">
+                <option value="CAC Focal">CAC Focal (Admin)</option>
+                <option value="Laurence R. Arimado">Laurence R. Arimado</option>
+                <option value="Ryan Erik V. Reñevo">Ryan Erik V. Reñevo</option>
+                <option value="Nanette B. Baranda">Nanette B. Baranda</option>
+            </select>
+        </div>
+        <button class="btn btn-accent" style="width:100%; justify-content:center; padding:12px;" onclick="login()">Enter Dashboard</button>
+    </div>
+</div>
+
+<div id="custom-alert-overlay">
+    <div class="custom-alert-box">
+        <span class="custom-alert-icon" id="c-alert-icon">🔔</span>
+        <div class="custom-alert-msg" id="c-alert-msg">Notification</div>
+        <button class="btn btn-primary" onclick="document.getElementById('custom-alert-overlay').style.display='none'">OK</button>
+    </div>
+</div>
+
+<nav>
+    <div class="brand">AMS <span>v2.0</span></div>
+    <div class="user-pill" onclick="location.reload()" title="Click to Logout">👤 <span id="user-display">Guest</span></div>
+</nav>
+
+<div class="container">
+    <div class="sidebar">
+        <button class="btn btn-accent" onclick="window.open('ATLAS.html', '_blank')">🚀 Open ATLAS System</button>
+        <div>
+            <div class="widget-title">Dashboard Filters</div>
+            <select id="filter-ac" onchange="renderCalendar()"><option value="">All Assessment Centers</option></select>
+        </div>
+        <div>
+            <div class="widget-title">System Status</div>
+            <div class="stat-card">
+                <div class="stat-num" id="pending-count">0</div>
+                <div class="stat-label">Pending Acceptance</div>
+            </div>
+            <div class="stat-card" style="background:#e0f2f1;">
+                <div class="stat-num" style="color:var(--success)" id="accepted-count">0</div>
+                <div class="stat-label">Confirmed Schedules</div>
+            </div>
+            <div class="stat-card" id="sched-pending-card" style="background:#fff3cd; display:none;">
+                <div class="stat-num" style="color:var(--warning)" id="sched-pending-count">0</div>
+                <div class="stat-label">Pending Schedules</div>
+            </div>
+            
+            <div id="letter-stats" style="display:none; margin-top:10px;">
+                <div class="widget-title">Generated Letters</div>
+                <div style="font-size:0.8rem; padding:10px; background:white; border:1px solid #eee; border-radius:5px;">
+                    <div>Appt: <b id="cnt-appt">0</b></div>
+                    <div>Assg: <b id="cnt-assg">0</b></div>
+                    <div>Endo: <b id="cnt-endo">0</b></div>
+                    <button id="btn-reset-letters" onclick="resetLetterCounts()" style="font-size:0.6rem; margin-top:5px; width:100%;">Reset</button>
+                </div>
+            </div>
+
+            <div id="admin-tools" style="display:none; margin-top:15px;">
+                 <button class="btn btn-ghost" style="width:100%; border:1px dashed #ccc;" onclick="manageDesignated()">👥 Manage Roles</button>
+            </div>
+        </div>
+    	<div id="pending-list-container" style="display:none; margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
+            <div class="widget-title" style="color:#d35400;">⚠️ ACTION REQUIRED</div>
+            <div id="pending-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="cal-header">
+            <h2 id="month-label" style="margin:0; color:var(--primary);">Month Year</h2>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-ghost" onclick="changeMonth(-1)">◀ Prev</button>
+                <button class="btn btn-ghost" onclick="changeMonth(1)">Next ▶</button>
+            </div>
+        </div>
+        <div class="cal-grid" id="calendar"></div>
+    </div>
+</div>
+
+<div id="detail-modal" class="modal">
+    <div class="modal-card">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title" id="modal-date-title">Details</div>
+                <small style="color:#7f8c8d;">Daily Assessment Monitoring & Compliance View</small>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <span id="save-indicator" style="color:var(--success); font-weight:bold; opacity:0; transition:0.3s;">Saved!</span>
+                <button class="btn btn-primary" onclick="saveAll()">💾 Save Changes</button>
+                <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+        <div class="modal-body">
+            <table class="monitoring-table">
+                <thead><tr><th>Assessment Center</th><th>Qualification</th><th>Assessor</th><th>TESDA Rep</th><th>Rating Sheet</th><th>Result</th><th>CCTV</th><th>Remarks</th><th>Actions</th></tr></thead>
+                <tbody id="detail-rows"></tbody>
+            </table>
+            <div style="padding:20px; text-align:center;"><button class="btn btn-ghost" onclick="addRow()" style="border:1px dashed #ccc;">+ Add New Schedule Row</button></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyoPM_USOIroJAeIQf9tl70F6hfR75nihFHanSC2jugs4KyH0XJgYi-oUGldhuDziC9IQ/exec"; 
+    
+    // DATA CONFIG
+    const AC_DIRECTORY = { "DARAGA HUMAN RESOURCE DEVELOPMENT CENTER": "Zone 5, Anislag, Daraga, Albay", "PROVINCIAL TRAINING CENTER - GUINOBATAN": "San Francisco, Guinobatan Albay", "PROVINCIAL TRAINING CENTER - MALILIPOT": "Basud, Malilipot Albay", "COMPUTER ARTS AND TECHNOLOGICAL COLLEGE-LIGAO CITY, INC.": "Washington Street, Binatagan, Ligao City", "ONDA SCHOOL OF TECHNOLOGY INC.": "2nd Floor, Embarcadero De Legazpi, Barangay 27, Victory Village South, Legazpi City", "TEKTONE GLOBAL TECHNOLOGIES FOUNDATION, INCORPORATED": "333 Peňaranda Extension, Bonot, Legazpi City", "EVEGATE TECHNICAL AND DEVELOPMENT TRAINING ACADEMY, INC.": "Mmb Building, St. Jude Subdivision, Legazpi City", "R. NADORA TRAINING CENTER INC.": "Brgy. Salugan, Camalig, Albay", "BELEN B. FRANCISCO FOUNDATION, INCORPORATED": "Daraga, Albay", "SAINTE TRINITE ACADEMY INC.": "2nd Floor, Mmb., Building, Peñaranda Street, Bonot, Legazpi City", "JUN GO TECHNOLOGICAL INSTITUTE (JGTI) INC.": "Panganiban / Alcala St., Sipi, Daraga, Albay", "SOUTHERN LUZON TECHNOLOGICAL COLLEGE FOUNDATION, INC.": "Ramon Santos Street Brgy. 33, Peñaranda, Legazpi City", "ABEC INSTITUTE OF BUSINESS AND TECHNOLOGY, INC.": "3rd Floor, Pvlb Building, Peňaranda Street, Legazpi City", "SUNSHINE INTERNATIONAL SCHOOL FOUNDATION, INC.": "Doña Maria Subdivision, Tagas, Daraga, Albay", "ALBAY FARMER'S BOUNTY VILLAGE": "Cabangan, Camalig Albay", "BLOOM TRAINING AND ASSESSMENT CENTER, INC.": "2nd Floor, Navia Bldg., Ilawod-comun Road, Purok 2, Ilawod 2, Camalig, Alba", "GOOD GRASS TRAINING & ASSESSMENT CENTER INCORPORATED": "Lot 16 Block 14 Happy Homes Greenfield Bgy. 44, Pawa, Legazpi City Albay", "ARCHER TECHNOLOGY TRAINING CENTER (ATTC) INC.": "Purok 1, Tuburan, Ligao City (capital), City Of Ligao, Albay, Region V (bicol Region)", "PNJ-BAGONG ABRE INSTITUTE OF TECHNOLOGY, INC.": "Zone 2, Brgy. 48, Bagong Abre, Legazpi City", "CITY DISASTER RISK REDUCTION AND MANAGEMENT OFFICE - CITY GOVERNMENT OF LIGAO": "Cdrrmo Command and Operation Center Barangay Tomolin, Ligao City, Albay", "DON BOSCO AGRO-MECHANICAL TECHNOLOGY CENTER (LEGAZPI), INC.": "Banquerohan, Legazpi City", "CAROLYNA INSTITUTE OF TECHNOLOGY, INC.": "Talisay Street, Happy Homes Subdivision , Tagas, Tabaco City", "SOUTH EAST-ASIA INSTITUTE OF TRADE AND TECHNOLOGY, INC.": "Brgy.16, East Washington Drive, Alternate Road, Legazpi City", "GLOBAL KNOWLEDGE TRAINING CENTER INC.": "Zone 1, Camalig, Albay", "SAN FRANCISCO INSTITUTE OF SCIENCE AND TECHNOLOGY": "San Francisco, Malilipot, Albay", "SAN FRANCISCO INSTITUTE OF SCIENCE AND TECHNOLOGY - (EXTENSION CAMPUS)": "Bagong San Roque, Sto. Domingo, Albay", "AGO MEDICAL AND EDUCATIONAL CENTER, INC.": "Rizal St., Old Albay, Legazpi City", "E-TRANSCRIBE EDUCATION SYSTEM, INCORPORATED, DOING BUSINESS UNDER THE NAME AND STYLE OF MTC-ACADEMY": "Benig Building, General Luna Street, Tabaco City", "GLOCAL VOCATIONAL SKILLS TRAINING, DEVELOPMENT, AND ASSESSMENT CENTER, INC.": "Maharlika Hi-way, Charisma Compound, Purok 3, San Rafael, Diversion Road, Guinobatan, Albay", "PLT COLLEGE OF GUINOBATAN, INCORPORATED": "San Francisco, Guinobatan Albay", "SOLONG INTEGRATED FARM TRAINING AND ASSESSMENT CENTER INC.": "Purok 2, Solong Rd. Solong 2, Camalig, Albay", "MULTIPLE SKILLS INSTITUTE INC.": "Peñaranda Extension, Bonot, Legazpi City", "LEO MEJILLANO BEAUTY CARE TRAINING CENTER CORP.": "Mejillano Building , Purok 3, Kiwalo, Daraga ( Locsin ), Albay" };
+    const STAFF_LIST = ["Laurence R. Arimado", "Maria Bella B. Atienza", "Nanette B. Baranda", "Ryan Erik V. Reñevo", "Nikko E. Sarate", "Mariglo L. Macabuhay-Sese", "Shellie Marionne S. Villareal", "Marjory B Ballaran", "Leichel C. Casulla", "Gerard John G. Lorete", "Sarah Jane O. Pama", "Kathleen L. Rogando", "Glenn Edison B. Sto. Tomas", "Jhosa B. Trilles", "Ella Mae A. Bodegon", "Lyza Azueta", "Jaimeir Ll Soria", "Mark Emil B Dionela", "CAC Focal"];
+    const QUAL_LIST = ["Agricultural Crops Production NC II", "Agricultural Machinery Servicing (4-Wheel Tractor) NC III", "Agroentrepreneurship NC II", "Animal Production (Poultry-Chicken) NC II", "Animal Production (Swine) NC II", "Automotive Servicing NC I", "Barangay Health Services NC II", "Bartending NC II", "Beauty Care (Nail Care) Services NC II", "Beauty Care (Nail Enhancement Technology) Services NC III", "Beauty Care (Skin Care) Services NC II", "Bookkeeping NC III", "Bread and Pastry Production NC II", "Computer Systems Servicing NC II", "Cookery NC II", "Customer Services NC II", "Dressmaking NC II", "Driving NC II", "Early Childhood Care and Development Services NC III", "Electrical Installation and Maintenance NC II", "Electrical Installation and Maintenance NC III", "Electronic Products Assembly and Servicing NC II", "Emergency Medical Services NC II", "Events Management Services NC III", "Food and Beverage Services NC II", "Front Office Services NC II", "Hairdressing NC II", "Heavy Equipment Operation (Backhoe Loader) NC II", "Heavy Equipment Operation (Bulldozer) NC II", "Heavy Equipment Operation (Forklift) NC II", "Heavy Equipment Operation (Hydraulic Excavator) NC II", "Heavy Equipment Operation (Rigid On-Highway Dump Truck) NC II", "Heavy Equipment Operation (Wheel Loader) NC II", "Hilot (Wellness Massage) NC II", "Housekeeping NC II", "Masonry NC I", "Mechatronics Servicing NC II", "Medical Transcription NC II", "Organic Agriculture Production NC II", "Plumbing NC I", "Plumbing NC II", "PV Systems Installation NC II", "RAC Servicing (DomRAC) NC II", "Rice Machinery Operations NC II", "Shielded Metal Arc Welding (SMAW) NC I", "Shielded Metal Arc Welding (SMAW) NC II", "Tailoring NC II", "Technical Drafting NC II", "Tile Setting NC II", "Trainers Methodology Level NC I"];
+    const ASSESSOR_RAW = [{n:"Abundio G Bermundo Jr", q:"RAC Servicing (DomRAC) NC II"}, {n:"Abundio G Bermundo Jr", q:"Electronic Products Assembly and Servicing NC II"}, {n:"Aeryk Vintton Manansala Obligacion", q:"Organic Agriculture Production NC II"}, {n:"Aizel Jacob Roncejero", q:"Bread and Pastry Production NC II"}, {n:"Aizel Jacob Roncejero", q:"Cookery NC II"}, {n:"Aler Mirandilla Buama", q:"Plumbing NC II"}, {n:"Allan B Borsal", q:"Computer Systems Servicing NC II"}, {n:"Alritz B Escoto", q:"Electrical Installation and Maintenance NC II"}, {n:"Alritz B Escoto", q:"Electrical Installation and Maintenance NC III"}, {n:"Alvin Z. Roxas", q:"Agricultural Crops Production NC II"}, {n:"Anatol C Burce", q:"PV Systems Installation NC II"}, {n:"Andrey R Labordio", q:"Front Office Services NC II"}, {n:"Angelica Briola Petes", q:"Dressmaking NC II"}, {n:"Angelo M Llacuna", q:"Driving NC II"}, {n:"Antonio P Padayao Jr", q:"Animal Production (Swine) NC II"}, {n:"Antonio P Padayao Jr", q:"Agricultural Crops Production NC II"}, {n:"Antonio P Padayao Jr", q:"Animal Production (Poultry-Chicken) NC II"}, {n:"Archie J Galicia", q:"Gas Metal Arc Welding (GMAW) NC II"}, {n:"Bavie Fernandez Dela Rama", q:"Electrical Installation and Maintenance NC II"}, {n:"Beverly V Perez", q:"Hilot (Wellness Massage) NC II"}, {n:"Carina Rabelas Mojeco", q:"Dressmaking NC II"}, {n:"Caryl M Venus", q:"Dressmaking NC II"}, {n:"Caryl M Venus", q:"Tailoring NC II"}, {n:"Christopher Alec Dayandante Locsin", q:"Organic Agriculture Production NC II"}, {n:"Cresenciano B Mandane", q:"Heavy Equipment Operation (Hydraulic Excavator) NC II"}, {n:"Cresenciano B Mandane", q:"Heavy Equipment Operation (Rigid On-Highway Dump Truck) NC II"}, {n:"Cresenciano B Mandane", q:"Heavy Equipment Operation (Wheel Loader) NC II"}, {n:"Dennis R Jacob", q:"Hilot (Wellness Massage) NC II"}, {n:"Dennis Y Perdigon", q:"Shielded Metal Arc Welding (SMAW) NC I"}, {n:"Dhen Angelo Nidua Navera", q:"Organic Agriculture Production NC II"}, {n:"Dhen Angelo Nidua Navera", q:"Agricultural Crops Production NC II"}, {n:"Edgar Ll Marollano", q:"Electronic Products Assembly and Servicing NC II"}, {n:"Edwin C Magalona", q:"Customer Services NC II"}, {n:"Edwin C Magalona", q:"Bookkeeping NC III"}, {n:"Elizabeth T Tan", q:"Hairdressing NC II"}, {n:"Elma Arcos Acuzar", q:"Organic Agriculture Production NC II"}, {n:"Elmar Jay Roda Roncejero", q:"Electrical Installation and Maintenance NC II"}, {n:"Elmer Bomalay Brampio", q:"Trainers Methodology Level NC I"}, {n:"Elsa Claveron Maranan", q:"Organic Agriculture Production NC II"}, {n:"Elsie B Montero", q:"Electronic Products Assembly and Servicing NC II"}, {n:"Eunice Marinay Jadie", q:"Agricultural Crops Production NC II"}, {n:"Francis L Adille", q:"Cookery NC II"}, {n:"Francis L Adille", q:"Food Processing NC II"}, {n:"Francis N Luzeriaga", q:"Electrical Installation and Maintenance NC II"}, {n:"Francis N Luzeriaga", q:"PV Systems Installation NC II"}, {n:"Francis N Luzeriaga", q:"PV Systems Servicing NC III"}, {n:"Gemar Lorena Nocos", q:"Computer Systems Servicing NC II"}, {n:"Geoffrey Bien R. Buena", q:"Computer Systems Servicing NC II"}, {n:"Gerald Luna Nape", q:"Heavy Equipment Operation (Rigid On-Highway Dump Truck) NC II"}, {n:"Grace A Dejumo", q:"Organic Agriculture Production NC II"}, {n:"Henry Adornado Belista", q:"Shielded Metal Arc Welding (SMAW) NC I"}, {n:"Jacquiline B. Boneo", q:"Dressmaking NC II"}, {n:"Jason John M Romero", q:"Computer Systems Servicing NC II"}, {n:"Jay B Vargas", q:"Driving NC II"}, {n:"Jayben E Carretero", q:"Electronic Products Assembly and Servicing NC II"}, {n:"Jayson Arnedo Acuña", q:"Shielded Metal Arc Welding (SMAW) NC I"}, {n:"Jenilyn B Florante", q:"Hilot (Wellness Massage) NC II"}, {n:"Jerald Rodriguez Lorilla", q:"Agricultural Crops Production NC II"}, {n:"Jhonalyn Madelar Goyena", q:"Trainers Methodology Level NC I"}, {n:"Jimmy D Yau", q:"Driving (Passenger Bus/Straight Truck) NC III"}, {n:"Jimmy D Yau", q:"Heavy Equipment Operation (Forklift) NC II"}, {n:"Jonard Benosa Balleras", q:"Bookkeeping NC III"}, {n:"Jonas Apin Balgemino", q:"Electrical Installation and Maintenance NC II"}, {n:"Jonathan Llaneta Mondragon", q:"Motorcycle/Small Engine Servicing NC II"}, {n:"Jonathan Llaneta Mondragon", q:"Automotive Servicing NC I"}, {n:"Jonisa Lovendino Bidar", q:"Housekeeping NC II"}, {n:"Jose Mari Jecon Basco Miralo", q:"Bartending NC II"}, {n:"Jossa C Araojo", q:"Tile Setting NC II"}, {n:"Juliet B. Brusola", q:"Computer Systems Servicing NC II"}, {n:"Juver Frondozo Samonte", q:"Cookery NC II"}, {n:"Karl Sarmiento Pelagio", q:"Electrical Installation and Maintenance NC II"}, {n:"Kathleen R Bejo", q:"Bread and Pastry Production NC II"}, {n:"Laarni Mujar Lique", q:"Shielded Metal Arc Welding (SMAW) NC I"}, {n:"Leila Borras Rabi", q:"Dressmaking NC II"}, {n:"Leonardo M. Montero", q:"PV Systems Installation NC II"}, {n:"Leonardo M. Montero", q:"Electronic Products Assembly and Servicing NC II"}, {n:"Leopoldo L Mejillano", q:"Hairdressing NC II"}, {n:"Leopoldo L Mejillano", q:"Beauty Care (Skin Care) Services NC II"}, {n:"Leopoldo L Mejillano", q:"Beauty Care (Nail Care) Services NC II"}, {n:"Lorenzo Gregorio Iii Bombase Nuñez", q:"Rice Machinery Operations NC II"}, {n:"Loui Adajo Sibbaluca", q:"Shielded Metal Arc Welding (SMAW) NC I"}, {n:"Loui Adajo Sibbaluca", q:"Shielded Metal Arc Welding (SMAW) NC II"}, {n:"Lourdes B Alcala", q:"Food and Beverage Services NC II"}, {n:"Ma. Belinda A Balde", q:"Bookkeeping NC III"}, {n:"Mabel C Echague", q:"Food and Beverage Services NC II"}, {n:"Manuel B Bobis", q:"Computer Systems Servicing NC II"}, {n:"Maria Asuncion B Locsin", q:"Tailoring NC II"}, {n:"Maria Asuncion B Locsin", q:"Dressmaking NC II"}, {n:"Maria Cristina Aldave Bulawan", q:"Beauty Care (Nail Care) Services NC II"}, {n:"Maricel A Cabria", q:"Hairdressing NC II"}, {n:"Maricel A Cabria", q:"Beauty Care (Nail Care) Services NC II"}, {n:"Marietta L Verchez", q:"Trainers Methodology Level NC II"}, {n:"Marietta L Verchez", q:"Trainers Methodology Level NC I"}, {n:"Mark Vincent A Sanchez", q:"Shielded Metal Arc Welding (SMAW) NC I"}, {n:"Mark Vincent A Sanchez", q:"Shielded Metal Arc Welding (SMAW) NC II"}, {n:"Mayleen A Azares", q:"Hilot (Wellness Massage) NC II"}, {n:"Mayleen A Azares", q:"Early Childhood Care and Development Services NC III"}, {n:"Melanie Nicerio Villanueva", q:"Bread and Pastry Production NC II"}, {n:"Melchor N Segovia", q:"Electrical Installation and Maintenance NC II"}, {n:"Meljie L. Matociños", q:"Organic Agriculture Production NC II"}, {n:"Noel R Cerdeña", q:"Front Office Services NC II"}, {n:"Noel R Cerdeña", q:"Bartending NC II"}, {n:"Noel R Cerdeña", q:"Food and Beverage Services NC II"}, {n:"Ophir M Aycocho", q:"PV Systems Servicing NC III"}, {n:"Patrick James D. Mendina", q:"Bartending NC II"}, {n:"Paul Daniel . Mandate", q:"Organic Agriculture Production NC II"}, {n:"Perla Casitas Bragais", q:"Food and Beverage Services NC II"}, {n:"Randie B Soncuya", q:"Computer Systems Servicing NC II"}, {n:"Raquel Aragon Mien", q:"Trainers Methodology Level NC I"}, {n:"Raymond Ramirez Correa", q:"Bread and Pastry Production NC II"}, {n:"Rex Raborar Solomon", q:"Electrical Installation and Maintenance NC II"}, {n:"Ricardo A. Esquivel Sr.", q:"Bartending NC II"}, {n:"Ricardo A. Esquivel Sr.", q:"Food and Beverage Services NC II"}, {n:"Ricardo D Vargas", q:"Automotive Servicing NC I"}, {n:"Ricardo D Vargas", q:"Automotive Servicing (Engine Repair) NC II"}, {n:"Ricardo D Vargas", q:"Driving NC II"}, {n:"Ricardo D Vargas", q:"Driving (Passenger Bus/Straight Truck) NC III"}, {n:"Ricky A Loterte", q:"Customer Services NC II"}, {n:"Ricky B Mendoza", q:"Domestic Work NC II"}, {n:"Ricky B Mendoza", q:"Cookery NC II"}, {n:"Ricky B Mendoza", q:"Events Management Services NC III"}, {n:"Ricky Lita Masarate", q:"Heavy Equipment Operation (Wheel Loader) NC II"}, {n:"Ricky Lita Masarate", q:"Heavy Equipment Operation (Rigid On-Highway Dump Truck) NC II"}, {n:"Ricky Lita Masarate", q:"Heavy Equipment Operation (Forklift) NC II"}, {n:"Ricky Lita Masarate", q:"Heavy Equipment Operation (Backhoe Loader) NC II"}, {n:"Roberto Caña Marigondon", q:"RAC Servicing (DomRAC) NC II"}, {n:"Roger B Borromeo", q:"Computer Systems Servicing NC II"}, {n:"Ronald Refama Saulon", q:"Rice Machinery Operations NC II"}, {n:"Ronel B Lotino", q:"Beauty Care (Nail Care) Services NC II"}, {n:"Ronel B Lotino", q:"Hilot (Wellness Massage) NC II"}, {n:"Ronel M Lumbes", q:"Electronic Products Assembly and Servicing NC II"}, {n:"Ronel M Lumbes", q:"Trainers Methodology Level NC I"}, {n:"Rosalinda R Verano", q:"Animal Production (Swine) NC II"}, {n:"Rossinni Manansala Obligacion", q:"Organic Agriculture Production NC II"}, {n:"Rowena A. Mujar", q:"Rice Machinery Operations NC II"}, {n:"Roy Arimado Lunas", q:"Automotive Servicing NC I"}, {n:"Rozil Leosala Loreto", q:"Electrical Installation and Maintenance NC II"}, {n:"Ruby D Lozada", q:"Hairdressing NC II"}, {n:"Ruby D Lozada", q:"Beauty Care (Nail Care) Services NC II"}, {n:"Salvador E Talangan", q:"Plumbing NC I"}, {n:"Sheila Robas Nuñez", q:"Bread and Pastry Production NC II"}, {n:"Susan M Quinto", q:"Cookery NC II"}, {n:"Susie Mirasol Molina", q:"Agroentrepreneurship NC II"}, {n:"Susie Mirasol Molina", q:"Agroentrepreneurship NC III"}, {n:"Tonefrancis M Bellen", q:"Driving NC II"}, {n:"Tonefrancis M Bellen", q:"Electrical Installation and Maintenance NC II"}, {n:"Tyndall Magallanes Bellen", q:"Driving NC II"}, {n:"Wilfredo Floresta Verano", q:"Animal Production (Swine) NC II"}];
+    const CLIENT_SUBTYPES = { "Scholarship": ["TWSP", "STEP", "UAQTEA", "PESFA", "RESP", "Tulong-Trabaho"], "DEPED": ["SHS", "JDP", "TechVoc", "TechPro"], "Regular": ["Regular"], "Walk-In": ["Walk-In"] };
+    const CLIENT_TYPE_2 = ["SHS TVL STUDENT", "OFW", "SHS TVL TEACHER", "TVET GRADUATE", "TVET GRADUATING STUDENT", "INDUSTRY WORKER", "K TO 12", "OTHERS"];
+    const MODALITIES = ["SHS TVL STUDENT ASSESSMENT", "SHS TVL TEACHER ASSESSMENT", "MANDATORY", "REGULAR", "CACW PROGRAM"];
+
+    // GLOBALS
+    let db = [];          
+    let transDb = [];     
+    let currentUser = "";
+    let currentMonth = new Date();
+    let currentView = "CALENDAR"; 
+    let EMAIL_DIRECTORY = {};
+    let designatedFocals = JSON.parse(localStorage.getItem('ams_designated')) || [];
+    let letterCounts = JSON.parse(localStorage.getItem('ams_letter_counts')) || { appt: 0, assg: 0, endo: 0 };
+    
+    let emailTemplates = JSON.parse(localStorage.getItem('ams_email_templates')) || {
+        endorsement: "Dear Sir/Ma'am,\n\nRespectfully forwarding the Endorsement of Assessment for [Qual].\n\nPlease confirm receipt.\n\nThanks,\nTESDA PO",
+        appointment: "Dear Assessor,\n\nYou are appointed to conduct assessment for [Qual] at [AC] on [Date].\n\nThanks,\nTESDA PO",
+        client: "Dear [Client],\n\nYour assessment for [Qual] is scheduled on [Date] at [AC].\n\nGood luck,\nTESDA PO",
+        reminder: "Dear AC,\n\nThis is a reminder to submit the CCTV recordings and requirements for the assessment conducted on [Date] for [Qual].\n\nPlease submit immediately.\n\nThanks,\nTESDA PO"
+    };
+
+    const WORKFLOW_STEPS = [
+        { id: "Receipt", label: "Receipt", role: "Any" },
+        { id: "Forwarded to Focal", label: "Forward to Focal", role: "Any" },
+        { id: "Focal Received", label: "Focal Received", role: "CAC Focal" },
+        { id: "Organizing Assessment", label: "Organizing", role: "CAC Focal" },
+        { id: "Assessment Finalized", label: "Set Schedule", role: "CAC Focal" },
+        { id: "Endorsed Documents", label: "Endorse Docs", role: "CAC Focal" },
+        { id: "Inform Assessor", label: "Inform Assessor", role: "CAC Focal" },
+        { id: "Inform Client", label: "Inform Client", role: "CAC Focal", optional: true },
+        { id: "TESDA Rep Assigned", label: "Assign Rep", role: "CAC Focal" },
+        { id: "AC Received Docs", label: "AC Rcvd Docs", role: "CAC Focal" },
+        { id: "Assessment On-Going", label: "Assessment Day", role: "CAC Focal" },
+        { id: "AC Submitted CCTV", label: "CCTV Submit", role: "CAC Focal" },
+        { id: "Encoding Result", label: "Encoding", role: "CAC Focal" },
+        { id: "Sending NC/COC", label: "Sending Certs", role: "CAC Focal" },
+        { id: "End of Transaction", label: "Completed", role: "Any" }
+    ];
+
+    // --- INITIALIZATION ---
+    window.addEventListener('DOMContentLoaded', () => {
+        // Branding
+        document.querySelector('.brand').innerHTML = `<img src="Logo.png" alt="TESDA" style="height:45px; margin-right:5px;"><div style="display:flex; flex-direction:column; line-height:1.1;"><span style="font-size:1.1rem; font-weight:800; color:var(--primary);">Assessment Monitoring System</span><span style="font-size:0.75rem; font-weight:600; color:#7f8c8d;">TESDA Albay Provincial Office</span></div>`;
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) { const f = document.createElement('div'); f.style.marginTop='auto'; f.style.paddingTop='15px'; f.style.borderTop='1px solid #eee'; f.style.fontSize='0.65rem'; f.style.textAlign='center'; f.innerHTML=`Developed by <b>Laurence R. Arimado</b><br>For <b>TESDA Albay</b>`; sidebar.appendChild(f); }
+        const loginBox = document.querySelector('.login-box');
+        if(loginBox && !loginBox.querySelector('img')) { const l = document.createElement('img'); l.src = 'logo.png'; l.style.height = '80px'; l.style.marginBottom = '15px'; loginBox.insertBefore(l, loginBox.firstChild); }
+
+        // Inject Buttons
+        const btnMonitor = document.createElement('button');
+        btnMonitor.className = 'btn btn-primary';
+        btnMonitor.style.width = '100%';
+        btnMonitor.style.marginBottom = '10px';
+        btnMonitor.innerHTML = '📊 Monitor / Front Desk';
+        btnMonitor.onclick = () => toggleView('MONITOR');
+        sidebar.insertBefore(btnMonitor, sidebar.firstChild);
+
+        const btnSettings = document.createElement('button');
+        btnSettings.className = 'btn btn-ghost';
+        btnSettings.style.width = '100%';
+        btnSettings.style.marginTop = '10px';
+        btnSettings.innerHTML = '⚙️ Settings (Email)';
+        btnSettings.onclick = openSettingsModal;
+        sidebar.appendChild(btnSettings);
+
+        populateSidebarFilter();
+        injectStyleOverrides();
+        injectTransactionModal();
+        injectDetailsModal();
+        injectSettingsModal();
+        injectCustomAlert(); // Inject Custom Popup
+        injectLoginPassword();
+    });
+
+    function injectStyleOverrides() {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .dark-mode .main { background-color: #2c3e50 !important; }
+            .dark-mode .cal-header h2 { color: #ecf0f1 !important; justify-content: center; display: flex; width: 100%; text-align:center; flex:1; }
+            .dark-mode .cal-day-header { color: #bdc3c7 !important; }
+            .dark-mode .cal-cell { background: #34495e !important; border-color: #465c71 !important; color: #ecf0f1; }
+            .dark-mode .cal-cell:hover { background: #3d566e !important; border-color: var(--accent) !important; }
+            .dark-mode .cal-cell span:first-child { color: #95a5a6 !important; }
+            .timeline-container { display: flex; overflow-x: auto; gap: 5px; padding-bottom: 10px; border-bottom: 2px solid #eee; margin-bottom: 20px; }
+            .timeline-step { min-width: 80px; text-align: center; font-size: 0.65rem; color: #ccc; position: relative; }
+            .timeline-step.active { color: var(--accent); font-weight: bold; }
+            .timeline-step.completed { color: var(--success); }
+            .timeline-dot { width: 10px; height: 10px; background: #eee; border-radius: 50%; margin: 0 auto 5px auto; }
+            .timeline-step.active .timeline-dot { background: var(--accent); transform: scale(1.3); }
+            .timeline-step.completed .timeline-dot { background: var(--success); }
+            #print-container { display: none; }
+        `;
+        document.head.appendChild(style);
+        if (!document.getElementById('print-container')) { const pc = document.createElement('div'); pc.id = 'print-container'; document.body.appendChild(pc); }
+    }
+
+    function injectCustomAlert() {
+        // Already injected in body
+    }
+
+    function showCustomAlert(msg, isSuccess=true) {
+        document.getElementById('c-alert-msg').innerText = msg;
+        document.getElementById('c-alert-icon').innerText = isSuccess ? '✅' : '❌';
+        document.getElementById('custom-alert-overlay').style.display = 'flex';
+    }
+
+    function injectLoginPassword() {
+        const loginSel = document.getElementById('login-user');
+        if(loginSel && !document.getElementById('login-pass')) {
+            const passInput = document.createElement('input');
+            passInput.type = 'password';
+            passInput.id = 'login-pass';
+            passInput.placeholder = 'Enter Password...';
+            passInput.style.cssText = "width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; display:block;";
+            loginSel.parentNode.insertBefore(passInput, loginSel.nextSibling);
+            
+            let html = '<option value="Super Admin" style="color:red; font-weight:bold;">Super Admin (Override)</option>'; 
+            html += '<option value="CAC Focal">CAC Focal (Admin)</option>'; 
+            STAFF_LIST.forEach(name => html += `<option value="${name}">${name}</option>`);
+            loginSel.innerHTML = html;
+            
+            loginSel.addEventListener('change', function() {
+                passInput.value = '';
+                passInput.placeholder = `Password for ${this.value}...`;
+                passInput.focus();
+                passInput.style.border = "2px solid #3498db"; 
+            });
+            passInput.addEventListener('keypress', function (e) { if (e.key === 'Enter') login(); });
+        }
+    }
+
+    // --- LOGIC ---
+    function login() {
+        const userSel = document.getElementById('login-user');
+        const passInp = document.getElementById('login-pass');
+        const btn = document.querySelector('.login-box button');
+        if(!passInp) return;
+        if(btn) { btn.innerText = "Verifying..."; btn.disabled = true; }
+        
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'login', user: userSel.value, pass: passInp.value })
+        }).then(r => r.json()).then(res => {
+            if(res.status === 'success') {
+                currentUser = userSel.value;
+                
+                // DESIGNATED FOCAL CHECK
+                let isDesignated = designatedFocals.includes(currentUser);
+                let displayRole = res.role;
+                if(isDesignated) displayRole = "Designated Focal (Admin)";
+                
+                document.getElementById('user-display').innerText = currentUser + (displayRole === 'Super Admin' ? ' 🛡️' : (isDesignated ? ' 🔑' : ''));
+                document.getElementById('login-overlay').style.display = 'none';
+                
+                // ADMIN UI TOGGLES
+                if(res.role === 'Super Admin') {
+                    document.getElementById('admin-tools').style.display = 'block';
+                    document.getElementById('letter-stats').style.display = 'block';
+                }
+                
+                fetchAllData();
+            } else {
+                showCustomAlert(res.msg, false);
+                if(btn) { btn.innerText = "Login"; btn.disabled = false; }
+            }
+        }).catch(e => { showCustomAlert("Login Error: " + e, false); if(btn) btn.disabled = false; });
+    }
+
+    function manageDesignated() {
+        let current = designatedFocals.join("\n");
+        let input = prompt("Enter usernames to designate as Focal (one per line):", current);
+        if(input !== null) {
+            designatedFocals = input.split("\n").filter(x => x.trim() !== "");
+            localStorage.setItem('ams_designated', JSON.stringify(designatedFocals));
+            showCustomAlert("Roles Updated!", true);
+        }
+    }
+
+    function resetLetterCounts() {
+        if(confirm("Reset all letter generation counters to zero?")) {
+            letterCounts = { appt: 0, assg: 0, endo: 0 };
+            localStorage.setItem('ams_letter_counts', JSON.stringify(letterCounts));
+            updateLetterStats();
+        }
+    }
+
+    function updateLetterStats() {
+        document.getElementById('cnt-appt').innerText = letterCounts.appt;
+        document.getElementById('cnt-assg').innerText = letterCounts.assg;
+        document.getElementById('cnt-endo').innerText = letterCounts.endo;
+    }
+
+    function fetchAllData() {
+        Promise.all([
+            fetch(`${SCRIPT_URL}?action=get_data`).then(r => r.json()),
+            fetch(`${SCRIPT_URL}?action=get_transactions`).then(r => r.json()),
+            fetch(`${SCRIPT_URL}?action=get_contacts`).then(r => r.json()), 
+            fetch(`${SCRIPT_URL}?action=check_replies`).then(r => r.json()).catch(e=>({}))
+        ]).then(([calendarData, transactionData, contactsData, replyData]) => {
+            db = calendarData;
+            transDb = transactionData;
+            EMAIL_DIRECTORY = contactsData || {}; 
+            
+            // AUTOMATIC REPLY HANDLING
+            if(replyData && replyData.updates && replyData.updates.length > 0) {
+                let count = 0;
+                replyData.updates.forEach(tNum => {
+                    let trans = transDb.find(t => t.trackingNo === tNum);
+                    if(trans && trans.status !== 'AC Received Docs' && trans.status !== 'Assessment On-Going') {
+                         trans.status = 'AC Received Docs';
+                         trans.history = JSON.parse(trans.history || "[]");
+                         trans.history.push({date: new Date().toISOString(), user: "System", action: "Auto-Update: Email Reply", note: "AC confirmed receipt"});
+                         // Save immediately
+                         fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save_transaction', data: trans }) });
+                         count++;
+                    }
+                });
+                if(count > 0) showCustomAlert(`🔔 ${count} transactions auto-updated (AC Received)!`, true);
+            }
+            
+            // AUTOMATIC ASSESSMENT ON-GOING
+            const today = new Date().toISOString().split('T')[0];
+            let ongoingUpdates = 0;
+            transDb.forEach(t => {
+                if(t.schedDate === today && t.status === "AC Received Docs") {
+                    t.status = "Assessment On-Going";
+                    t.history = (typeof t.history === 'string' ? JSON.parse(t.history) : t.history) || [];
+                    t.history.push({date: new Date().toISOString(), user: "System", action: "Auto-Update: Assessment Day", note: "Scheduled date reached"});
+                    fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save_transaction', data: t }) });
+                    ongoingUpdates++;
+                }
+            });
+            if(ongoingUpdates > 0) console.log("Auto-started " + ongoingUpdates + " assessments.");
+
+            updateStats();
+            updateLetterStats();
+            checkNotifications();
+            if(currentView === "CALENDAR") { document.body.classList.add('dark-mode'); renderCalendar(); } else { renderMonitorView(); }
+        }).catch(e => { console.error(e); showCustomAlert("Network Error. Retrying...", false); });
+    }
+
+    function toggleView(view) {
+        purgeEmptyRows(); 
+        const main = document.querySelector('.main');
+        currentView = view;
+        if (currentView === "CALENDAR") {
+            document.body.classList.add('dark-mode'); 
+            main.innerHTML = `<div class="cal-header"><h2 id="month-label" style="margin:0;">Month Year</h2><div style="display:flex; gap:10px;"><button class="btn btn-ghost" onclick="changeMonth(-1)">◀ Prev</button><button class="btn btn-ghost" onclick="changeMonth(1)">Next ▶</button></div></div><div class="cal-grid" id="calendar"></div>`;
+            renderCalendar();
+        } else {
+            document.body.classList.remove('dark-mode'); 
+            renderMonitorView();
+        }
+    }
+
+    function renderMonitorView() {
+        const main = document.querySelector('.main');
+        main.style.backgroundColor = "#f8f9fa"; 
+        main.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <div style="display:flex; align-items:center; gap:10px;"><button class="btn btn-ghost" onclick="toggleView('CALENDAR')">⬅ Back</button><h2 style="color:var(--primary); margin:0;">Transaction Monitoring</h2></div>
+                <div style="display:flex; gap:10px;"><button class="btn btn-accent" onclick="showReportModal()">📈 Reports</button><button class="btn btn-success" onclick="openTransModal(null)">+ New Transaction</button></div>
+            </div>
+            <div id="notification-area" style="margin-bottom:20px; display:none;">
+                <h4 style="margin:0 0 10px 0; color:var(--danger);">⚠️ Action Required (Click to Fix)</h4>
+                <div id="notif-list"></div>
+            </div>
+            <div style="background:white; padding:15px; border-radius:8px; margin-bottom:20px; display:flex; gap:10px; border:1px solid #e0e0e0;">
+                <select id="filter-client" style="width:200px;" onchange="renderTransTable()"><option value="">All Clients</option><option value="Scholarship">Scholarship</option><option value="DEPED">DEPED</option><option value="Regular">Regular</option><option value="Walk-In">Walk-In</option></select>
+                <input type="text" id="search-rqm" placeholder="Search RQM or Tracking #" style="width:250px;" onkeyup="renderTransTable()">
+            </div>
+            <div style="overflow:auto; background:white; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); max-height: 70vh;">
+                <table class="monitoring-table">
+                    <thead><tr><th>Tracking #</th><th>RQM / Ref</th><th>Date Rcvd</th><th>Client</th><th>Qual</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody id="trans-rows"></tbody>
+                </table>
+            </div>
+        `;
+        renderTransTable();
+        checkNotifications();
+    }
+
+    function renderTransTable() {
+        const tbody = document.getElementById('trans-rows');
+        if(!tbody) return;
+        tbody.innerHTML = '';
+        const filterClient = document.getElementById('filter-client').value;
+        const search = document.getElementById('search-rqm').value.toLowerCase();
+        
+        const filtered = transDb.filter(t => {
+            if(t.status === 'Deleted') return false; 
+            return (!filterClient || t.clientType === filterClient) && (!search || (t.rqm||"").toLowerCase().includes(search) || (t.trackingNo||"").toLowerCase().includes(search));
+        });
+
+        filtered.forEach(t => {
+            let statusDisplay = t.status;
+            // DESIGNATED FOCAL LOGIC
+            const isSuper = currentUser === 'Super Admin';
+            const isFocal = currentUser === 'CAC Focal';
+            const isDesignated = designatedFocals.includes(currentUser);
+            const isPrivileged = isSuper || isFocal || isDesignated;
+            
+            const isEditableStage = (t.status === 'Receipt' || t.status === 'Forwarded to Focal');
+            const canEdit = isPrivileged || isEditableStage;
+            
+            const tr = document.createElement('tr');
+            let badge = '#95a5a6';
+            if (statusDisplay.includes('Received')) badge = '#f1c40f'; 
+            if (statusDisplay.includes('Finalized') || statusDisplay.includes('Scheduled')) badge = '#3498db'; 
+            if (statusDisplay.includes('On-Going')) badge = '#e67e22'; 
+            if (statusDisplay.includes('End') || statusDisplay.includes('Encoded')) badge = '#27ae60'; 
+
+            tr.innerHTML = `
+                <td style="font-family:monospace; font-weight:bold;">${t.trackingNo}</td>
+                <td>${t.rqm || '-'}</td>
+                <td>${t.dateReceived}</td>
+                <td><div style="font-weight:bold;">${t.clientName || t.clientType}</div><small>${t.subType || ''}</small></td>
+                <td>${t.qual}</td>
+                <td><span class="status-badge" style="background:${badge}; color:white;">${statusDisplay}</span></td>
+                <td>
+                    <div class="action-cell">
+                        <div class="action-item" onclick='${canEdit ? `openTransModal(${JSON.stringify(t).replace(/'/g, "&apos;")})` : ''}' ${!canEdit ? 'style="opacity:0.5; cursor:not-allowed;"' : ''}>
+                            <span class="action-icon">${canEdit ? '✏️' : '🔒'}</span>
+                            <span class="action-label">${canEdit ? 'Manage' : 'Locked'}</span>
+                        </div>
+                        <div class="action-item" onclick='openDetailsModal(${JSON.stringify(t).replace(/'/g, "&apos;")})'>
+                            <span class="action-icon">📄</span>
+                            <span class="action-label">Details</span>
+                        </div>
+                         <div class="action-item" onclick='deleteTransaction("${t.trackingNo}")'>
+                            <span class="action-icon" style="color:var(--danger);">🗑️</span>
+                            <span class="action-label" style="color:var(--danger);">Delete</span>
+                        </div>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function deleteTransaction(trackNo) {
+        if(!confirm("Are you sure you want to delete " + trackNo + "?")) return;
+        const trans = transDb.find(t => t.trackingNo === trackNo);
+        if(trans) {
+            trans.status = "Deleted";
+            const payload = JSON.parse(JSON.stringify(trans));
+            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save_transaction', data: payload }) })
+            .then(r => r.json()).then(res => {
+                showCustomAlert("🗑️ Transaction Deleted.", true);
+                fetchAllData();
+            });
+        }
+    }
+
+    // --- WIZARD & BATCH LOGIC ---
+    let currentTransData = {}; 
+
+    function openTransModal(data = null) {
+        if(!data) {
+            currentTransData = { trackingNo: "TESDAAlbay-" + new Date().getFullYear() + "-" + String(Date.now()).slice(-4), status: "Receipt", history: [] };
+        } else {
+            currentTransData = JSON.parse(JSON.stringify(data)); 
+            if(typeof currentTransData.history === 'string') { try { currentTransData.history = JSON.parse(currentTransData.history); } catch(e) { currentTransData.history = []; } }
+        }
+        renderWizard();
+        document.getElementById('trans-modal').style.display = 'flex';
+    }
+
+    function renderWizard() {
+        const status = currentTransData.status;
+        const stepIndex = WORKFLOW_STEPS.findIndex(s => s.id === status);
+        const nextStep = WORKFLOW_STEPS[stepIndex + 1];
+        
+        // Render Timeline
+        const tl = document.getElementById('workflow-timeline');
+        tl.innerHTML = '';
+        WORKFLOW_STEPS.forEach((s, i) => {
+            const cls = i < stepIndex ? 'completed' : (i === stepIndex ? 'active' : '');
+            tl.innerHTML += `<div class="timeline-step ${cls}"><div class="timeline-dot"></div>${s.label}</div>`;
+        });
+
+        document.getElementById('step-title').innerText = `Step ${stepIndex + 1}: ${status}`;
+        const container = document.getElementById('wiz-fields');
+        container.innerHTML = '';
+        
+        // DYNAMIC FIELD RENDERING
+        if(status === 'Receipt') {
+            addInput(container, 'Date Received', 'date', 'w-date', currentTransData.dateReceived || formatDateForInput(new Date()));
+            addSelect(container, 'Client Type', 'w-type', ['Scholarship','DEPED','Regular','Walk-In'], currentTransData.clientType, 'updateSubTypes()');
+            addSelect(container, 'Sub-Type', 'w-subtype', [], currentTransData.subType);
+            addInput(container, 'RQM / Ref No.', 'text', 'w-rqm', currentTransData.rqm);
+            addInput(container, 'Client Name/School', 'text', 'w-name', currentTransData.clientName);
+            addInput(container, 'Candidates', 'number', 'w-cands', currentTransData.numCandidates);
+            addSelect(container, 'Client Type 2', 'w-type2', CLIENT_TYPE_2, currentTransData.clientType2);
+            addInput(container, 'Contact No.', 'text', 'w-contact', currentTransData.contact);
+            addSelect(container, 'Qualification', 'w-qual', QUAL_LIST, currentTransData.qual);
+            addSelect(container, 'Modality', 'w-mod', MODALITIES, currentTransData.modality);
+            addInput(container, 'Deficiencies', 'text', 'w-def', currentTransData.deficiencies);
+            setTimeout(updateSubTypes, 100); 
+        } 
+        else if (status === 'Organizing Assessment') {
+            addSelect(container, 'Assessment Center', 'w-ac', Object.keys(AC_DIRECTORY).sort(), currentTransData.ac);
+            addSelect(container, 'Assessor', 'w-assessor', [], currentTransData.assessor);
+            updateAssessorList(currentTransData.qual, currentTransData.assessor);
+        }
+        else if (status === 'Assessment Finalized') {
+            // MIXED BATCH LOGIC
+            const total = parseInt(currentTransData.numCandidates) || 10;
+            if (total > 10) {
+                 container.style.display = "block"; // Reset Grid
+                 container.innerHTML = `<div style="grid-column: span 2; background:#fff3cd; padding:10px; border-radius:4px; margin-bottom:10px;"><b>Large Batch Detected (${total} pax).</b> Assign dates for batches (Max 10/day).</div>
+                 <table class="batch-table" id="batch-sched-table">
+                    <thead><tr><th>Batch</th><th>Candidates Breakdown</th><th>Sched Date</th></tr></thead>
+                    <tbody></tbody>
+                 </table>`;
+                 
+                 const tbody = container.querySelector('tbody');
+                 let remaining = total;
+                 let batchNum = 1;
+                 const pendingTrans = transDb.filter(t => (t.status === 'Receipt' || t.status === 'Forwarded to Focal') && t.trackingNo !== currentTransData.trackingNo);
+
+                 while(remaining > 0) {
+                     let chunk = remaining >= 10 ? 10 : remaining;
+                     let row = `<tr>
+                        <td>Batch ${String.fromCharCode(64 + batchNum)}</td>
+                        <td>
+                            <div style="font-size:0.8rem; font-weight:bold;">Total: ${chunk} pax</div>
+                            ${chunk < 10 ? `
+                            <div style="margin-top:5px; padding:5px; background:#f0f0f0; border-radius:4px;">
+                                <label style="font-size:0.7rem;">From Current RQM:</label>
+                                <input type="number" class="split-rqm" value="${chunk}" max="${chunk}" min="0" onchange="updateSplit(this, ${chunk})" style="width:50px; font-size:0.75rem;">
+                                <br>
+                                <label style="font-size:0.7rem; color:blue;">Walk-in / Other:</label>
+                                <input type="number" class="split-other" value="0" readonly style="width:50px; font-size:0.75rem; color:blue;">
+                                <br>
+                                <select class="batch-merge-sel" style="margin-top:2px; font-size:0.75rem;"><option value="">-- Select Source RQM --</option>${pendingTrans.map(w => `<option value="${w.trackingNo}">${w.trackingNo} (${w.numCandidates} pax)</option>`).join('')}</select>
+                            </div>` : '<small style="color:green;">Full Batch</small>'}
+                        </td>
+                        <td><input type="date" class="batch-date-inp"></td>
+                     </tr>`;
+                     tbody.innerHTML += row;
+                     remaining -= chunk;
+                     batchNum++;
+                 }
+                 window.updateSplit = function(inp, total) {
+                     const row = inp.closest('tr');
+                     const otherInp = row.querySelector('.split-other');
+                     let val = parseInt(inp.value);
+                     if(val > total) val = total; if(val < 0) val = 0;
+                     inp.value = val;
+                     otherInp.value = total - val;
+                 }
+
+            } else {
+                 addInput(container, 'Set Schedule Date', 'date', 'w-sched', currentTransData.schedDate);
+            }
+        }
+        else if (status === 'TESDA Rep Assigned') {
+            addSelect(container, 'Assign TESDA Rep', 'w-rep', STAFF_LIST, currentTransData.rep);
+            const repSel = document.getElementById('w-rep');
+            const manOpt = document.createElement('option'); manOpt.value="MANUAL_INPUT"; manOpt.text="[+ Manual Input]"; repSel.add(manOpt);
+            repSel.onchange = () => handleManualInputWizard(repSel);
+        }
+        else if (status === 'AC Submitted CCTV') {
+            addSelect(container, 'CCTV Status', 'w-cctv', ['Pending', 'Submitted'], currentTransData.cctvStatus || 'Pending');
+        }
+        else if (status === 'Encoding Result') {
+            addInput(container, 'Date Encoded', 'date', 'w-encoded', currentTransData.dateEncoded);
+        }
+        else {
+            addInput(container, 'Action Date', 'date', 'w-act-date', formatDateForInput(new Date()));
+        }
+
+        // Render Actions
+        const acts = document.getElementById('wiz-actions');
+        acts.innerHTML = '';
+        if(status === 'Endorsed Documents') {
+            acts.innerHTML = `<button class="btn btn-endo" onclick="printEndorsementMock()">🖨️ Print Endorsement</button><button class="btn btn-primary" onclick="sendAutomaticEmail('endorsement')">📤 Auto-Email to AC</button>`;
+        }
+        if(status === 'Inform Assessor') {
+            acts.innerHTML = `<button class="btn btn-appt" onclick="printAppointmentMock()">🖨️ Print Appointment</button><button class="btn btn-primary" onclick="sendAutomaticEmail('appointment')">📤 Auto-Email to Assessor</button>`;
+        }
+        if(status === 'Inform Client') acts.innerHTML = `<button class="btn btn-primary" onclick="sendAutomaticEmail('client')">📤 Auto-Email to Client</button>`;
+        if(status === 'TESDA Rep Assigned') acts.innerHTML = `<button class="btn btn-assg" onclick="printAssignmentMock()">🖨️ Print Assignment</button>`;
+
+        // Buttons
+        const btnNext = document.getElementById('btn-next-step');
+        const btnCancel = document.getElementById('btn-cancel-assess');
+        
+        // HIDE CANCEL BUTTON IN ORGANIZING
+        if (status === 'Organizing Assessment') {
+            btnCancel.style.display = 'none';
+        } else {
+            btnCancel.style.display = (['Assessment On-Going', 'Assessment Finalized'].includes(status)) ? 'block' : 'none';
+        }
+
+        if(!nextStep) {
+            btnNext.style.display = 'none'; 
+        } else {
+            btnNext.style.display = 'flex';
+            btnNext.innerHTML = `✅ Proceed to: ${nextStep.id}`;
+            const isSuper = currentUser === 'Super Admin';
+            const isFocal = currentUser === 'CAC Focal';
+            const isDesignated = designatedFocals.includes(currentUser);
+            const isPrivileged = isSuper || isFocal || isDesignated;
+
+            const isAuthorized = (WORKFLOW_STEPS[stepIndex].role === 'Any') || isPrivileged || (WORKFLOW_STEPS[stepIndex].role === currentUser);
+            btnNext.disabled = !isAuthorized;
+            if(!isAuthorized) btnNext.innerHTML = `🚫 Waiting for ${WORKFLOW_STEPS[stepIndex].role}`;
+        }
+
+        if (currentUser === 'Super Admin') {
+            const inputs = document.getElementById('wiz-fields').querySelectorAll('input, select');
+            inputs.forEach(i => i.disabled = false);
+        }
+
+        document.getElementById('wiz-summary').innerHTML = `<b>Tracking #:</b> ${currentTransData.trackingNo}<br><b>Client:</b> ${currentTransData.clientName || 'N/A'}<br><b>Qual:</b> ${currentTransData.qual || 'N/A'}`;
+    }
+
+    function advanceWorkflow() {
+        const notes = document.getElementById('wiz-notes').value;
+        if(currentTransData.status !== 'Receipt' && !notes && !confirm("Proceed without notes?")) return;
+
+        // Capture Standard Inputs
+        if(document.getElementById('w-date')) currentTransData.dateReceived = document.getElementById('w-date').value;
+        if(document.getElementById('w-rqm')) currentTransData.rqm = document.getElementById('w-rqm').value;
+        if(document.getElementById('w-name')) currentTransData.clientName = document.getElementById('w-name').value;
+        if(document.getElementById('w-qual')) currentTransData.qual = document.getElementById('w-qual').value;
+        if(document.getElementById('w-type')) currentTransData.clientType = document.getElementById('w-type').value;
+        if(document.getElementById('w-subtype')) currentTransData.subType = document.getElementById('w-subtype').value;
+        if(document.getElementById('w-def')) currentTransData.deficiencies = document.getElementById('w-def').value;
+        if(document.getElementById('w-ac')) currentTransData.ac = document.getElementById('w-ac').value;
+        if(document.getElementById('w-assessor')) currentTransData.assessor = document.getElementById('w-assessor').value;
+        if(document.getElementById('w-cands')) currentTransData.numCandidates = document.getElementById('w-cands').value;
+        if(document.getElementById('w-type2')) currentTransData.clientType2 = document.getElementById('w-type2').value;
+        if(document.getElementById('w-mod')) currentTransData.modality = document.getElementById('w-mod').value;
+        if(document.getElementById('w-contact')) currentTransData.contact = document.getElementById('w-contact').value;
+        if(document.getElementById('w-rep')) currentTransData.rep = document.getElementById('w-rep').value;
+        if(document.getElementById('w-cctv')) currentTransData.cctvStatus = document.getElementById('w-cctv').value;
+        if(document.getElementById('w-encoded')) currentTransData.dateEncoded = document.getElementById('w-encoded').value;
+
+        // --- SCHEDULING LOGIC (Mixed Batch) ---
+        if (currentTransData.status === 'Assessment Finalized') {
+             const batchRows = document.querySelectorAll('.batch-date-inp');
+             if(batchRows.length > 0) {
+                 // Multi-Batch Mode
+                 let dates = [];
+                 let mergedTrans = [];
+                 
+                 document.querySelectorAll('#batch-sched-table tbody tr').forEach((tr, idx) => {
+                     const dateVal = tr.querySelector('.batch-date-inp').value;
+                     const splitRQM = tr.querySelector('.split-rqm');
+                     const splitOther = tr.querySelector('.split-other');
+                     
+                     if(dateVal) {
+                         dates.push(dateVal);
+                         
+                         let linkTrack = currentTransData.trackingNo;
+                         let note = "Standard Batch";
+                         
+                         // Logic for Mixed Batch
+                         if(splitOther && parseInt(splitOther.value) > 0) {
+                             const mergeSel = tr.querySelector('.batch-merge-sel');
+                             if(mergeSel && mergeSel.value) {
+                                 linkTrack += ", " + mergeSel.value;
+                                 mergedTrans.push({track: mergeSel.value, date: dateVal});
+                                 note = `Mixed: ${splitRQM.value} from Main, ${splitOther.value} from ${mergeSel.value}`;
+                             }
+                         }
+                         
+                         db.push({
+                             id: Date.now().toString() + idx,
+                             date: dateVal,
+                             ac: currentTransData.ac,
+                             qual: currentTransData.qual,
+                             assessor: currentTransData.assessor,
+                             rep: "", status: "Pending", linkedTrackingNo: linkTrack, cctvStatus: "Pending",
+                             remarks: note
+                         });
+                     }
+                 });
+                 
+                 if(dates.length === 0) return showCustomAlert("Please set at least one date.", false);
+                 currentTransData.schedDate = dates[0]; 
+                 currentTransData.linkedEventId = "MULTI_BATCH"; 
+
+                 // Handle Merged Transactions
+                 mergedTrans.forEach(m => {
+                     let mt = transDb.find(t => t.trackingNo === m.track);
+                     if(mt) {
+                         mt.status = "Assessment Finalized";
+                         mt.schedDate = m.date;
+                         mt.ac = currentTransData.ac;
+                         mt.assessor = currentTransData.assessor;
+                         mt.history = (typeof mt.history === 'string' ? JSON.parse(mt.history) : mt.history) || [];
+                         mt.history.push({date: new Date().toISOString(), user: currentUser, action: "Merged Schedule", note: "Merged with " + currentTransData.trackingNo});
+                         fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save_transaction', data: mt }) });
+                     }
+                 });
+                 
+                 fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save_batch', data: db }) });
+
+             } else {
+                 if(document.getElementById('w-sched')) currentTransData.schedDate = document.getElementById('w-sched').value;
+             }
+        }
+
+        // --- CLIENT EMAIL PROMPT ---
+        if (currentTransData.status === 'Receipt') {
+             let contact = currentTransData.contact;
+             if (!contact || !contact.includes('@')) {
+                 const newContact = prompt("Client Email is missing or invalid. Enter Email (or leave empty to skip):", contact);
+                 if (newContact !== null && newContact.trim() !== "") currentTransData.contact = newContact;
+             }
+        }
+
+        currentTransData.history.push({ date: new Date().toISOString(), user: currentUser, action: `Completed ${currentTransData.status}`, note: notes });
+
+        const idx = WORKFLOW_STEPS.findIndex(s => s.id === currentTransData.status);
+        if(idx < WORKFLOW_STEPS.length - 1) currentTransData.status = WORKFLOW_STEPS[idx+1].id;
+
+        saveTransAndSync();
+    }
+
+    function saveTransAndSync() {
+        if(currentTransData.schedDate && currentTransData.linkedEventId !== "MULTI_BATCH") {
+            let linkId = currentTransData.linkedEventId;
+            let existingEv = db.find(e => e.id == linkId);
+            if (!existingEv) {
+                linkId = Date.now().toString();
+                currentTransData.linkedEventId = linkId;
+                existingEv = { id: linkId, status: "Pending", cctvStatus: "Pending", linkedTrackingNo: currentTransData.trackingNo };
+                db.push(existingEv);
+            }
+            existingEv.date = currentTransData.schedDate;
+            existingEv.ac = currentTransData.ac;
+            existingEv.qual = currentTransData.qual;
+            existingEv.assessor = currentTransData.assessor;
+            if(currentTransData.rep) existingEv.rep = currentTransData.rep;
+            if(currentTransData.cctvStatus) existingEv.cctvStatus = currentTransData.cctvStatus;
+            if(currentTransData.dateEncoded) existingEv.dateEncoded = currentTransData.dateEncoded;
+            if(currentTransData.datePrinted) existingEv.datePrinted = currentTransData.datePrinted;
+            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save_batch', data: db }) });
+        }
+
+        const payload = JSON.parse(JSON.stringify(currentTransData));
+        payload.history = JSON.stringify(payload.history);
+        
+        fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save_transaction', data: payload }) })
+        .then(r => r.json()).then(res => {
+            showCustomAlert("✅ Status Updated & Synced!", true);
+            document.getElementById('trans-modal').style.display = 'none';
+            fetchAllData();
+        });
+    }
+
+    // --- UTILS & HELPERS ---
+    function injectTransactionModal() {
+        const modalHtml = `
+        <div id="trans-modal" class="modal">
+            <div class="modal-card">
+                <div class="modal-head"><div class="modal-title">Transaction Workflow</div><div><button class="btn btn-ghost" onclick="document.getElementById('trans-modal').style.display='none'">Close</button></div></div>
+                <div class="modal-body" style="padding:20px; background:#f4f6f8;">
+                    <div id="workflow-timeline" class="timeline-container"></div>
+                    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px;">
+                        <div style="background:white; padding:25px; border-radius:8px; box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+                            <h3 id="step-title" style="color:var(--primary); margin-top:0;">Current Step</h3>
+                            <div id="wiz-fields" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;"></div>
+                            <div id="wiz-actions" style="margin-bottom:15px; display:flex; gap:10px;"></div>
+                            <div style="border-top:1px solid #eee; padding-top:20px;">
+                                <label>Log Notes / Remarks</label>
+                                <textarea id="wiz-notes" style="width:100%; height:60px; margin-bottom:10px;"></textarea>
+                                <button id="btn-next-step" class="btn btn-primary" style="width:100%; justify-content:center; padding:15px;" onclick="advanceWorkflow()">✅ Proceed to Next Status</button>
+                                <button id="btn-cancel-assess" class="btn btn-danger" style="width:100%; justify-content:center; padding:15px; margin-top:10px; display:none;" onclick="cancelAssessment()">🚫 Cancel Assessment</button>
+                            </div>
+                        </div>
+                        <div style="background:white; padding:20px; border-radius:8px; height:fit-content;">
+                            <h4 style="margin-top:0;">Summary</h4>
+                            <div id="wiz-summary" style="font-size:0.85rem; color:#555;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+    
+    function injectDetailsModal() {
+        const html = `<div id="details-modal" class="modal"><div class="modal-card" style="width:800px;"><div class="modal-head"><div class="modal-title">Transaction Details</div><button class="btn btn-ghost" onclick="document.getElementById('details-modal').style.display='none'">Close</button></div><div class="modal-body" style="padding:30px; background:white;"><h2 id="d-track" style="color:var(--primary); border-bottom:2px solid var(--accent); padding-bottom:10px;"></h2><div id="d-info" class="details-grid"></div><h4 style="color:var(--primary);">Audit Trail & History</h4><div id="d-audit" style="max-height:400px; overflow-y:auto;"></div></div></div></div>`;
+        document.body.insertAdjacentHTML('beforeend', html);
+    }
+    
+    function injectSettingsModal() {
+        const html = `
+        <div id="settings-modal" class="modal">
+            <div class="modal-card" style="width:600px; height:auto;">
+                <div class="modal-head"><div class="modal-title">Email Templates Settings</div><button class="btn btn-ghost" onclick="document.getElementById('settings-modal').style.display='none'">Close</button></div>
+                <div class="modal-body" style="padding:30px; background:white; display:flex; flex-direction:column; gap:15px;">
+                    <div><label><b>Endorsement Email (To AC)</b></label><textarea id="tpl-endo" style="width:100%; height:80px;"></textarea></div>
+                    <div><label><b>Appointment Email (To Assessor)</b></label><textarea id="tpl-appt" style="width:100%; height:80px;"></textarea></div>
+                    <div><label><b>Client Notification</b></label><textarea id="tpl-client" style="width:100%; height:80px;"></textarea></div>
+                    <div><label><b>Reminder Email (CCTV/Reqs)</b></label><textarea id="tpl-remind" style="width:100%; height:80px;"></textarea></div>
+                    <button class="btn btn-primary" onclick="saveSettings()">💾 Save Templates</button>
+                </div>
+            </div>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', html);
+    }
+
+    function openSettingsModal() {
+        document.getElementById('tpl-endo').value = emailTemplates.endorsement;
+        document.getElementById('tpl-appt').value = emailTemplates.appointment;
+        document.getElementById('tpl-client').value = emailTemplates.client;
+        document.getElementById('tpl-remind').value = emailTemplates.reminder;
+        document.getElementById('settings-modal').style.display = 'flex';
+    }
+    function saveSettings() {
+        emailTemplates.endorsement = document.getElementById('tpl-endo').value;
+        emailTemplates.appointment = document.getElementById('tpl-appt').value;
+        emailTemplates.client = document.getElementById('tpl-client').value;
+        emailTemplates.reminder = document.getElementById('tpl-remind').value;
+        localStorage.setItem('ams_email_templates', JSON.stringify(emailTemplates));
+        showCustomAlert("Templates Saved!", true);
+        document.getElementById('settings-modal').style.display = 'none';
+    }
+
+    function sendAutomaticEmail(type) {
+        let recipient = "";
+        let body = "";
+        let subjectType = "";
+
+        if (type === 'endorsement') {
+            const acName = currentTransData.ac.trim();
+            recipient = EMAIL_DIRECTORY[acName] || ""; 
+            if (!recipient) { recipient = prompt(`Email for "${acName}" not found. Enter manually:`); }
+            if (!recipient) return;
+            body = emailTemplates.endorsement.replace('[Qual]', currentTransData.qual);
+            subjectType = "Endorsement";
+        }
+        else if (type === 'appointment') {
+            recipient = EMAIL_DIRECTORY[currentTransData.assessor.trim()] || "";
+            if (!recipient) recipient = prompt("Enter Assessor Email:", ""); 
+            if (!recipient) return;
+            body = emailTemplates.appointment.replace('[Qual]', currentTransData.qual).replace('[AC]', currentTransData.ac).replace('[Date]', currentTransData.schedDate);
+            subjectType = "Appointment";
+        }
+        else if (type === 'client') {
+             recipient = currentTransData.contact && currentTransData.contact.includes('@') ? currentTransData.contact : prompt("Enter Client Email:");
+             if (!recipient) return;
+             body = emailTemplates.client.replace('[Qual]', currentTransData.qual).replace('[Date]', currentTransData.schedDate);
+             subjectType = "Schedule";
+        }
+        
+        if(confirm(`Send automatic email to ${recipient}?`)) {
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'send_email_auto',
+                    to: recipient,
+                    subjectType: subjectType,
+                    trackingNo: currentTransData.trackingNo,
+                    body: body.replace(/\n/g, '<br>')
+                })
+            }).then(r => r.json()).then(res => {
+                if(res.status === 'success') showCustomAlert("✅ Email Sent Successfully!", true);
+                else showCustomAlert("❌ Error sending email: " + res.msg, false);
+            });
+        }
+    }
+
+    function checkNotifications() {
+        const list = document.getElementById('notif-list');
+        const area = document.getElementById('notification-area');
+        if(!list) return;
+
+        const today = new Date();
+        const cctvAlerts = [];
+        const resultAlerts = [];
+        
+        db.forEach(ev => {
+            if(ev.date) {
+                const sched = new Date(ev.date);
+                const diffTime = today - sched;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                if (diffDays >= 1 && ev.cctvStatus !== 'Submitted') cctvAlerts.push(ev);
+                if (diffDays >= 1 && !ev.dateEncoded) resultAlerts.push(ev);
+            }
+        });
+
+        list.innerHTML = '';
+        if(cctvAlerts.length + resultAlerts.length > 0) {
+            area.style.display = 'block';
+            if(cctvAlerts.length > 0) renderNotifGroup("📹 CCTV Missing", cctvAlerts, true);
+            if(resultAlerts.length > 0) renderNotifGroup("📝 Results Pending", resultAlerts, false);
+        } else {
+            area.style.display = 'none';
+        }
+    }
+    
+    function renderNotifGroup(title, items, showMailBtn) {
+        const list = document.getElementById('notif-list');
+        let html = `<div class="notif-card"><div class="notif-info"><div class="notif-title">${title}</div><div class="notif-sub">${items.length} items need attention</div></div><div style="cursor:pointer;" onclick="this.parentElement.nextElementSibling.style.display='block'">▼</div></div><div style="display:none;">`;
+        items.forEach(ev => {
+            const trans = transDb.find(t => t.linkedEventId == ev.id) || { trackingNo: "Unknown" };
+            html += `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><span onclick='openTransModal(${JSON.stringify(trans).replace(/'/g, "&apos;")})'>${ev.ac} - ${ev.qual} (${ev.date})</span>${showMailBtn ? `<button class="btn btn-ghost" style="padding:2px 5px; font-size:0.7rem;" onclick="sendReminder('${ev.ac}', '${ev.qual}', '${ev.date}')">📧</button>` : ''}</div>`;
+        });
+        html += `</div>`;
+        list.innerHTML += html;
+    }
+
+    function sendReminder(acName, qual, date) {
+        let recipient = EMAIL_DIRECTORY[acName.trim()] || "";
+        if (!recipient) recipient = prompt("Enter Email for " + acName);
+        if (!recipient) return;
+        let body = emailTemplates.reminder.replace('[Date]', date).replace('[Qual]', qual);
+        if(confirm("Send reminder to " + recipient + "?")) {
+            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'send_email_auto', to: recipient, subjectType: "Reminder", trackingNo: "REMINDER", body: body.replace(/\n/g, '<br>') }) })
+            .then(r=>r.json()).then(res => showCustomAlert(res.status==='success'?"Sent!":"Error", res.status==='success'));
+        }
+    }
+
+    function openDetailsModal(data) {
+        document.getElementById('d-track').innerText = `${data.trackingNo} - ${data.status}`;
+        const info = document.getElementById('d-info');
+        
+        // BEAUTIFIED GRID LAYOUT
+        info.innerHTML = `
+            <div class="dg-row"><div class="dg-label">Client Name:</div><div class="dg-val">${data.clientName}</div></div>
+            <div class="dg-row"><div class="dg-label">Client Type:</div><div class="dg-val">${data.clientType} (${data.subType})</div></div>
+            <div class="dg-row"><div class="dg-label">RQM / Ref No:</div><div class="dg-val">${data.rqm || '-'}</div></div>
+            <div class="dg-row"><div class="dg-label">Qualification:</div><div class="dg-val">${data.qual}</div></div>
+            <div class="dg-row"><div class="dg-label">Assessment Center:</div><div class="dg-val">${data.ac || '-'}</div></div>
+            <div class="dg-row"><div class="dg-label">Assessor:</div><div class="dg-val">${data.assessor || '-'}</div></div>
+            <div class="dg-row"><div class="dg-label">Schedule Date:</div><div class="dg-val">${data.schedDate || data.dateReceived}</div></div>
+            <div class="dg-row"><div class="dg-label">Deficiencies:</div><div class="dg-val">${data.deficiencies || 'None'}</div></div>
+        `;
+
+        const container = document.getElementById('d-audit');
+        container.innerHTML = '';
+        let hist = [];
+        try { hist = typeof data.history === 'string' ? JSON.parse(data.history) : data.history; } catch(e){ hist = []; }
+        hist.forEach(h => { container.innerHTML += `<div class="audit-entry"><div class="audit-date">${new Date(h.date).toLocaleDateString()}</div><div class="audit-content"><div class="audit-action">${h.action}</div><div class="audit-user">by ${h.user}</div>${h.note ? `<div class="audit-note">"${h.note}"</div>` : ''}</div></div>`; });
+        document.getElementById('details-modal').style.display = 'flex';
+    }
+
+    function saveAll() {
+        const rows = document.querySelectorAll('#detail-rows tr');
+        rows.forEach(tr => {
+            const id = tr.dataset.id;
+            const entry = db.find(x => x.id == id);
+            if(entry) {
+                const prevEncoded = entry.dateEncoded;
+                const prevCCTV = entry.cctvStatus;
+                entry.ac = tr.querySelector('.inp-ac').value;
+                entry.qual = tr.querySelector('.inp-qual').value;
+                entry.assessor = tr.querySelector('.inp-assessor').value;
+                entry.rep = tr.querySelector('.inp-rep').value;
+                entry.datePrinted = tr.querySelector('.inp-printed').value;
+                entry.dateEncoded = tr.querySelector('.inp-encoded').value;
+                entry.cctvStatus = tr.querySelector('.inp-cctv-status').value;
+                entry.cctvRemarks = tr.querySelector('.inp-cctv-rem').value;
+                entry.remarks = tr.querySelector('.inp-rem').value;
+
+                if(entry.linkedTrackingNo) {
+                    const tracks = entry.linkedTrackingNo.split(',').map(s=>s.trim());
+                    tracks.forEach(trackNo => {
+                        const trans = transDb.find(t => t.trackingNo === trackNo);
+                        if(trans) {
+                            let updated = false;
+                            if(!prevEncoded && entry.dateEncoded) { trans.status = "Sending NC/COC"; updated = true; }
+                            if(prevCCTV !== 'Submitted' && entry.cctvStatus === 'Submitted') { trans.cctvStatus = "Submitted"; updated = true; }
+                            if(updated) {
+                                trans.dateEncoded = entry.dateEncoded;
+                                const payload = JSON.parse(JSON.stringify(trans));
+                                payload.history = JSON.stringify(payload.history);
+                                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save_transaction', data: payload }) });
+                            }
+                        }
+                    });
+                }
+            }
+        });
+        fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save_batch', data: db }) }).then(r => r.json()).then(res => {
+            document.getElementById('save-indicator').style.opacity = 1; setTimeout(() => document.getElementById('save-indicator').style.opacity = 0, 2000); updateStats(); renderCalendar(); 
+        });
+    }
+
+    // Helpers
+    function formatDateForInput(isoStr) { if(!isoStr) return ""; return new Date(isoStr).toISOString().split('T')[0]; }
+    function purgeEmptyRows() { db = db.filter(item => { return (item.ac && item.ac.trim() !== "") || (item.qual && item.qual.trim() !== "") || (item.assessor && item.assessor.trim() !== "") || item.status === "Accepted"; }); }
+    function addRow() { db.push({ id: Date.now().toString(), date: selectedDateStr, ac: "", qual: "", assessor: "", rep: "", status: "Pending", datePrinted: "", dateEncoded: "", cctvStatus: "Pending", cctvRemarks: "", remarks: "", linkedTrackingNo: "" }); renderTable(); }
+    function populateSidebarFilter() { const f = document.getElementById('filter-ac'); if(f) { f.innerHTML = '<option value="">All Assessment Centers</option>'; Object.keys(AC_DIRECTORY).sort().forEach(ac => { const o=document.createElement('option'); o.value=ac; o.text=ac; f.add(o); }); }}
+    function generateACOptions(c) { let h='<option value="">-- Select AC --</option>'; Object.keys(AC_DIRECTORY).sort().forEach(n=>{h+=`<option value="${n}" ${n===c?'selected':''}>${n}</option>`}); return h; }
+    function generateRepOptions(c) { let h='<option value="">-- Select --</option>'; STAFF_LIST.forEach(n=>{h+=`<option value="${n}" ${n===c?'selected':''}>${n}</option>`}); return h;}
+    function handleRepChange(e){}
+    function updateStats() { 
+        document.getElementById('pending-count').innerText = db.filter(i => i.status === 'Pending').length; 
+        document.getElementById('accepted-count').innerText = db.filter(i => i.status === 'Accepted').length; 
+        
+        // PENDING SCHEDULES LOGIC
+        const pendingSched = transDb.filter(t => t.status === 'Forwarded to Focal' || t.status === 'Organizing Assessment').length;
+        if(pendingSched > 0 && (currentUser === 'CAC Focal' || currentUser === 'Super Admin' || designatedFocals.includes(currentUser))) {
+            document.getElementById('sched-pending-count').innerText = pendingSched;
+            document.getElementById('sched-pending-card').style.display = 'block';
+        } else {
+            document.getElementById('sched-pending-card').style.display = 'none';
+        }
+
+        const myPending = db.filter(i => i.rep === currentUser && i.status === 'Pending'); 
+        const c = document.getElementById('pending-list-container'); 
+        const b = document.getElementById('pending-list'); 
+        b.innerHTML = ''; 
+        if (myPending.length > 0) { 
+            c.style.display = 'block'; 
+            myPending.forEach(item => { 
+                const d = document.createElement('div'); 
+                d.style.cssText = "background:white; border:1px solid #ffccbc; border-left:4px solid #d35400; padding:10px; border-radius:4px; cursor:pointer; font-size:0.8rem;"; 
+                d.innerHTML = `<div style="font-weight:bold; color:#d35400;">${item.ac}</div><div style="color:#555;">${item.date}</div><div style="font-size:0.7rem; color:#777;">Click to Accept</div>`; 
+                d.onclick = () => openModal(item.date); 
+                b.appendChild(d); 
+            }); 
+        } else { c.style.display = 'none'; } 
+    }
+    
+    // UI Helpers
+    function cancelAssessment() {
+        const reason = prompt("Enter Reason for Cancellation:");
+        if (!reason) return;
+        currentTransData.status = "Cancelled";
+        currentTransData.history.push({ date: new Date().toISOString(), user: currentUser, action: "Cancelled Assessment", note: reason });
+        saveTransAndSync();
+    }
+    
+    function addInput(parent, lbl, type, id, val) { const d = document.createElement('div'); d.innerHTML = `<label style="font-size:0.8rem; font-weight:bold;">${lbl}</label><input type="${type}" id="${id}" value="${val||''}" style="width:100%;">`; parent.appendChild(d); }
+    function addSelect(parent, lbl, id, opts, val, changeEvt=null) { const d = document.createElement('div'); let h = `<label style="font-size:0.8rem; font-weight:bold;">${lbl}</label><select id="${id}" style="width:100%;" ${changeEvt?`onchange="${changeEvt}"`:''}><option value="">-- Select --</option>`; opts.forEach(o => h += `<option value="${o}" ${o===val?'selected':''}>${o}</option>`); h += `</select>`; d.innerHTML = h; parent.appendChild(d); }
+    function updateSubTypes() { const type = document.getElementById('w-type').value; const subSel = document.getElementById('w-subtype'); subSel.innerHTML = ""; const opts = CLIENT_SUBTYPES[type] || [type]; opts.forEach(o => { const opt = document.createElement('option'); opt.value = o; opt.text = o; subSel.add(opt); }); }
+    function updateAssessorList(qual, selected) { const sel = document.getElementById('w-assessor'); if(!sel) return; sel.innerHTML = '<option value="">-- Select --</option>'; const matches = ASSESSOR_RAW.filter(a => a.q.toLowerCase().trim() === (qual||'').toLowerCase().trim()); matches.forEach(a => { const opt = document.createElement('option'); opt.value = a.n; opt.text = a.n; sel.add(opt); }); const man = document.createElement('option'); man.value = "MANUAL_INPUT"; man.text = "[ + Manual Input ]"; man.style.color="blue"; sel.add(man); sel.onchange = () => handleManualInputWizard(sel); if(selected) sel.value = selected; }
+    function handleManualInputWizard(el) { if(el.value === 'MANUAL_INPUT') { const val = prompt("Enter Custom Value:"); if(val) { const opt = document.createElement('option'); opt.value = val; opt.text = val; opt.selected = true; el.add(opt, el.options[el.length-1]); el.value = val; } else el.value = ""; } }
+    window.addEventListener('change', (e) => { if(e.target.id === 'w-ac') handleManualInputWizard(e.target); });
+    function showReportModal() { document.getElementById('rep-modal').style.display = 'flex'; }
+    function generateReport() { const filter = document.getElementById('rep-filter').value; const val = document.getElementById('rep-val').value.toLowerCase(); const data = transDb.filter(t => { if (filter === 'ALL') return true; if (filter === 'CLIENT') return t.clientType.toLowerCase().includes(val) || t.rqm.toLowerCase().includes(val); if (filter === 'STATUS') return t.status.toLowerCase().includes(val); return true; }); let csv = "TrackingNo,RQM,DateReceived,ClientType,ClientName,Qualification,Status,Candidates,Modality\n"; data.forEach(t => { csv += `"${t.trackingNo}","${t.rqm}","${t.dateReceived}","${t.clientType}","${t.clientName}","${t.qual}","${t.status}","${t.numCandidates}","${t.modality}"\n`; }); const blob = new Blob([csv], { type: 'text/csv' }); const a = document.createElement('a'); a.href = window.URL.createObjectURL(blob); a.download = `AMS_Report.csv`; a.click(); document.getElementById('rep-modal').style.display = 'none'; }
+
+    // PRINT & COUNTERS
+    function incrementLetter(type) {
+        letterCounts[type]++;
+        localStorage.setItem('ams_letter_counts', JSON.stringify(letterCounts));
+        updateLetterStats();
+    }
+    
+    function printEndorsementMock() { incrementLetter('endo'); generateEndorsementHTML(currentTransData); }
+    function printAppointmentMock() { 
+        if(currentTransData.linkedEventId) { incrementLetter('appt'); printAppointment(currentTransData.linkedEventId); }
+        else showCustomAlert("Schedule not yet synced to Calendar. Save status first.", false); 
+    }
+    function printAssignmentMock() { 
+        if(currentTransData.linkedEventId) { incrementLetter('assg'); printAMSLetter(currentTransData.linkedEventId); }
+        else showCustomAlert("Schedule not yet synced.", false); 
+    }
+
+    function generateEndorsementHTML(data) { const acName = data.ac || "ASSESSMENT CENTER"; const address = AC_DIRECTORY[acName] || "Albay"; const html = `<div class="a4-page"><div style="text-align:right; margin-bottom:20px;">Date: ${new Date().toLocaleDateString()}</div><div style="margin-bottom:20px;"><b>Daisy N Navia</b><br>AC MANAGER<br>${acName}<br>${address}</div><div style="margin-bottom:20px;">Dear Ms. Navia,</div><p>This is to endorse the following applications for assessment.</p><table class="endo-table"><tr class="endo-header"><th style="width:10%">No. of Candidates</th><th style="width:25%">Qualification</th><th style="width:25%">Training Center / Institution</th><th style="width:15%">Assessment Schedule</th><th style="width:10%">Client Type</th><th style="width:15%">Modality</th></tr><tr><td>${data.numCandidates || ""}</td><td>${data.qual || ""}</td><td>${data.clientName || ""}</td><td>${data.schedDate || data.dateReceived || ""}</td> <td>${data.clientType || ""}</td><td>${data.modality || ""}</td></tr><tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td></tr></table><p>Attached herewith are application forms, self-assessment guide, list of candidates and other pertinent documents for your reference.</p><div class="sig-block"><div><div>Received by:</div><div style="margin-top:20px; border-bottom:1px solid black; width:200px;"></div><div>Date:</div></div><div><div>Received by:</div><div style="margin-top:20px; border-bottom:1px solid black; width:200px;"></div><div>Date:</div></div></div><div style="margin-top:40px;">Sincerely yours,</div><div class="sig-line">MARIGLO L. MACABUHAY-SESE<br><span style="font-weight:normal">Provincial Director</span></div></div>`; const p = document.getElementById('print-container'); p.innerHTML = html; window.print(); setTimeout(() => { p.innerHTML = ''; }, 1000); }
+    window.printAMSLetter = function(id) { const entry = db.find(x => x.id == id); if (!entry) return showCustomAlert("Entry not found.", false); const html = `<div class="a4-page"><div style="text-align:center;"><h3>LETTER OF ASSIGNMENT</h3></div><br><br>Date: ${new Date().toLocaleDateString()}<br><br><strong>${entry.rep}</strong><br>TESDA Rep<br><br>Dear Sir/Ma'am:<br><br>This officially designates you as TESDA Representative on <strong>${entry.date}</strong> for <strong>${entry.qual}</strong> at <strong>${entry.ac}</strong>.<br><br>Very truly yours,<br><br><br><strong>MARIGLO L. MACABUHAY-SESE</strong><br>Provincial Director</div>`; const p = document.getElementById('print-container'); p.innerHTML = html; window.print(); setTimeout(() => { p.innerHTML = ''; }, 1000); };
+    window.printAppointment = function(id) { const entry = db.find(x => x.id == id); if(!entry) return; const html = `<div class="a4-page"><div style="text-align:right;">Date: ${new Date().toLocaleDateString()}</div><br><br><strong>${entry.assessor}</strong><br>Competency Assessor<br><br>Dear Sir/Ma'am:<br><br>You are hereby appointed as the Competency Assessor for <strong>${entry.qual}</strong> to be conducted at <strong>${entry.ac}</strong> on <strong>${entry.date}</strong>.<br><br>Please be at the venue 30 minutes before the schedule.<br><br>Very truly yours,<br><br><br><strong>MARIGLO L. MACABUHAY-SESE</strong><br>Provincial Director</div>`; const p = document.getElementById('print-container'); p.innerHTML = html; window.print(); setTimeout(() => { p.innerHTML = ''; }, 1000); }
+
+    function renderCalendar() {
+        const cal = document.getElementById('calendar'); if(!cal) return; cal.innerHTML = '';
+        const opts = { month: 'long', year: 'numeric' }; document.getElementById('month-label').innerText = currentMonth.toLocaleDateString('en-US', opts);
+        const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']; days.forEach(d => cal.innerHTML += `<div class="cal-day-header">${d}</div>`);
+        const year = currentMonth.getFullYear(); const month = currentMonth.getMonth();
+        const firstDay = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const filterAC = document.getElementById('filter-ac').value;
+        const validEvents = db.filter(item => (item.ac || item.qual || item.assessor) || item.status === 'Accepted' || item.status === 'Cancelled');
+        for(let i=0; i<firstDay; i++) cal.innerHTML += `<div></div>`;
+        for(let d=1; d<=daysInMonth; d++) {
+            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            let events = validEvents.filter(x => x.date === dateStr);
+            if(filterAC) events = events.filter(x => x.ac === filterAC);
+            let html = `<div class="cal-cell" onclick="openModal('${dateStr}')"><span style="font-weight:700;">${d}</span>`;
+            events.forEach(ev => { 
+                let cls = 'pending';
+                if(ev.status === 'Accepted') cls = 'accepted';
+                if(ev.status === 'Cancelled') cls = 'cancelled';
+                html += `<span class="chip ${cls}">${ev.ac}</span>`; 
+            });
+            html += `</div>`; cal.innerHTML += html;
+        }
+    }
+    function changeMonth(n) { currentMonth.setMonth(currentMonth.getMonth() + n); renderCalendar(); }
+    function openModal(dateStr) { selectedDateStr = dateStr; document.getElementById('modal-date-title').innerText = new Date(dateStr).toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' }); document.getElementById('detail-modal').style.display = 'flex'; renderTable(); }
+    function closeModal() { purgeEmptyRows(); document.getElementById('detail-modal').style.display = 'none'; renderCalendar(); }
+    
+    window.renderTable = function() {
+        const tbody = document.getElementById('detail-rows'); if(!tbody) return; tbody.innerHTML = '';
+        let dayEvents = db.filter(x => x.date === selectedDateStr);
+        dayEvents.forEach(ev => {
+            const tr = document.createElement('tr'); tr.dataset.id = ev.id;
+            const isLinked = !!ev.linkedTrackingNo;
+            const locked = isLinked ? 'disabled' : ''; 
+            
+            // BEAUTIFIED OVERRIDE BUTTONS
+            let actions = '';
+            // Partial Reschedule Button for Cancelled items
+            if(ev.status === 'Cancelled') {
+                actions += `<button class="ovr-btn ovr-resched" onclick="rescheduleBatch('${ev.id}')">🔄 Reschedule</button>`;
+            } else {
+                if((currentUser === ev.rep || currentUser === 'CAC Focal') && ev.status !== 'Accepted') { 
+                    const lbl = currentUser === 'CAC Focal' ? 'Override' : 'Accept';
+                    actions += `<button class="ovr-btn ovr-accept" onclick="acceptAssignment('${ev.id}')">✓ ${lbl}</button>`; 
+                }
+                if(ev.status === 'Accepted' && (currentUser === 'CAC Focal' || currentUser === ev.rep)) { 
+                    actions += `<button class="ovr-btn ovr-ob" onclick="createOB('${ev.id}')">📄 OB</button>`; 
+                }
+                if (ev.linkedTrackingNo) {
+                    actions += `<button class="ovr-btn ovr-adv" onclick="forceAdvance('${ev.linkedTrackingNo}')">➜ Adv</button>`;
+                }
+                // Cancellation toggle
+                if(currentUser === 'CAC Focal' || currentUser === 'Super Admin') {
+                    actions += `<button class="btn btn-ghost" style="color:red; font-size:0.7rem;" onclick="markCancelled('${ev.id}')">✖</button>`;
+                }
+            }
+
+            let statusColor = ev.status === 'Cancelled' ? 'background:#e74c3c; color:white;' : (ev.status==='Accepted'?'background:#d4edda; color:#155724':'background:#fff3cd; color:#856404');
+
+            tr.innerHTML = `<td><select class="inp-ac" ${locked} onchange="handleManualInputWizard(this)" style="width:100%">${generateACOptions(ev.ac)}</select></td><td><input type="text" class="inp-qual" value="${ev.qual}" ${locked} placeholder="Qual"></td><td><input type="text" class="inp-assessor" value="${ev.assessor}" ${locked} placeholder="Assessor"></td><td><select class="inp-rep" onchange="handleRepChange(this)">${generateRepOptions(ev.rep)}</select><div style="margin-top:5px;"><span class="status-badge" style="${statusColor}">${ev.status}</span></div></td><td><input type="date" class="inp-printed" value="${formatDateForInput(ev.datePrinted)}"></td><td><input type="date" class="inp-encoded" value="${formatDateForInput(ev.dateEncoded)}"></td><td><select class="inp-cctv-status" style="margin-bottom:5px;"><option value="Pending">Pending</option><option value="Submitted">Submitted</option></select><input type="text" class="inp-cctv-rem" value="${ev.cctvRemarks || ''}" placeholder="CCTV Remarks"></td><td><input type="text" class="inp-rem" value="${ev.remarks}" placeholder="General Remarks"></td><td><div class="action-btn-group" style="flex-direction:row;">${actions}</div></td>`;
+            tr.querySelector('.inp-cctv-status').value = ev.cctvStatus || "Pending";
+            const repSel = tr.querySelector('.inp-rep'); const manOpt = document.createElement('option'); manOpt.value="MANUAL_INPUT"; manOpt.text="[+ Manual Input]"; repSel.add(manOpt); repSel.onchange = () => handleManualInputWizard(repSel);
+            tbody.appendChild(tr);
+        });
+    };
+    function acceptAssignment(id) { const entry = db.find(x => x.id == id); if(entry) { entry.status = 'Accepted'; saveAll(); fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'notify_accept', id: id, rep: currentUser, ac: entry.ac }) }); showCustomAlert("✅ Accepted!", true); } }
+    function createOB(id) { const entry = db.find(x => x.id == id); window.open(`ATLAS.html?action=createOB&date=${entry.date}&name=${entry.rep}&destination=${entry.ac}`, '_blank'); }
+    function forceAdvance(trackNo) { const trans = transDb.find(t => t.trackingNo === trackNo); if(trans) openTransModal(trans); }
+    
+    function markCancelled(id) {
+        const entry = db.find(x => x.id == id);
+        if(confirm("Mark this batch as Cancelled? (You can reschedule it later)")) {
+            entry.status = "Cancelled";
+            saveAll();
+        }
+    }
+    function rescheduleBatch(id) {
+        const entry = db.find(x => x.id == id);
+        // Create a new clone transaction for this specific batch
+        let newTrans = {
+            trackingNo: entry.linkedTrackingNo + "-RESCHED",
+            ac: entry.ac,
+            qual: entry.qual,
+            status: "Organizing Assessment", // Back to organizing
+            history: [],
+            numCandidates: "10 (Est)"
+        };
+        fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save_transaction', data: newTrans }) })
+        .then(r => {
+            showCustomAlert("🔄 Created new pending transaction for reschedule.", true);
+            closeModal();
+            fetchAllData();
+        });
+    }
+// ==========================================
+// V6.0 AMS FULL INTEGRATED FORMS SYSTEM
+// (Non-Destructive | COA Compliant)
+// ==========================================
+
+(function() { 
+
+// 1. SYSTEM STYLES
+if (!document.getElementById('ams-forms-style')) {
+    const s = document.createElement('style');
+    s.id = 'ams-forms-style';
+    s.textContent = `
+        /* Modal System */
+        .ams-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: flex-start; z-index: 99999; padding-top: 30px; }
+        .ams-modal { background: white; width: 750px; max-height: 90vh; border-radius: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; font-family: sans-serif; }
+        .ams-modal-header { padding: 15px; border-bottom: 2px solid #2c3e50; background: #ecf0f1; display: flex; justify-content: space-between; align-items: center; }
+        .ams-modal-body { padding: 20px; overflow-y: auto; background: #fff; }
+        
+        /* Form Elements */
+        .ams-form-group { margin-bottom: 12px; }
+        .ams-form-group label { display: block; font-weight: bold; font-size: 11px; margin-bottom: 4px; color: #333; }
+        .ams-form-control { width: 100%; padding: 6px; border: 1px solid #999; font-size: 13px; box-sizing: border-box; }
+        .ams-checkbox-group { display: grid; grid-template-columns: 1fr; gap: 4px; border: 1px solid #eee; padding: 10px; background: #fafafa; }
+        .ams-checkbox-item { font-size: 12px; display: flex; align-items: center; }
+        
+        /* Integrated Buttons */
+        .btn-ams-action { 
+            padding: 6px 12px; border-radius: 4px; cursor: pointer; 
+            font-weight: bold; font-size: 12px; margin-left: 5px; border: 1px solid rgba(0,0,0,0.1); 
+            display: inline-flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: white;
+        }
+        .btn-ams-nod { background: #c0392b; width: 100%; margin: 5px 0; }
+        .btn-ams-loa { background: #2980b9; }
+        .btn-ams-assign { background: #8e44ad; }
+        .btn-ams-endorse { background: #27ae60; }
+        
+        .btn-ams-action:hover { opacity: 0.9; transform: translateY(-1px); }
+    `;
+    document.head.appendChild(s);
+}
+
+// 2. MODAL CONTAINER
+if (!document.getElementById('ams-forms-modal')) {
+    const m = document.createElement('div');
+    m.id = 'ams-forms-modal';
+    m.className = 'ams-modal-overlay';
+    m.innerHTML = `
+        <div class="ams-modal">
+            <div class="ams-modal-header">
+                <h3 id="ams-modal-title" style="margin:0; font-size:16px; color:#2c3e50;">Generate Document</h3>
+                <button onclick="document.getElementById('ams-forms-modal').style.display='none'" style="border:none;background:none;font-size:24px;cursor:pointer;">&times;</button>
+            </div>
+            <div class="ams-modal-body" id="ams-modal-body"></div>
+            <div style="padding:15px; text-align:right; border-top:1px solid #ddd; background:#f9f9f9;">
+                <button id="ams-print-confirm-btn" style="padding:8px 20px; background:#2c3e50; color:white; border:none; font-weight:bold; cursor:pointer;">PRINT PREVIEW</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(m);
+}
+
+// 3. SMART DATA SCRAPER (Pulls from Active Context)
+function getActiveData() {
+    // Priority: SweetAlert, then Wizard Modal, then Document Body
+    const activeContext = document.querySelector('.swal2-container') || document.querySelector('.wizard-modal') || document.body;
+    
+    const getVal = (selectors) => {
+        for (let sel of selectors) {
+            let el = activeContext.querySelector(sel);
+            // Also try fuzzy ID matching if selector is ID-based
+            if (!el && sel.startsWith('#')) el = document.getElementById(sel.substring(1));
+            
+            if (el && (el.value || el.innerText)) return el.value || el.innerText;
+        }
+        return '';
+    };
+
+    return {
+        ac: getVal(['.inp-ac', '#ac', 'input[placeholder*="Center"]', 'input[placeholder*="Institution"]']),
+        qual: getVal(['.inp-qual', '#qual', 'input[placeholder*="Qual"]']),
+        assessor: getVal(['.inp-assessor', '#assessor', 'input[placeholder*="Assessor"]']),
+        rep: getVal(['.inp-rep', '#rep', 'select.inp-rep']),
+        schedDate: getVal(['input[type="date"]', '#schedDate']) || new Date().toISOString().split('T')[0]
+    };
+}
+
+// 4. THE LIVE INTEGRATOR (Safe Injection)
+const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+        if (mutation.addedNodes.length) {
+            injectWorkflowButtons();
+        }
+    });
+});
+
+observer.observe(document.body, { childList: true, subtree: true });
+
+function injectWorkflowButtons() {
+    // A. RECEIPT STAGE: Notice of Deficiency
+    // Find the input for "Deficiencies" and REPLACE it with the Button
+    const inputs = document.querySelectorAll('input, textarea');
+    inputs.forEach(inp => {
+        const desc = (inp.placeholder + inp.className + inp.name).toLowerCase();
+        if (desc.includes('defic') && !inp.dataset.patched) {
+            inp.style.display = 'none'; // Hide original input
+            inp.dataset.patched = "true";
+            
+            const btn = document.createElement('button');
+            btn.className = 'btn-ams-action btn-ams-nod';
+            btn.innerHTML = '⚠️ GENERATE NOTICE OF DEFICIENCY';
+            btn.type = 'button'; // Prevent form submit
+            btn.onclick = (e) => { e.preventDefault(); setupForm('NOD'); };
+            
+            inp.parentNode.insertBefore(btn, inp);
+        }
+    });
+
+    // B. INFORM ASSESSOR STAGE: Letter of Appointment
+    // Find the Assessor Input -> Append Button NEXT to it
+    const assInputs = document.querySelectorAll('input[placeholder*="Assessor"]');
+    assInputs.forEach(inp => {
+        if (inp.offsetParent && !inp.parentNode.querySelector('.btn-ams-loa')) {
+            const btn = document.createElement('button');
+            btn.className = 'btn-ams-action btn-ams-loa';
+            btn.innerHTML = '📜 Print LOA';
+            btn.type = 'button';
+            btn.onclick = (e) => { e.preventDefault(); setupForm('LOA'); };
+            inp.parentNode.appendChild(btn);
+        }
+    });
+
+    // C. ASSIGN REP STAGE: Letter of Assignment
+    // Find the Rep Dropdown -> Append Button NEXT to it
+    const repInputs = document.querySelectorAll('select.inp-rep');
+    repInputs.forEach(inp => {
+        if (inp.offsetParent && !inp.parentNode.querySelector('.btn-ams-assign')) {
+            const btn = document.createElement('button');
+            btn.className = 'btn-ams-action btn-ams-assign';
+            btn.innerHTML = '📋 Print Assign';
+            btn.type = 'button';
+            btn.onclick = (e) => { e.preventDefault(); setupForm('LOASG'); };
+            inp.parentNode.appendChild(btn);
+        }
+    });
+
+    // D. ENDORSE STAGE: Endorsement Letter
+    // Find the action buttons area (where "Proceed" usually is)
+    // We ADD our button there, we DO NOT replace anything.
+    const actionFooters = document.querySelectorAll('.swal2-actions, .wizard-footer, .modal-footer');
+    actionFooters.forEach(footer => {
+        // Only inject if we see "Endorse" related text in the modal content
+        const modalText = footer.closest('.swal2-popup, .modal')?.innerText || '';
+        if (modalText.includes('Endorse') && !footer.querySelector('.btn-ams-endorse')) {
+            const btn = document.createElement('button');
+            btn.className = 'btn-ams-action btn-ams-endorse';
+            btn.innerHTML = '🤝 Print Endorsement';
+            btn.type = 'button';
+            btn.onclick = (e) => { e.preventDefault(); setupForm('ENDORSE'); };
+            footer.appendChild(btn); // Add to end of footer
+        }
+    });
+}
+
+// 5. FORM GENERATION LOGIC
+window.setupForm = function(type) {
+    const modal = document.getElementById('ams-forms-modal');
+    const body = document.getElementById('ams-modal-body');
+    const btn = document.getElementById('ams-print-confirm-btn');
+    const d = getActiveData();
+    
+    modal.style.display = 'flex';
+    let html = '';
+
+    if (type === 'NOD') {
+        html = `
+            <div class="ams-form-group"><label>Institution:</label><input type="text" id="nod-inst" value="${d.ac}" class="ams-form-control"></div>
+            <div class="ams-form-group"><label>Qualification:</label><input type="text" id="nod-qual" value="${d.qual}" class="ams-form-control"></div>
+            <div class="ams-form-group"><label>Scholarship:</label><input type="text" id="nod-schol" placeholder="2023 TWSP" class="ams-form-control"></div>
+            <div class="ams-form-group"><label>RQM NO:</label><input type="text" id="nod-rqm" class="ams-form-control"></div>
+            <div class="ams-form-group"><label>Tracking No:</label><input type="text" id="nod-track" class="ams-form-control"></div>
+            <div class="ams-form-group"><label>Findings:</label>
+                <div class="ams-checkbox-group">
+                    <label><input type="checkbox" id="c-1"> No Memo Transmittal</label>
+                    <label><input type="checkbox" id="c-2"> Not properly filled out Application Form</label>
+                    <label><input type="checkbox" id="c-3"> Not properly filled out SAG</label>
+                    <label><input type="checkbox" id="c-4"> SAG not Attached</label>
+                    <label><input type="checkbox" id="c-5"> Picture not standard</label>
+                    <label><input type="checkbox" id="c-6"> Others (Specify below)</label>
+                </div>
+            </div>
+            <div class="ams-form-group"><label>Others Specify:</label><input type="text" id="nod-other" class="ams-form-control"></div>
+            <div class="ams-form-group"><label>Officer of the Day:</label><input type="text" id="nod-ood" class="ams-form-control"></div>
+        `;
+    } 
+    else if (type === 'LOA' || type === 'LOASG') {
+        html = `
+            <div class="ams-form-group"><label>Date:</label><input type="text" id="f-date" value="${new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'})}" class="ams-form-control"></div>
+            <div class="ams-form-group"><label>Name (${type==='LOA'?'Assessor':'Rep'}):</label><input type="text" id="f-name" value="${type==='LOA'?d.assessor:d.rep}" class="ams-form-control"></div>
+            <div class="ams-form-group"><label>Address:</label><input type="text" id="f-addr" class="ams-form-control"></div>
+            <div class="ams-form-group"><label>Schedule:</label><input type="text" id="f-sched" value="${d.schedDate}" class="ams-form-control"></div>
+            <div class="ams-form-group"><label>Qualification:</label><input type="text" id="f-qual" value="${d.qual}" class="ams-form-control"></div>
+            <div class="ams-form-group"><label>AC Name/Address:</label><input type="text" id="f-ac" value="${d.ac}" class="ams-form-control"></div>
+        `;
+    }
+    else if (type === 'ENDORSE') {
+        html = `
+            <div class="ams-form-group"><label>AC Manager Name:</label><input type="text" id="end-mgr" class="ams-form-control"></div>
+            <div class="ams-form-group"><label>Manager Surname (Salutation):</label><input type="text" id="end-sur" class="ams-form-control"></div>
+            <div class="ams-form-group"><label>AC Address:</label><input type="text" id="end-addr" class="ams-form-control"></div>
+            <div class="ams-form-group"><label>No. of Candidates:</label><input type="text" id="end-count" class="ams-form-control"></div>
+            <div class="ams-form-group"><label>Client Type:</label><input type="text" id="end-client" class="ams-form-control"></div>
+            <div class="ams-form-group"><label>Modality:</label><input type="text" id="end-mod" value="Full" class="ams-form-control"></div>
+        `;
+    }
+
+    html += `<div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;"><label><input type="checkbox" id="use-esig" checked> Use E-Signature (PD Glo Sese)</label></div>`;
+    body.innerHTML = html;
+    btn.onclick = () => printForm(type);
+};
+
+// 6. STRICT PRINT TEMPLATES
+function printForm(type) {
+    const esig = document.getElementById('use-esig').checked ? 
+        `<img src="PD Glo Sese.gif" style="width:140px; position:absolute; margin-top:-40px; z-index:-1;">` : '<br><br>';
+    const sigBlock = `<div style="margin-top:30px;">${esig}<br><b>MARIGLO L. MACABUHAY, SESE-CESE</b><br>Provincial Director</div>`;
+    
+    let content = '';
+
+    if (type === 'NOD') {
+        const inst = document.getElementById('nod-inst').value;
+        const qual = document.getElementById('nod-qual').value;
+        const schol = document.getElementById('nod-schol').value;
+        const rqm = document.getElementById('nod-rqm').value;
+        const track = document.getElementById('nod-track').value;
+        const ood = document.getElementById('nod-ood').value;
+        const other = document.getElementById('nod-other').value;
+        const chk = (id) => document.getElementById(id).checked ? '[ / ]' : '[ &nbsp; ]';
+
+        content = `
+            <div style="font-family:Arial; font-size:11pt; padding:40px;">
+                <center><b>TESDA ALBAY PROVINCIAL OFFICE</b><br><b>NOTICE OF DEFICIENCY</b></center><br>
+                <table style="width:100%">
+                    <tr><td width="30%">NAME OF INSTITUTION:</td><td style="border-bottom:1px solid black"><b>${inst}</b></td></tr>
+                    <tr><td>QUALIFICATION:</td><td style="border-bottom:1px solid black"><b>${qual}</b></td></tr>
+                    <tr><td>TYPES OF SCHOLARSHIP:</td><td style="border-bottom:1px solid black"><b>${schol}</b></td></tr>
+                    <tr><td>RQM NO:</td><td style="border-bottom:1px solid black"><b>${rqm}</b></td></tr>
+                </table><br>
+                Tracking Number: <b>${track}</b><br><br>
+                No. of Candidates for Assessment: _______________<br><br>
+                <b>&nbsp;&nbsp;&nbsp;DEFICIENCY/IES<br>&nbsp;&nbsp;&nbsp;FINDINGS:</b>
+                <div style="margin-left:40px; margin-top:10px;">
+                    ${chk('c-1')} No Memo Transmittal<br>
+                    ${chk('c-2')} Not properly filled out Application Form (Incomplete entry, No Signature)<br>
+                    ${chk('c-3')} Not properly filled out Self Assessment Guide (Incomplete entry, No Signature)<br>
+                    ${chk('c-4')} Self Assessment Guide not Attached<br>
+                    ${chk('c-5')} Picture not standard<br>
+                    ${chk('c-6')} Others Specify: <u>${other}</u>
+                </div><br>
+                <table style="width:100%">
+                    <tr><td>Reviewed by:<br><br>_____________________</td><td align="right">Date of transaction: ${new Date().toLocaleDateString()}</td></tr>
+                    <tr><td><b>${ood}</b><br>OFFICER OF THE DAY</td><td></td></tr>
+                </table><br>
+                <b>Action Taken:</b><br>
+                &nbsp;&nbsp;[ ] Returned to Client &nbsp;&nbsp;&nbsp; Date: _______<br>
+                &nbsp;&nbsp;[ ] Forwarded to focal &nbsp;&nbsp;&nbsp; Date: _______<br><br>
+                <b>Compliance to deficiency/ies</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>TO BE FILLED OUT BY TESDA</b>
+                <table border="1" style="width:100%; border-collapse:collapse; text-align:center; margin-top:5px;">
+                    <tr style="background:#eee;"><th>DEFICIENCY/IES</th><th>COMPLIANCE</th><th>REMARKS</th></tr>
+                    <tr height="25"><td></td><td></td><td></td></tr>
+                    <tr height="25"><td></td><td></td><td></td></tr>
+                    <tr height="25"><td></td><td></td><td></td></tr>
+                    <tr height="25"><td></td><td></td><td></td></tr>
+                </table><br>
+                <div style="text-align:right;">__________________________<br>Signature over Printed Name</div>
+            </div>`;
+    }
+    else if (type === 'LOA' || type === 'LOASG') {
+        const date = document.getElementById('f-date').value;
+        const name = document.getElementById('f-name').value;
+        const addr = document.getElementById('f-addr').value;
+        const sched = document.getElementById('f-sched').value;
+        const qual = document.getElementById('f-qual').value;
+        const ac = document.getElementById('f-ac').value;
+      const header = type === 'LOA'
+  	? '<div style="text-align:right; width:100%;">TESDA-OP-CO-05-F28<br>Rev.No.01-09/02/22</div>'
+  	: '<div style="text-align:right; width:100%;">TESDA-OP-CO-05-F29<br>Rev.No.00-03/08/17</div>';
+        const title = type === 'LOA' ? 'LETTER OF APPOINTMENT' : 'LETTER OF ASSIGNMENT';
+        const bodyTxt = type === 'LOA' 
+            ? `This letter officially appoints you as competency assessor on <b>${sched}</b> for <b>${qual}</b> at <b>${ac}</b>. Please report to the Assessment Center as scheduled.<br><br>If you have any questions, please call Nanette B. Baranda at 09178289539. We look forward to your acceptance of this appointment.`
+            : `This letter officially designates you as TESDA Representative on <b>(${sched})</b> for <b>(${qual})</b> at <b>(${ac})</b>. Please report to the Assessment Center/Venue as scheduled.<br><br>If you have any questions/ queries, please call the undersigned at telephone number/s 09178289539.`;
+        const footerTxt = type === 'LOA' ? 'Signature of Assessor' : 'Signature over printed name of TESDA Representative';
+
+        content = `
+            <div style="font-family:'Times New Roman'; font-size:12pt; padding:40px; line-height:1.4;">
+                <div style="display:flex; justify-content:space-between;">
+                    <div style="font-size:9pt;">${header}</div>
+                </div>
+                <center><b>Technical Education and Skills Development Authority<br>ASSESSMENT AND CERTIFICATION PROGRAM</b><br><br><b>${title}</b></center>
+                <br><div style="text-align:right;">${date}</div><br>
+                <b>${name}</b><br>${addr}<br><br>
+                Dear Sir/Madam:<br><br>
+                &nbsp;&nbsp;&nbsp;&nbsp;${bodyTxt}<br><br>
+                Very truly yours,${sigBlock}<br><br><br>Conforme:<br>_____________________<br>${footerTxt}
+            </div>`;
+    }
+    else if (type === 'ENDORSE') {
+        const mgr = document.getElementById('end-mgr').value;
+        const sur = document.getElementById('end-sur').value;
+        const addr = document.getElementById('end-addr').value;
+        const count = document.getElementById('end-count').value;
+        const client = document.getElementById('end-client').value;
+        const mod = document.getElementById('end-mod').value;
+        const d = getActiveData();
+
+        content = `
+            <div style="font-family:'Times New Roman'; font-size:12pt; padding:40px; line-height:1.3;">
+                <div style="text-align:center;">
+                    Date: ${new Date().toLocaleDateString()}<br><br>
+                    <div style="font-weight:bold; font-size:14pt;">Republic of the Philippines</div>
+                    <div style="font-weight:bold; font-size:12pt;">TECHNICAL EDUCATION AND SKILLS DEVELOPMENT AUTHORITY</div>
+                    <div style="font-size:10pt;">ISO 9001: 2015 Certified</div>
+                </div><br><br>
+                <b>${mgr}</b><br>AC MANAGER<br>${d.ac}<br>${addr}<br><br>
+                Dear Mr./Mrs. ${sur},<br><br>
+                This is to endorse the following applications for assessment.<br><br>
+                <table border="1" style="width:100%; border-collapse:collapse; text-align:center; font-size:11pt;">
+                    <tr style="background:#eee;">
+                        <th style="padding:5px;">No. of Candidates</th>
+                        <th style="padding:5px;">Qualification</th>
+                        <th style="padding:5px;">Training Center / Institution</th>
+                        <th style="padding:5px;">Assessment Schedule</th>
+                        <th style="padding:5px;">Client Type</th>
+                        <th style="padding:5px;">Modality</th>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px;">${count}</td>
+                        <td>${d.qual}</td>
+                        <td>${d.ac}</td>
+                        <td>${d.schedDate}</td>
+                        <td>${client}</td>
+                        <td>${mod}</td>
+                    </tr>
+                </table><br>
+                Attached herewith are application forms, self-assessment guide, list of candidates and other pertinent documents for your reference.<br><br><br>
+                <div style="border:1px solid black; width:220px; padding:10px; font-size:10pt; margin-left:20px;">
+                    Received by:<br><br>____________________<br><br>Date: ______________
+                </div><br>
+                Sincerely yours,${sigBlock}
+            </div>`;
+    }
+
+    const win = window.open('', '_blank', 'width=850,height=1100');
+    win.document.write(`<html><head><title>Print</title></head><body>${content}</body></html>`);
+    win.document.close();
+    document.getElementById('ams-forms-modal').style.display = 'none';
+}
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+"use strict";
+NEXUS_SPECTRA.Controllers.HomeDashboard=(()=>{function refresh(){NEXUS_SPECTRA.Views.HomeDashboard.render(NEXUS_SPECTRA.Services.HomeDashboard.build());NEXUS_SPECTRA.Controllers.NotificationCenter.refresh();}function initialize(){document.getElementById("homeRefresh")?.addEventListener("click",refresh);window.addEventListener("storage",refresh);refresh();}return Object.freeze({initialize,refresh});})();

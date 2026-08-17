@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARMMS | Assessment Readiness Monitoring</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased p-4 md:p-8">
+
+<div class="max-w-7xl mx-auto space-y-6">
+    <!-- Header -->
+    <header class="text-center space-y-2 animate-fade-in">
+        <h1 class="text-4xl font-bold text-slate-900 tracking-tight"><i class="fas fa-chart-line text-blue-600 mr-2"></i> ARMMS Dashboard</h1>
+        <p class="text-slate-500 font-medium">Assessment Readiness Monitoring and Mapping System</p>
+    </header>
+
+    <!-- Upload Section -->
+    <section class="glass-card rounded-2xl shadow-sm p-6 animate-fade-in">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="space-y-2">
+                <label class="text-sm font-semibold text-slate-700"><i class="fas fa-file-csv text-blue-500 mr-1"></i> Registered Programs</label>
+                <input type="file" id="filePrograms" accept=".csv" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all cursor-pointer">
+            </div>
+            <div class="space-y-2">
+                <label class="text-sm font-semibold text-slate-700"><i class="fas fa-building text-green-500 mr-1"></i> Assessment Centers</label>
+                <input type="file" id="fileAC" accept=".csv" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition-all cursor-pointer">
+            </div>
+            <div class="space-y-2">
+                <label class="text-sm font-semibold text-slate-700"><i class="fas fa-users text-amber-500 mr-1"></i> Assessors</label>
+                <input type="file" id="fileAssessors" accept=".csv" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 transition-all cursor-pointer">
+            </div>
+        </div>
+        <button onclick="loadData()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+            <i class="fas fa-sync-alt"></i> Process & Load Data
+        </button>
+    </section>
+
+    <!-- Dashboard Area -->
+    <div id="dashboardArea" class="hidden space-y-6 animate-fade-in">
+        
+        <!-- Enterprise IQA Analytics Section -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="glass-card rounded-2xl p-5 shadow-sm border-l-4 border-red-500">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase">Critical IQA Gaps (No AC & No Assessor)</h3>
+                    <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+                </div>
+                <div class="mt-2 text-3xl font-bold text-slate-800" id="statCritical">0</div>
+                <p class="text-xs text-slate-400 mt-1">Total WTR qualifications lacking infrastructure.</p>
+            </div>
+            <div class="glass-card rounded-2xl p-5 shadow-sm border-l-4 border-orange-500">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase">Top Need: Assessment Centers</h3>
+                    <i class="fas fa-building text-orange-500 text-xl"></i>
+                </div>
+                <div class="mt-2 space-y-1 h-[60px] overflow-hidden" id="statNeedsAC">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+            <div class="glass-card rounded-2xl p-5 shadow-sm border-l-4 border-amber-500">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase">Top Need: Assessors</h3>
+                    <i class="fas fa-user-times text-amber-500 text-xl"></i>
+                </div>
+                <div class="mt-2 space-y-1 h-[60px] overflow-hidden" id="statNeedsAssessor">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Filters -->
+        <section class="glass-card rounded-2xl shadow-sm p-6 flex flex-col md:flex-row gap-4 items-end bg-slate-50/50">
+            <div class="flex-1 w-full">
+                <label class="block text-xs font-bold text-blue-600 uppercase mb-1"><i class="fas fa-clipboard-check"></i> IQA Audit View</label>
+                <select id="auditFilter" onchange="updateDashboard()" class="w-full bg-white border border-blue-200 text-blue-800 font-semibold rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 shadow-sm">
+                    <option value="ALL">Show All Data (Including Exempted & Optimal)</option>
+                    <option value="CRITICAL">Show Critical IQA Gaps Only (Missing Both)</option>
+                    <option value="NO_AC">Show Qualifications Missing Assessment Centers</option>
+                    <option value="NO_ASSR">Show Qualifications Missing Assessors</option>
+                </select>
+            </div>
+            <div class="flex-1 w-full">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Filter by District</label>
+                <select id="districtFilter" onchange="updateDashboard()" class="w-full bg-white border border-slate-200 text-slate-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 shadow-sm">
+                    <option value="ALL">All Districts</option>
+                </select>
+            </div>
+            <div class="flex-1 w-full">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Search Qualification</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <i class="fas fa-search text-slate-400"></i>
+                    </div>
+                    <input type="text" id="qualFilter" onkeyup="updateDashboard()" placeholder="Type to search..." class="w-full bg-white border border-slate-200 text-slate-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-10 p-2.5 shadow-sm">
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts -->
+        <section class="glass-card rounded-2xl shadow-sm p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-800"><i class="fas fa-chart-bar text-blue-500 mr-2"></i>Filtered Qualifications Overview</h3>
+                <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-1 rounded" id="chartLabel">Showing All</span>
+            </div>
+            <div class="relative h-[400px] w-full">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Data Table -->
+        <section class="glass-card rounded-2xl shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-slate-100 bg-white flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-800"><i class="fas fa-table text-blue-500 mr-2"></i>Vis-a-Vis Alignment Matrix</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-slate-600">
+                    <thead class="text-xs text-slate-500 uppercase bg-slate-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-4">Qualification Title</th>
+                            <th scope="col" class="px-6 py-4 text-center">Programs</th>
+                            <th scope="col" class="px-6 py-4 text-center">Valid ACs</th>
+                            <th scope="col" class="px-6 py-4 text-center">Valid Assessors</th>
+                            <th scope="col" class="px-6 py-4">Status Recommendation</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-100 bg-white">
+                        <!-- Rows injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Unified Dynamic Modal -->
+<div id="detailsModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] flex flex-col animate-fade-in">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+            <div>
+                <h3 class="text-xl font-bold text-slate-800" id="modalTitle">Details</h3>
+                <p class="text-sm text-slate-500 mt-1 font-semibold text-blue-600" id="modalSubtitle">Qualification</p>
+            </div>
+            <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full p-2 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto flex-1 bg-slate-50">
+            <div class="grid gap-4" id="modalContent">
+                <!-- Data cards will be injected here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let db = { programs: [], acs: [], assessors: [] };
+    let chartInstance = null;
+
+    // Hardcoded Exemption List (No longer explicitly relying on "NTR" text in the title)
+    const EXEMPTED_PROGRAMS = [
+        "PRODUCTION OF HIGH-QUALITY INBRED RICE, AND SEED CERTIFICATION, AND FARM MECHANIZATION",
+        "CONTACT CENTER SERVICES", // Covers NC II or generic
+        "COCONUT VINEGAR PROCESSING",
+        "ASSEMBLY OF SOLAR NIGHTLIGHT AND POST LAMP",
+        "PROGRAMMING (JAVA) NC III",
+        "ENTREPRENEURSHIP"
+    ];
+
+    // Comprehensive Check: Hardcoded + Strict NTR column reading
+    function isExempted(item) {
+        if (!item || !item.title) return false;
+        
+        // 1. Is it a hardcoded standard exemption?
+        let titleUpper = item.title.toUpperCase();
+        if (EXEMPTED_PROGRAMS.some(exempted => titleUpper.includes(exempted.toUpperCase()))) {
+            return true;
+        }
+
+        // 2. Is it exempted due to ALL programs for this qual being NTR?
+        if (item.programs > 0 && item.wtrCount === 0 && item.ntrCount > 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    const parseCSV = (file) => new Promise((resolve, reject) => {
+        Papa.parse(file, { header: true, skipEmptyLines: true, complete: res => resolve(res.data), error: err => reject(err) });
+    });
+
+    function isValidDate(dateStr) {
+        if (!dateStr) return true;
+        let expireDate = new Date(dateStr);
+        return isNaN(expireDate.getTime()) ? true : expireDate >= new Date();
+    }
+
+    async function loadData() {
+        const files = {
+            prog: document.getElementById('filePrograms').files[0],
+            ac: document.getElementById('fileAC').files[0],
+            assr: document.getElementById('fileAssessors').files[0]
+        };
+
+        if (!files.prog || !files.ac || !files.assr) return alert("Please upload all three CSV files to proceed.");
+
+        try {
+            db.programs = await parseCSV(files.prog);
+            db.acs = await parseCSV(files.ac);
+            db.assessors = await parseCSV(files.assr);
+
+            const districts = new Set();
+            db.programs.forEach(p => {
+                if(p['CONGRESSIONAL DISTRICT']) districts.add(p['CONGRESSIONAL DISTRICT'].trim());
+            });
+            const distSelect = document.getElementById('districtFilter');
+            distSelect.innerHTML = '<option value="ALL">All Districts</option>';
+            Array.from(districts).sort().forEach(d => {
+                distSelect.innerHTML += `<option value="${d}">District ${d}</option>`;
+            });
+
+            document.getElementById('dashboardArea').classList.remove('hidden');
+            updateDashboard();
+        } catch (error) {
+            alert("Error parsing files: " + error);
+        }
+    }
+
+    function updateDashboard() {
+        const filterDist = document.getElementById('districtFilter').value;
+        const filterQual = document.getElementById('qualFilter').value.toUpperCase();
+        const auditFilter = document.getElementById('auditFilter').value;
+
+        let matrix = {};
+
+        // 1. Compile Matrix Data (Now parsing the STATUS column for WTR vs NTR)
+        db.programs.forEach(row => {
+            let dist = row['CONGRESSIONAL DISTRICT'] ? row['CONGRESSIONAL DISTRICT'].trim() : "";
+            let qual = row['COURSE/REGISTERED PROGRAM'] || row['QUALIFICATION TITLE'];
+            let status = row['STATUS'] ? row['STATUS'].trim().toUpperCase() : "";
+
+            if (qual) {
+                qual = qual.trim().toUpperCase();
+                if ((filterDist === "ALL" || dist === filterDist) && qual.includes(filterQual)) {
+                    if (!matrix[qual]) {
+                        matrix[qual] = { title: qual, programs: 0, ntrCount: 0, wtrCount: 0, acs: 0, assessors: 0 };
+                    }
+                    
+                    matrix[qual].programs += 1;
+                    if (status === 'NTR') {
+                        matrix[qual].ntrCount += 1;
+                    } else {
+                        matrix[qual].wtrCount += 1;
+                    }
+                }
+            }
+        });
+
+        db.acs.forEach(row => {
+            let qual = row['QUALIFICATION TITLE'];
+            if (qual && isValidDate(row['VALID UNTIL'])) {
+                qual = qual.trim().toUpperCase();
+                if (qual.includes(filterQual) && matrix[qual]) {
+                    matrix[qual].acs += 1;
+                }
+            }
+        });
+
+        db.assessors.forEach(row => {
+            let qual = row['QUALIFICATION TITLE'];
+            if (qual && isValidDate(row['VALID UNTIL'])) {
+                qual = qual.trim().toUpperCase();
+                if (qual.includes(filterQual) && matrix[qual]) {
+                    matrix[qual].assessors += 1;
+                }
+            }
+        });
+
+        let dataArray = Object.values(matrix)
+            .filter(item => item.programs > 0)
+            .sort((a, b) => b.programs - a.programs);
+
+        // 2. Generate IQA Analytics (Calculated using complete provincial context)
+        let criticalGapCount = 0;
+        let missingAcList = [];
+        let missingAssrList = [];
+
+        dataArray.forEach(item => {
+            if (!isExempted(item)) {
+                if (item.acs === 0 && item.assessors === 0) criticalGapCount++;
+                if (item.acs === 0) missingAcList.push(item);
+                if (item.assessors === 0) missingAssrList.push(item);
+            }
+        });
+
+        document.getElementById('statCritical').textContent = criticalGapCount;
+        
+        document.getElementById('statNeedsAC').innerHTML = missingAcList.slice(0, 3).map(i => 
+            `<div class="text-xs font-semibold text-slate-700 truncate" title="${i.title}">• ${i.title} <span class="text-orange-500">(${i.programs} progs)</span></div>`
+        ).join('') || `<div class="text-xs text-green-600 font-semibold">No Critical Gaps Found!</div>`;
+
+        document.getElementById('statNeedsAssessor').innerHTML = missingAssrList.slice(0, 3).map(i => 
+            `<div class="text-xs font-semibold text-slate-700 truncate" title="${i.title}">• ${i.title} <span class="text-amber-500">(${i.programs} progs)</span></div>`
+        ).join('') || `<div class="text-xs text-green-600 font-semibold">No Critical Gaps Found!</div>`;
+
+        // 3. Apply Audit Filter for Table/Chart Strict Views
+        let filteredArray = dataArray.filter(item => {
+            if (auditFilter === "ALL") return true;
+            
+            // If any Audit Filter is on, strictly hide exempted programs completely
+            if (isExempted(item)) return false; 
+            
+            if (auditFilter === "CRITICAL") return item.acs === 0 && item.assessors === 0;
+            if (auditFilter === "NO_AC") return item.acs === 0;
+            if (auditFilter === "NO_ASSR") return item.assessors === 0;
+            return true;
+        });
+
+        // UI Label Update
+        const labels = {
+            "ALL": "Showing All Data",
+            "CRITICAL": "Filtered: Critical IQA Gaps",
+            "NO_AC": "Filtered: Missing ACs",
+            "NO_ASSR": "Filtered: Missing Assessors"
+        };
+        document.getElementById('chartLabel').textContent = labels[auditFilter];
+
+        renderTable(filteredArray);
+        renderChart(filteredArray.slice(0, 15));
+    }
+
+    function renderTable(data) {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+
+        if(data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-slate-500 font-bold bg-slate-50">No gaps found matching the current IQA Audit Filter.</td></tr>`;
+            return;
+        }
+
+        data.forEach(item => {
+            let status = `<span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-1 rounded-full"><i class="fas fa-check-circle mr-1"></i> Optimal</span>`;
+            
+            let isNTR_Exempted = (item.programs > 0 && item.wtrCount === 0);
+            let isStd_Exempted = EXEMPTED_PROGRAMS.some(e => item.title.toUpperCase().includes(e.toUpperCase()));
+
+            if (isNTR_Exempted) {
+                status = `<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-1 rounded-full"><i class="fas fa-info-circle mr-1"></i> Exempted (NTR)</span>`;
+            } else if (isStd_Exempted) {
+                status = `<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-1 rounded-full"><i class="fas fa-info-circle mr-1"></i> Exempted (Standard)</span>`;
+            } else if (item.programs > 0 && item.acs === 0 && item.assessors === 0) {
+                status = `<span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-1 rounded-full animate-pulse"><i class="fas fa-exclamation-triangle mr-1"></i> Critical: Needs AC & Assessor</span>`;
+            } else if (item.programs > 0 && item.acs === 0) {
+                status = `<span class="bg-orange-100 text-orange-800 text-xs font-medium px-2.5 py-1 rounded-full"><i class="fas fa-building mr-1"></i> Gap: Needs AC</span>`;
+            } else if (item.programs > 0 && item.assessors === 0) {
+                status = `<span class="bg-amber-100 text-amber-800 text-xs font-medium px-2.5 py-1 rounded-full"><i class="fas fa-user-times mr-1"></i> Gap: Needs Assessor</span>`;
+            }
+
+            let safeTitle = item.title.replace(/'/g, "\\'");
+            
+            // Program count column (indicates WTR vs NTR breakdown on hover)
+            let progCol = `<button onclick="openProgramModal('${safeTitle}')" class="font-bold text-blue-600 hover:text-blue-800 hover:underline bg-blue-50 px-3 py-1 rounded-lg tooltip" title="WTR: ${item.wtrCount} | NTR: ${item.ntrCount}">${item.programs} <i class="fas fa-external-link-alt text-xs ml-1"></i></button>`;
+            
+            let acCol = item.acs > 0 
+                ? `<button onclick="openACModal('${safeTitle}')" class="font-bold text-green-600 hover:text-green-800 hover:underline bg-green-50 px-3 py-1 rounded-lg tooltip" title="View ACs">${item.acs} <i class="fas fa-external-link-alt text-xs ml-1"></i></button>`
+                : `<span class="${isExempted(item) ? 'text-slate-400' : 'text-red-500 font-bold'}">0</span>`;
+
+            let assrCol = item.assessors > 0 
+                ? `<button onclick="openAssessorModal('${safeTitle}')" class="font-bold text-amber-600 hover:text-amber-800 hover:underline bg-amber-50 px-3 py-1 rounded-lg tooltip" title="View Assessors">${item.assessors} <i class="fas fa-external-link-alt text-xs ml-1"></i></button>`
+                : `<span class="${isExempted(item) ? 'text-slate-400' : 'text-red-500 font-bold'}">0</span>`;
+
+            tbody.innerHTML += `
+                <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
+                    <td class="px-6 py-4 font-medium text-slate-900">${item.title}</td>
+                    <td class="px-6 py-4 text-center text-lg">${progCol}</td>
+                    <td class="px-6 py-4 text-center text-lg">${acCol}</td>
+                    <td class="px-6 py-4 text-center text-lg">${assrCol}</td>
+                    <td class="px-6 py-4">${status}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function renderChart(data) {
+        if (chartInstance) chartInstance.destroy();
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.title.length > 25 ? d.title.substring(0, 25) + '...' : d.title),
+                datasets: [
+                    { label: 'Programs', data: data.map(d => d.programs), backgroundColor: '#3b82f6', borderRadius: 4 },
+                    { label: 'ACs', data: data.map(d => d.acs), backgroundColor: '#22c55e', borderRadius: 4 },
+                    { label: 'Assessors', data: data.map(d => d.assessors), backgroundColor: '#f59e0b', borderRadius: 4 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } } },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { beginAtZero: true, border: { dash: [4, 4] }, grid: { color: '#f1f5f9' } }
+                }
+            }
+        });
+    }
+
+    // Modal Functions 
+    function openProgramModal(qualTitle) { populateModal(qualTitle, 'PROG'); }
+    function openACModal(qualTitle) { populateModal(qualTitle, 'AC'); }
+    function openAssessorModal(qualTitle) { populateModal(qualTitle, 'ASSR'); }
+
+    function populateModal(qualTitle, type) {
+        const content = document.getElementById('modalContent');
+        content.innerHTML = '';
+        document.getElementById('modalSubtitle').textContent = qualTitle;
+        const filterDist = document.getElementById('districtFilter').value;
+
+        if(type === 'PROG') {
+            document.getElementById('modalTitle').innerHTML = `<i class="fas fa-file-alt text-blue-500 mr-2"></i>Registered Programs`;
+            const validProgs = db.programs.filter(row => {
+                let q = row['COURSE/REGISTERED PROGRAM'] || row['QUALIFICATION TITLE'];
+                let dist = row['CONGRESSIONAL DISTRICT'] ? row['CONGRESSIONAL DISTRICT'].trim() : "";
+                return q && q.trim().toUpperCase() === qualTitle.toUpperCase() && (filterDist === "ALL" || dist === filterDist);
+            });
+            validProgs.forEach(p => {
+                let statusBadge = p['STATUS'] ? p['STATUS'].trim().toUpperCase() : 'N/A';
+                content.innerHTML += createCardHTML(p['NAME OF INSTITUTION'] || 'N/A', p['ADDRESS'] || 'No address', `Type: ${statusBadge}`, 'blue', 'clock', p['DURATION']||'N/A', `Dist: ${p['CONGRESSIONAL DISTRICT']||'N/A'}`);
+            });
+        } 
+        else if (type === 'AC') {
+            document.getElementById('modalTitle').innerHTML = `<i class="fas fa-building text-green-500 mr-2"></i>Assessment Centers`;
+            const validAcs = db.acs.filter(row => row['QUALIFICATION TITLE'] && row['QUALIFICATION TITLE'].trim().toUpperCase() === qualTitle.toUpperCase() && isValidDate(row['VALID UNTIL']));
+            validAcs.forEach(ac => content.innerHTML += createCardHTML(ac['ASSESSMENT CENTER'] || 'N/A', ac['ADDRESS'] || 'No address', `Valid til: ${ac['VALID UNTIL']||'N/A'}`, 'green', 'user-tie', ac['CENTER MANAGER']||'N/A', ac['TEL. NO.']||'No Contact'));
+        } 
+        else if (type === 'ASSR') {
+            document.getElementById('modalTitle').innerHTML = `<i class="fas fa-users text-amber-500 mr-2"></i>Valid Assessors`;
+            const validAssrs = db.assessors.filter(row => row['QUALIFICATION TITLE'] && row['QUALIFICATION TITLE'].trim().toUpperCase() === qualTitle.toUpperCase() && isValidDate(row['VALID UNTIL']));
+            validAssrs.forEach(a => content.innerHTML += createCardHTML(a['NAME'] || 'N/A', a['COMPANY NAME'] || a['ADDRESS'] || 'No company/address', `Valid til: ${a['VALID UNTIL']||'N/A'}`, 'amber', 'id-badge', `Acc: ${a['ACCREDITATION NUMBER']||'N/A'}`, a['PRESENT DESIGNATION']||'N/A'));
+        }
+
+        document.getElementById('detailsModal').classList.remove('hidden');
+    }
+
+    function createCardHTML(title, sub, badge, color, icon1, val1, val2) {
+        return `
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-lg">${title}</h4>
+                        <p class="text-sm text-slate-500 mt-1 truncate max-w-lg"><i class="fas fa-map-marker-alt text-slate-400 w-4"></i> ${sub}</p>
+                    </div>
+                    <span class="bg-${color}-100 text-${color}-800 text-xs px-2 py-1 rounded-md font-semibold whitespace-nowrap">${badge}</span>
+                </div>
+                <div class="mt-3 pt-3 border-t border-slate-100 flex gap-4 text-sm">
+                    <span class="text-slate-600"><i class="fas fa-${icon1} text-slate-400 w-4"></i> ${val1}</span>
+                    <span class="text-slate-600"><i class="fas fa-tag text-slate-400 w-4"></i> ${val2}</span>
+                </div>
+            </div>`;
+    }
+
+    function closeModal() { document.getElementById('detailsModal').classList.add('hidden'); }
+    document.getElementById('detailsModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+</script>
+
+</body>
+</html>

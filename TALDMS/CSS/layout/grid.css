@@ -1,0 +1,52 @@
+/*
+==========================================================
+Enterprise Grid System
+==========================================================
+*/
+
+.app-layout{
+
+    display:grid;
+
+    grid-template-columns:
+        var(--sidebar-width)
+        1fr;
+
+    grid-template-rows:
+        var(--header-height)
+        1fr;
+
+    grid-template-areas:
+
+        "sidebar header"
+        "sidebar content";
+
+    min-height:100vh;
+
+}
+
+@media(max-width:992px){
+
+    .app-layout{
+
+        grid-template-columns:1fr;
+
+        grid-template-rows:
+
+            var(--header-height)
+
+            auto
+
+            1fr;
+
+        grid-template-areas:
+
+            "header"
+
+            "sidebar"
+
+            "content";
+
+    }
+
+}

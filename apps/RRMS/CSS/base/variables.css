@@ -1,0 +1,15 @@
+:root {
+    --rrms-blue-900: #003b70;
+    --rrms-blue-700: #005a9c;
+    --rrms-blue-100: #d9eaf7;
+    --rrms-ink: #172033;
+    --rrms-muted: #64748b;
+    --rrms-bg: #f4f7fb;
+    --rrms-card: #ffffff;
+    --rrms-border: #d8e2eb;
+    --rrms-success: #166534;
+    --rrms-warning: #92400e;
+    --rrms-danger: #b91c1c;
+    --rrms-shadow: 0 12px 30px rgba(15, 23, 42, 0.10);
+    --rrms-radius: 16px;
+}

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Document Workspace Test</title>
+
+<<link rel="stylesheet"
+      href="../../CSS/layout/document.workspace.css">
+
+<script src="../../JS/core/namespace.js"></script>
+
+<script src="../../JS/core/ui/layouts/document.workspace.js"></script>
+
+<script src="../../Modules/workforce/wdp/models/wdp.activity.model.js"></script>
+
+<script src="../../Modules/workforce/wdp/repository/wdp.activity.repository.js"></script>
+</head>
+
+<body>
+
+<div id="app"></div>
+
+<script>
+
+document.getElementById("app").innerHTML =
+
+TAESF.UI.DocumentWorkspace.render({
+
+    title:"Strategic Workforce Plan",
+
+    subtitle:"Planning Cycle 2025-2027",
+
+    badge:'<span class="badge badge-success">Approved</span>',
+
+    toolbar:`
+
+<button>Add Activity</button>
+
+<button>Import</button>
+
+<button>Generate Annual Plan</button>
+
+`,
+
+    tabs:`
+
+<button>Header</button>
+
+<button>TNA</button>
+
+<button>Activities</button>
+
+<button>Summary</button>
+
+`,
+
+    body:`
+
+<h2>Activities</h2>
+
+<p>This is a placeholder document body.</p>
+
+<p>Scroll to verify the layout.</p>
+
+<div style="height:1200px;"></div>
+
+`,
+
+    summary:`
+
+<strong>Total Activities:</strong> 37
+
+<br>
+
+<strong>Total Budget:</strong> ₱620,000
+
+`,
+
+    actions:`
+
+<button>Save Draft</button>
+
+<button>Approve</button>
+
+<button>Print</button>
+
+`
+
+});
+
+</script>
+
+</body>
+
+</html>

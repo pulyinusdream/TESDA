@@ -1,0 +1,10 @@
+"use strict";
+window.NEXUS_SAM = window.NEXUS_SAM || {};
+NEXUS_SAM.Configuration = NEXUS_SAM.Configuration || {};
+NEXUS_SAM.Core = NEXUS_SAM.Core || {};
+NEXUS_SAM.Storage = NEXUS_SAM.Storage || {};
+NEXUS_SAM.Services = NEXUS_SAM.Services || {};
+NEXUS_SAM.Modules = NEXUS_SAM.Modules || {};
+NEXUS_SAM.Data = NEXUS_SAM.Data || {};
+NEXUS_SAM.Utilities = NEXUS_SAM.Utilities || {};
+NEXUS_SAM.State = NEXUS_SAM.State || {};

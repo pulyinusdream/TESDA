@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Employee Master</title>
+
+    <link rel="stylesheet" href="../../css/app.css">
+
+</head>
+
+<body>
+
+    <div id="app"></div>
+
+    <!-- ======================================================
+     CORE
+====================================================== -->
+
+<script src="../../js/core/namespace.js"></script>
+
+<!-- ======================================================
+     STORAGE
+====================================================== -->
+
+<script src="../../js/core/storage/local.storage.js"></script>
+<script src="../../js/core/storage/storage.service.js"></script>
+
+<!-- ======================================================
+     DASHBOARD
+====================================================== -->
+
+<script src="../../js/core/ui/layouts/dashboard.layout.js"></script>
+
+<!-- ======================================================
+     TAEDS COMPONENTS
+====================================================== -->
+
+<script src="../../js/core/ui/components/header.js"></script>
+<script src="../../js/core/ui/components/sidebar.js"></script>
+<script src="../../js/core/ui/components/breadcrumb.js"></script>
+
+<script src="../../js/core/ui/components/button.js"></script>
+<script src="../../js/core/ui/components/card.js"></script>
+<script src="../../js/core/ui/components/form.js"></script>
+<script src="../../js/core/ui/components/table.js"></script>
+<script src="../../js/core/ui/components/badge.js"></script>
+<script src="../../js/core/ui/components/modal.js"></script>
+<script src="../../js/core/ui/components/notification.js"></script>
+
+<!-- ======================================================
+     EMPLOYEE MODULE
+====================================================== -->
+<script src="../../Modules/employee/models/employee.model.js"></script>
+
+<script src="../../Modules/employee/repository/employee.repository.js"></script>
+
+<script src="../../Modules/employee/validation/employee.validator.js"></script>
+
+<script src="../../Modules/employee/services/employee.service.js"></script>
+
+<script src="../../Modules/employee/controllers/employee.controller.js"></script>
+
+<script src="../../Modules/employee/views/employee.form.view.js"></script>
+
+<script src="../../Modules/employee/views/employee.list.view.js"></script>
+
+<!-- ======================================================
+     START PAGE
+====================================================== -->
+
+<script>
+
+document.getElementById("app").innerHTML =
+    TAESF.Modules.Employee.Views.List.render();
+
+TAESF.Modules.Employee.Controller.initialize();
+
+</script>
+
+</body>
+
+</html>

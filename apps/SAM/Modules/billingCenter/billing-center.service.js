@@ -1,0 +1,37 @@
+"use strict";
+NEXUS_SAM.Modules.BillingCenter=NEXUS_SAM.Modules.BillingCenter||{};
+NEXUS_SAM.Modules.BillingCenter.Service=(()=>{
+ const ACTIVE=x=>!["CANCELLED","RETURNED_TO_TVI"].includes(x.status),norm=s=>String(s||"").trim().toUpperCase().replace(/\s+/g," ");
+ const TYPES={
+  TSF_INITIAL_50:{label:"Training Support Fund — Initial 50%",components:["TSF_INITIAL_50"],policy:"Attendance-based scholar benefit. Scholarship Focal verifies current tranche eligibility."},
+  TSF_REMAINING_50:{label:"Training Support Fund — Remaining / Final",components:["TSF_REMAINING_50"],policy:"Final TSF is attendance-based and subject to applicable deductions/eligibility."},
+  TSF_COMBINED:{label:"Training Support Fund — Initial + Remaining (Combined)",components:["TSF_INITIAL_50","TSF_REMAINING_50"],policy:"Use when both TSF components are being submitted as one billing package."},
+  TRAINING_FEE:{label:"Training Fee / Training Cost",components:["TRAINING_FEE"],policy:"Provider training-cost claim. Current Omnibus/financial requirements are verified by Scholarship."},
+  ASSESSMENT_FEE:{label:"Assessment Fee",components:["ASSESSMENT_FEE"],policy:"After conduct of assessment. Claimant/Assessment Center authority remains subject to current TESDA rules."},
+  ENTREPRENEURSHIP_FEE:{label:"Entrepreneurship Fee",components:["ENTREPRENEURSHIP_FEE"],policy:"Available only when the approved RQM/cost profile carries an entrepreneurship component."}
+ };
+ function rqm(rqmCode){return NEXUS_SAM.Modules.RQM.get(rqmCode);}
+ function batch(rqmCode){return NEXUS_SAM.Modules.Batch.Repository.all().find(x=>norm(x.rqmNo||x.rqmCode)===norm(rqmCode))||null;}
+ function officialEnrollments(rqmCode){try{return JSON.parse(localStorage.getItem("NEXUS:SPECTRA:scholarEnrollments")||"[]").filter(x=>norm(x.rqmCode)===norm(rqmCode));}catch(_){return []}}
+ function scholarSummary(rqmCode){const rows=officialEnrollments(rqmCode),is=(r,re)=>re.test(norm(r.trainingStatus||r.trainingResult));return {total:rows.length,ongoing:rows.filter(x=>is(x,/ONGOING|IN PROGRESS/)).length,completed:rows.filter(x=>is(x,/COMPLETED|PASS|GRADUAT/)).length,assessed:rows.filter(x=>x.assessmentDate||x.assessmentResult).length,certified:rows.filter(x=>/COMPETENT|CERTIFIED/.test(norm(x.assessmentResult))).length};}
+ function allowanceRows(rqmCode){const b=batch(rqmCode);if(!b)return [];try{return NEXUS_SAM.Modules.Allowance.Service.build(b.batchId).rows||[];}catch(_){return []}}
+ function amount(rqmCode,type){const r=rqm(rqmCode),sum=scholarSummary(rqmCode),a=allowanceRows(rqmCode),cp=r?.costProfile||{},cost=findCost(r?.qualification||"");if(type==="TSF_INITIAL_50")return a.reduce((n,x)=>n+Math.min(Number(x.maxTsf||0)/2,Number(x.earned||0)),0);if(type==="TSF_REMAINING_50")return a.reduce((n,x)=>n+Math.max(0,Number(x.earned||0)-Number(x.maxTsf||0)/2),0);if(type==="TSF_COMBINED")return a.reduce((n,x)=>n+Number(x.earned||0),0);if(type==="TRAINING_FEE")return Number(cp.trainingCostPerPax||cost?.trainingCost||0)*sum.completed;if(type==="ASSESSMENT_FEE")return Number(cp.assessmentFeePerPax||cost?.assessmentFee||0)*sum.assessed;if(type==="ENTREPRENEURSHIP_FEE")return Number(cp.entrepreneurshipPerPax||cost?.entrepreneurshipFee||0)*sum.completed;return 0;}
+ function findCost(qualification){try{const rows=JSON.parse(localStorage.getItem("nexus_sam:cost_master")||"[]");return rows.find(x=>norm(x.qualificationTitle)===norm(qualification)&&!["ARCHIVED","SUPERSEDED"].includes(norm(x.status)))||rows.find(x=>norm(x.qualificationTitle)===norm(qualification));}catch(_){return null}}
+ function documentKey(rqmCode){return `RQM:${String(rqmCode||"").trim()}`;}
+ function docs(rqmCode){const b=batch(rqmCode),rows=[];if(b)rows.push(...NEXUS_SAM.Modules.Handoff.Documents.byBatch(b.batchId));rows.push(...NEXUS_SAM.Modules.Handoff.Documents.byBatch(documentKey(rqmCode)));const seen=new Set();return rows.filter(x=>!seen.has(x.documentId)&&seen.add(x.documentId));}
+ async function uploadDocument(rqmCode,file,docType,remarks=""){if(!rqmCode)throw new Error("Select an approved RQM first.");return NEXUS_SAM.Modules.Handoff.Documents.upload(documentKey(rqmCode),file,docType,remarks);}
+ async function removeDocument(id){return NEXUS_SAM.Modules.Handoff.Documents.remove(id);}
+ async function openDocument(id){return NEXUS_SAM.Modules.Handoff.Documents.open(id);}
+ function requirements(rqmCode,type){const docTypes=new Set(docs(rqmCode).map(x=>x.docType)),mis=NEXUS_SAM.Modules.MIS?.Service?.latestForRqm?.(rqmCode),req=[];const add=(code,label,ok)=>req.push({code,label,ok});
+   add("BILLING_STATEMENT","Signed Billing Statement",docTypes.has("BILLING_STATEMENT"));
+   if(/^TSF_/.test(type)){add("ATTENDANCE_SUMMARY","Signed Summary of Attendance",docTypes.has("ATTENDANCE_SUMMARY"));add("ALLOWANCE","Validated attendance / allowance computation",allowanceRows(rqmCode).length>0);}
+   if(type==="TRAINING_FEE"){add("MIS","Current MIS 03-02 submission",!!mis);add("ATTENDANCE_SUMMARY","Attendance support",docTypes.has("ATTENDANCE_SUMMARY"));}
+   if(type==="ASSESSMENT_FEE"){add("MIS","Current MIS 03-02 with assessment data",!!mis&&mis.rows.some(x=>x.assessmentDate||x.assessmentResult));}
+   if(type==="ENTREPRENEURSHIP_FEE"){add("MIS","Current MIS 03-02 submission",!!mis);}
+   return req;
+ }
+ function existingComponents(rqmCode){return NEXUS_SAM.Modules.Handoff.Repository.all().filter(x=>norm(x.rqmCode||x.rqmNo)===norm(rqmCode)&&ACTIVE(x)).flatMap(x=>x.claimComponents||[x.claimType]);}
+ function readiness(rqmCode,type){const r=rqm(rqmCode),b=batch(rqmCode),t=TYPES[type],errors=[];if(!r)errors.push("Select an approved RQM.");if(!t)errors.push("Select a billing type.");if(!b&&/^TSF_/.test(type))errors.push("Open/setup the RQM in the Allowance module first so attendance and TSF can be computed.");const prior=new Set(existingComponents(rqmCode));if(t&&t.components.some(c=>prior.has(c)))errors.push("One or more selected billing components already have an active billing transaction for this RQM.");const req=requirements(rqmCode,type);for(const x of req)if(!x.ok)errors.push(`Required: ${x.label}.`);if(type==="ENTREPRENEURSHIP_FEE"&&amount(rqmCode,type)<=0)errors.push("This RQM/cost profile has no payable Entrepreneurship Fee based on the current registry.");if(type==="ASSESSMENT_FEE"&&scholarSummary(rqmCode).assessed===0)errors.push("No assessed scholar is recorded in the current MIS registry.");if(type==="TRAINING_FEE"&&scholarSummary(rqmCode).completed===0)errors.push("No completed scholar is recorded in the current MIS registry.");if(/^TSF_/.test(type)&&amount(rqmCode,type)<=0)errors.push("No payable TSF amount is currently computed.");return {ok:errors.length===0,errors,requirements:req,amount:amount(rqmCode,type),rqm:r,batch:b,summary:scholarSummary(rqmCode),type:t};}
+ function submit(rqmCode,type){const ready=readiness(rqmCode,type);if(!ready.ok)return {ok:false,errors:ready.errors};const batchId=ready.batch?.batchId||`RQM-${rqmCode}`,result=NEXUS_SAM.Modules.Handoff.Service.submit(batchId,type,{rqmOverride:ready.rqm,claimAmount:ready.amount,claimComponents:ready.type.components,claimLabel:ready.type.label,scholarSummary:ready.summary,nonAllowance:!/^TSF_/.test(type),onlineDocuments:docs(rqmCode)});return result;}
+ return Object.freeze({TYPES,rqm,batch,documentKey,docs,uploadDocument,removeDocument,openDocument,scholarSummary,amount,findCost,requirements,existingComponents,readiness,submit});
+})();

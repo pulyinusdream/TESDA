@@ -1,0 +1,60 @@
+/*
+==========================================================
+TAEDS Enterprise Table System
+Framework Sprint F8.6
+==========================================================
+*/
+
+.table-container{
+
+    overflow-x:auto;
+
+    border:1px solid var(--color-border);
+
+    border-radius:var(--radius-medium);
+
+    background:var(--color-surface);
+
+}
+
+.table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+.table th{
+
+    background:var(--color-background);
+
+    text-align:left;
+
+    padding:14px 16px;
+
+    font-weight:var(--font-semibold);
+
+    border-bottom:1px solid var(--color-border);
+
+}
+
+.table td{
+
+    padding:14px 16px;
+
+    border-bottom:1px solid var(--color-border);
+
+}
+
+.table tbody tr:hover{
+
+    background:#F9FAFB;
+
+}
+
+.table tbody tr:last-child td{
+
+    border-bottom:none;
+
+}

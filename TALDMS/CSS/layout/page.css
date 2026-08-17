@@ -1,0 +1,41 @@
+/*
+==========================================================
+Enterprise Page Layout
+==========================================================
+*/
+
+.app-content{
+
+    grid-area:content;
+
+    padding:var(--space-6);
+
+    overflow:auto;
+
+}
+
+.page{
+
+    max-width:var(--content-max-width);
+
+    margin:auto;
+
+}
+
+.page-header{
+
+    margin-bottom:var(--space-6);
+
+}
+
+.page-title{
+
+    margin-bottom:var(--space-2);
+
+}
+
+.page-subtitle{
+
+    color:var(--color-text-secondary);
+
+}

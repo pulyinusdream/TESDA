@@ -1,0 +1,68 @@
+/*
+==========================================================
+TAECP Enterprise Stylesheet
+
+Master stylesheet
+
+Load Order
+
+1 Reset
+
+2 Variables
+
+3 Typography
+
+4 Layout
+
+5 Components
+
+6 Theme
+
+==========================================================
+/*
+==========================================================
+BASE
+==========================================================
+*/
+
+@import url("./base/reset.css");
+@import url("./base/variables.css");
+@import url("./base/typography.css");
+
+/*
+==========================================================
+LAYOUT
+==========================================================
+*/
+
+@import url("./layout/grid.css");
+@import url("./layout/page.css");
+@import url("./layout/sidebar.css");
+@import url("./layout/header.css");
+@import url("./layout/dashboard.css");
+
+/*
+==========================================================
+COMPONENTS
+==========================================================
+*/
+
+@import url("./components/buttons.css");
+@import url("./components/cards.css");
+@import url("./components/forms.css");
+@import url("./components/tables.css");
+@import url("./components/modal.css");
+@import url("./components/badges.css");
+@import url("./components/notification.css");
+@import url("./components/loading.css");
+@import url("components/collapsible.panel.css");
+@import url("components/action.buttons.css");
+@import url("components/dialog.css");
+
+/*
+==========================================================
+THEME
+==========================================================
+*/
+
+@import url("./themes/tesda.css");

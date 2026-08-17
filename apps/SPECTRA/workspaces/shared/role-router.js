@@ -1,0 +1,7 @@
+"use strict";
+NEXUS_SPECTRA.Controllers.RoleRouter=(()=>{
+ let active="overview";
+ function show(name){active=name;document.querySelectorAll("[data-role-panel]").forEach(p=>p.hidden=p.dataset.rolePanel!==name);document.querySelectorAll(".role-nav [data-role-screen]").forEach(b=>b.classList.toggle("active",b.dataset.roleScreen===name));const meta=(window.ROLE_SCREEN_META||{})[name]||[name,""];document.getElementById("rolePageTitle").textContent=meta[0];document.getElementById("rolePageSubtitle").textContent=meta[1]||"";document.getElementById("roleBreadcrumb").textContent=`${window.ROLE_NAME||"SPECTRA"} / ${meta[0]}`;window.ROLE_REFRESH?.(name);window.scrollTo({top:0,behavior:"smooth"});}
+ function initialize(){document.addEventListener("click",e=>{const b=e.target.closest("[data-role-screen]");if(b){show(b.dataset.roleScreen);history.replaceState(null,"",`#${b.dataset.roleScreen}`);}});document.getElementById("roleRefresh")?.addEventListener("click",()=>window.ROLE_REFRESH?.(active));const initial=location.hash.replace(/^#/,"");show(document.querySelector(`[data-role-panel="${CSS.escape(initial)}"]`)?initial:"overview");}
+ return Object.freeze({initialize,show,current:()=>active});
+})();

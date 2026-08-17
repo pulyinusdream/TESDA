@@ -1,0 +1,14 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>NTTC Block 1 Tests</title></head><body><pre id="out"></pre>
+<script>window.TAESF=window.TAESF||{};</script><script src="../JS/core/namespace.js"></script><script src="../JS/config/nttc.constants.js"></script><script src="../Modules/workflow/services/nttc.workflow.service.js"></script><script src="../Modules/computation/services/nttc.computation.service.js"></script>
+<script>
+const o=[];function t(name,fn){try{fn();o.push('PASS '+name)}catch(e){o.push('FAIL '+name+' :: '+e.message)}}function eq(a,b){if(a!==b)throw new Error(`${a} !== ${b}`)}
+t('2312 direct year',()=>eq(TAESF.NTTC.Computation.directIwerYears('PRE_SERVICE',2312),1));
+t('DTP 0.5 factor',()=>eq(TAESF.NTTC.Computation.directEquivalentHours('DTP_DTS',80),40));
+t('Teaching 5 years = 3 units',()=>eq(TAESF.NTTC.Computation.teachingCreditUnits(5),3));
+t('Total 6 units = 1.5 years',()=>eq(TAESF.NTTC.Computation.totalUnitsToYears(6),1.5));
+t('Teaching route needs both unit types',()=>eq(TAESF.NTTC.Computation.teachingEquivalency({teachingYears:5,modalityEquivalentHours:0}).eligible,false));
+t('Valid workflow transition',()=>eq(TAESF.NTTC.Workflow.canTransition('DRAFT','READY_FOR_ONLINE_SUBMISSION'),true));
+t('Invalid workflow transition blocked',()=>eq(TAESF.NTTC.Workflow.canTransition('DRAFT','RELEASED'),false));
+t('RO status applicant mapping',()=>eq(TAESF.NTTC.Workflow.applicantStage('TRANSMITTED_TO_REGIONAL_OFFICE'),'SUBMITTED TO REGIONAL OFFICE'));
+document.getElementById('out').textContent=o.join('\n');
+</script></body></html>

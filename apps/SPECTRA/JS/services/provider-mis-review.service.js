@@ -1,0 +1,2 @@
+"use strict";
+NEXUS_SPECTRA.Services.ProviderMISReview=(()=>{const KEY="NEXUS:SAM:misSubmissions";function all(){try{return JSON.parse(localStorage.getItem(KEY)||"[]");}catch(_){return []}}function update(id,patch){const rows=all(),i=rows.findIndex(x=>x.submissionId===id);if(i<0)return null;rows[i]={...rows[i],...patch,reviewedAt:new Date().toISOString()};localStorage.setItem(KEY,JSON.stringify(rows));return rows[i];}return Object.freeze({all,update});})();

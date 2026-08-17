@@ -1,0 +1,2 @@
+"use strict";
+NEXUS_SPECTRA.Repository.DVJEV=(()=>{const KEY="NEXUS:SPECTRA:dvJev";const all=()=>{try{return JSON.parse(localStorage.getItem(KEY)||"[]");}catch(_){return [];}};function get(no){return all().find(x=>x.transactionNo===no)||null;}function save(r){const rows=all(),i=rows.findIndex(x=>x.transactionNo===r.transactionNo);if(i>=0)rows[i]=r;else rows.push(r);localStorage.setItem(KEY,JSON.stringify(rows));return r;}return Object.freeze({all,get,save});})();

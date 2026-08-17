@@ -1,0 +1,36 @@
+TITAN DIRECT-URL GUARD — EXACT EDIT
+
+AUTHORITATIVE FILE
+public/apps/TITAN.html
+
+1. Locate the opening line:
+<html lang="en">
+
+Replace it with:
+<html lang="en" class="nexus-app-auth-pending" data-nexus-application="TITAN">
+
+2. Inside <head>, immediately after the viewport <meta> block and before external libraries,
+insert these four lines in this exact order:
+
+<script src="/NEXUS/nexus.config.js"></script>
+<script src="/NEXUS/nexus.api.js"></script>
+<script src="/NEXUS/nexus.session.js"></script>
+<script src="/NEXUS/nexus.app-guard.js"></script>
+
+3. Do not remove TITAN's existing scripts, styles, login screen, or backend configuration.
+
+4. Optional but recommended for buttons that must remain usable for COA:
+add data-nexus-readonly-allow="true"
+
+Example:
+<button data-nexus-readonly-allow="true" onclick="printReport()">Print</button>
+
+5. For every permanent TITAN write function, add this as its first executable line:
+
+NexusAppGuard.assertWritable();
+
+Priority functions include save, add, edit, delete, issue, release, upload,
+override, transfer, stock-out, reconciliation, approval, and import functions.
+
+The generic UI guard blocks likely write controls, but permanent security still
+requires backend write endpoints to validate the NEXUS token and readOnly flag.

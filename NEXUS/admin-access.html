@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" class="nexus-auth-pending">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>NEXUS Access Administration | TESDA Albay</title>
+  <style>
+    :root{
+      --blue:#003399;--blue2:#0056b3;--ink:#172033;--muted:#64748b;
+      --line:#dbe3ef;--surface:#fff;--bg:#eef4fb;--success:#15803d;
+      --warning:#b45309;--danger:#b42318;--shadow:0 14px 35px rgba(15,23,42,.12)
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%}
+    html.nexus-auth-pending body{visibility:hidden}
+    body{font-family:"Segoe UI",Arial,sans-serif;background:
+      linear-gradient(rgba(238,244,251,.94),rgba(238,244,251,.98)),
+      url("../assets/Background.jpg") center/cover fixed;color:var(--ink)}
+    button,input,select,textarea{font:inherit}
+    .loading{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;
+      background:linear-gradient(135deg,#001d5a,#0059b8);color:#fff;font-weight:900}
+    .loading[hidden]{display:none}
+    .spinner{width:48px;height:48px;border:5px solid #ffffff55;border-top-color:#fff;
+      border-radius:50%;margin:0 auto 16px;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    header{background:rgba(255,255,255,.96);border-bottom:5px solid var(--blue);
+      box-shadow:0 5px 20px #0002;padding:18px 26px;display:flex;align-items:center;
+      justify-content:space-between;gap:20px;position:sticky;top:0;z-index:20}
+    .brand{display:flex;align-items:center;gap:14px}.brand img{width:58px;height:58px;object-fit:contain}
+    .brand h1{font-size:1.22rem;margin:0;color:var(--blue)}.brand p{margin:4px 0 0;color:var(--muted);font-weight:700;font-size:.84rem}
+    .header-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .identity{text-align:right;margin-right:6px}.identity strong{display:block;font-size:.88rem}.identity span{font-size:.72rem;color:var(--blue);font-weight:900;text-transform:uppercase}
+    .btn{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+    .btn:disabled{opacity:.55;cursor:not-allowed}.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue2)}
+    .btn-light{background:#fff;color:#334155;border:1px solid #cbd5e1}.btn-danger{background:#fff1f2;color:var(--danger);border:1px solid #fecdd3}
+    main{max-width:1450px;margin:auto;padding:28px}
+    .hero{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:20px}
+    .hero h2{margin:0;color:var(--blue);font-size:1.65rem}.hero p{margin:7px 0 0;color:var(--muted);line-height:1.5}
+    .summary{display:grid;grid-template-columns:repeat(4,minmax(140px,1fr));gap:14px;margin-bottom:20px}
+    .summary-card{background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 8px 20px #0001}
+    .summary-card .value{font-size:1.7rem;font-weight:900;color:var(--blue)}.summary-card .label{font-size:.78rem;color:var(--muted);font-weight:800;margin-top:3px}
+    .toolbar{background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:18px;box-shadow:0 8px 20px #0001;display:grid;grid-template-columns:1fr 190px 190px auto;gap:10px}
+    .toolbar input,.toolbar select{width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:11px 12px;background:#fff}
+    .users{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:18px}
+    .user-card{background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px}
+    .user-head{display:flex;gap:12px;align-items:center}.avatar{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;background:#e0eaff;color:var(--blue);font-weight:900}
+    .user-name{font-weight:900}.user-meta{font-size:.78rem;color:var(--muted);margin-top:3px}.role-badge{margin-left:auto;padding:6px 10px;border-radius:999px;font-size:.7rem;font-weight:900;text-transform:uppercase}
+    .role-admin{background:#ede9fe;color:#6d28d9}.role-staff{background:#dbeafe;color:#1d4ed8}.role-coa{background:#dcfce7;color:#166534}
+    .access-state{display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;font-size:.78rem}
+    .state-active{color:var(--success);font-weight:900}.state-pending{color:var(--warning);font-weight:900}.state-inactive{color:var(--danger);font-weight:900}
+    .apps{display:flex;flex-wrap:wrap;gap:7px;min-height:30px}.chip{padding:6px 9px;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:.7rem;font-weight:900}
+    .empty-chip{color:var(--muted);font-size:.78rem;font-style:italic}
+    .card-actions{display:flex;gap:8px;margin-top:auto}.card-actions .btn{flex:1}
+    .admin-note{background:#f5f3ff;color:#6d28d9;border:1px solid #ddd6fe;border-radius:11px;padding:10px;font-size:.76rem;font-weight:700}
+    .empty-state{grid-column:1/-1;background:#fff;border:1px dashed #94a3b8;border-radius:16px;padding:34px;text-align:center;color:var(--muted)}
+    .modal{position:fixed;inset:0;background:rgba(15,23,42,.68);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px;z-index:100}
+    .modal.open{display:flex}.modal-box{background:#fff;border-radius:20px;width:min(880px,96vw);max-height:90vh;overflow:auto;box-shadow:0 25px 70px #0007}
+    .modal-head{padding:20px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:center;position:sticky;top:0;background:#fff;z-index:2}
+    .modal-head h3{margin:0;color:var(--blue)}.modal-body{padding:22px}.close{border:0;background:#f1f5f9;border-radius:9px;width:36px;height:36px;cursor:pointer;font-size:1.2rem}
+    .target{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:16px}.target strong{display:block}.target span{font-size:.78rem;color:var(--muted)}
+    .field{margin-bottom:16px}.field label{display:block;font-size:.78rem;font-weight:900;margin-bottom:7px}.field select,.field textarea{width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:11px;background:#fff}
+    .field textarea{min-height:80px;resize:vertical}.application-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .app-option{border:1px solid var(--line);border-radius:12px;padding:11px;display:flex;gap:9px;align-items:flex-start;cursor:pointer;background:#fff}
+    .app-option:hover{border-color:var(--blue)}.app-option input{margin-top:3px;transform:scale(1.15)}.app-option strong{display:block;font-size:.82rem;color:var(--blue)}.app-option span{font-size:.72rem;color:var(--muted);line-height:1.35}
+    .readonly-note{background:#ecfdf5;border:1px solid #bbf7d0;color:#166534;border-radius:11px;padding:11px;font-size:.78rem;font-weight:800;margin-bottom:14px}
+    .modal-actions{display:flex;justify-content:flex-end;gap:10px;padding:18px 22px;border-top:1px solid var(--line);position:sticky;bottom:0;background:#fff}
+    .toast-wrap{position:fixed;right:22px;bottom:22px;z-index:200;display:flex;flex-direction:column;gap:9px}.toast{background:#0f172a;color:#fff;border-radius:11px;padding:12px 15px;box-shadow:0 12px 28px #0004;font-size:.82rem;max-width:360px}.toast.error{background:#991b1b}.toast.success{background:#166534}
+    @media(max-width:900px){header{position:static;align-items:flex-start}.identity{display:none}.summary{grid-template-columns:repeat(2,1fr)}.toolbar{grid-template-columns:1fr 1fr}.toolbar input{grid-column:1/-1}.application-grid{grid-template-columns:1fr}}
+    @media(max-width:560px){main{padding:18px 12px}.hero{display:block}.summary{grid-template-columns:1fr 1fr}.toolbar{grid-template-columns:1fr}.toolbar input{grid-column:auto}.users{grid-template-columns:1fr}.header-actions .btn span{display:none}}
+  </style>
+</head>
+<body>
+  <div id="loading" class="loading">
+    <div><div class="spinner"></div><div>Loading secure access administration…</div></div>
+  </div>
+
+  <header>
+    <div class="brand">
+      <img src="../assets/Logo.png" alt="TESDA Logo">
+      <div>
+        <h1>NEXUS Access Administration</h1>
+        <p>TESDA Albay Network Enterprise Experience for Unified Systems</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="identity"><strong id="admin-name">Administrator</strong><span id="admin-role">ADMIN</span></div>
+      <button id="back-button" class="btn btn-light" type="button">← <span>Back to NEXUS</span></button>
+      <button id="logout-button" class="btn btn-danger" type="button">⎋ <span>Sign Out</span></button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <h2>Manage Application Access</h2>
+        <p>Assign only the applications each Staff or COA account may open. COA access is automatically enforced as read-only.</p>
+      </div>
+      <button id="refresh-button" class="btn btn-primary" type="button">↻ Refresh Users</button>
+    </section>
+
+    <section class="summary">
+      <div class="summary-card"><div id="total-users" class="value">0</div><div class="label">Total Accounts</div></div>
+      <div class="summary-card"><div id="admin-users" class="value">0</div><div class="label">Administrators</div></div>
+      <div class="summary-card"><div id="assigned-users" class="value">0</div><div class="label">Assigned Staff / COA</div></div>
+      <div class="summary-card"><div id="pending-users" class="value">0</div><div class="label">Pending Assignment</div></div>
+    </section>
+
+    <section class="toolbar">
+      <input id="search-input" type="search" placeholder="Search name, username, position or employee number">
+      <select id="role-filter">
+        <option value="">All roles</option><option value="admin">Admin</option><option value="staff">Staff</option><option value="coa">COA</option>
+      </select>
+      <select id="access-filter">
+        <option value="">All access states</option><option value="assigned">Assigned</option><option value="pending">Pending assignment</option><option value="inactive">Inactive access</option>
+      </select>
+      <button id="clear-filter" class="btn btn-light" type="button">Clear</button>
+    </section>
+
+    <section id="users-container" class="users"></section>
+  </main>
+
+  <div id="access-modal" class="modal" aria-hidden="true">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-head">
+        <h3 id="modal-title">Edit Application Access</h3>
+        <button id="modal-close" class="close" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="target">
+          <strong id="modal-user-name">User</strong>
+          <span id="modal-user-details"></span>
+        </div>
+        <div id="super-admin-note" class="readonly-note" hidden style="background:#f5f3ff;border-color:#ddd6fe;color:#6d28d9">
+          You are the current NEXUS Super Administrator. Your portal role and wildcard access are protected until authority is formally transferred.
+        </div>
+        <div id="coa-readonly-note" class="readonly-note" hidden>COA accounts are automatically restricted to read-only access in every assigned application.</div>
+        <div id="nexus-admin-note" class="readonly-note" hidden style="background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8">
+          NEXUS Administrators automatically receive access to all applications. Individual application checkboxes are not required.
+        </div>
+        <div id="nexus-role-field" class="field" hidden>
+          <label for="nexus-role">NEXUS Portal Role</label>
+          <select id="nexus-role">
+            <option value="staff">Staff</option>
+            <option value="coa">COA</option>
+            <option value="admin">Administrator</option>
+          </select>
+          <div id="nexus-role-help" style="margin-top:7px;font-size:.75rem;color:#64748b;line-height:1.4">
+            Only the current Super Administrator may change NEXUS portal roles. This does not modify the user’s AIMS role.
+          </div>
+        </div>
+        <div id="application-assignment-field" class="field">
+          <label>Assigned NEXUS Applications</label>
+          <div id="application-options" class="application-grid"></div>
+        </div>
+        <div class="field">
+          <label for="access-status">Access Status</label>
+          <select id="access-status"><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option></select>
+        </div>
+        <div class="field">
+          <label for="access-notes">Administrative Notes</label>
+          <textarea id="access-notes" placeholder="Optional reason, scope or audit note"></textarea>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="remove-access-button" class="btn btn-danger" type="button">Remove Assignment</button>
+        <button id="modal-cancel" class="btn btn-light" type="button">Cancel</button>
+        <button id="save-access-button" class="btn btn-primary" type="button">Save Access</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-wrap" class="toast-wrap"></div>
+
+  <script src="nexus.config.js"></script>
+  <script src="nexus.api.js"></script>
+  <script src="nexus.session.js"></script>
+  <script src="nexus.admin-access.js"></script>
+</body>
+</html>

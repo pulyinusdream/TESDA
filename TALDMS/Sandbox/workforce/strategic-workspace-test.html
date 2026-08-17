@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>
+
+Strategic Workforce Plan Workspace Test
+
+</title>
+
+<link rel="stylesheet" href="../../CSS/app.css">
+
+</head>
+
+<body>
+
+<div id="app"></div>
+
+<!-- ======================================================
+     CORE
+====================================================== -->
+
+<script src="../../JS/core/namespace.js"></script>
+
+<!-- ======================================================
+     STORAGE
+====================================================== -->
+
+<script src="../../JS/core/storage/local.storage.js"></script>
+
+<script src="../../JS/core/storage/storage.service.js"></script>
+
+<!-- ======================================================
+     UI COMPONENTS
+====================================================== -->
+
+<script src="../../JS/core/ui/components/header.js"></script>
+<script src="../../JS/core/ui/components/sidebar.js"></script>
+<script src="../../JS/core/ui/components/breadcrumb.js"></script>
+<script src="../../JS/core/ui/components/button.js"></script>
+<script src="../../JS/core/ui/components/card.js"></script>
+<script src="../../JS/core/ui/components/table.js"></script>
+<script src="../../JS/core/ui/components/collapsible.panel.js"></script>
+<script src="../../JS/core/ui/components/badge.js"></script>
+<script src="../../JS/core/ui/components/modal.js"></script>
+<script src="../../JS/core/ui/components/form.js"></script>
+<script src="../../JS/core/ui/components/action.buttons.js"></script>
+<script src="../../JS/core/ui/components/dialog.js"></script>
+<!-- ======================================================
+     LAYOUTS
+====================================================== -->
+
+<script src="../../JS/core/ui/layouts/dashboard.layout.js"></script>
+<script src="../../JS/core/ui/layouts/document.workspace.js"></script>
+
+<!-- ======================================================
+     WDP VIEW
+====================================================== -->
+
+<script src="../../Modules/workforce/wdp/views/wdp.workspace.view.js"></script>
+
+<!-- ======================================================
+     WDP BUSINESS LAYER
+====================================================== -->
+
+<script src="../../Modules/workforce/wdp/models/wdp.activity.model.js"></script>
+
+<script src="../../Modules/workforce/wdp/repository/wdp.activity.repository.js"></script>
+
+<script src="../../Modules/workforce/wdp/validation/wdp.activity.validator.js"></script>
+
+<script src="../../Modules/workforce/wdp/services/wdp.activity.service.js"></script>
+
+<script src="../../Modules/workforce/wdp/views/wdp.activity.modal.js"></script>
+
+<script src="../../Modules/workforce/wdp/controllers/wdp.controller.js"></script>
+<script>
+
+const samplePlan = {
+
+    wdpNumber:
+
+        "WDP-2025-2027-000001",
+
+    planningCycle:
+
+        "2025-2027",
+
+    office:
+
+        "TESDA Albay Provincial Office",
+
+    preparedBy:
+
+        "Laurence R. Arimado",
+
+    approvedBy:
+
+        "MARIGLO L. MACABUHAY-SESE, CESE",
+
+    status:
+
+        "Draft"
+
+};
+
+document.getElementById(
+
+    "app"
+
+).innerHTML =
+
+TAESF.Modules.Workforce.WDP.Views.Workspace.render(
+
+    samplePlan
+
+);
+
+setCurrentPlan(
+
+    samplePlan
+
+);
+
+initializeWorkspace();
+</script>
+
+</body>
+
+</html>

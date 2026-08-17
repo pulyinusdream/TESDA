@@ -1,0 +1,13 @@
+"use strict";
+window.NEXUS_SHARED_DOCS = window.NEXUS_SHARED_DOCS || (()=>{
+ const DB_NAME="NEXUS-SPECTRA-DOCUMENTS", DB_VERSION=1, STORE="documents";
+ function openDb(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,DB_VERSION);req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(STORE)){const s=db.createObjectStore(STORE,{keyPath:"documentId"});s.createIndex("transactionNo","transactionNo",{unique:false});s.createIndex("batchId","batchId",{unique:false});}};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
+ async function put(meta,file){const db=await openDb();const row={...meta,blob:file,storedAt:new Date().toISOString()};return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,"readwrite");tx.objectStore(STORE).put(row);tx.oncomplete=()=>resolve({...row,blob:undefined});tx.onerror=()=>reject(tx.error);});}
+ async function get(id){const db=await openDb();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,"readonly"),req=tx.objectStore(STORE).get(id);req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error);});}
+ async function byTransaction(no){const db=await openDb();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,"readonly"),idx=tx.objectStore(STORE).index("transactionNo"),req=idx.getAll(no);req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error);});}
+ async function byBatch(batchId){const db=await openDb();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,"readonly"),idx=tx.objectStore(STORE).index("batchId"),req=idx.getAll(batchId);req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error);});}
+ async function remove(id){const db=await openDb();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,"readwrite");tx.objectStore(STORE).delete(id);tx.oncomplete=()=>resolve(true);tx.onerror=()=>reject(tx.error);});}
+ async function retagBatchDocs(batchId,transactionNo){const rows=await byBatch(batchId);for(const row of rows){row.transactionNo=transactionNo;const db=await openDb();await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,"readwrite");tx.objectStore(STORE).put(row);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);});}return rows.length;}
+ function openBlob(row){if(!row?.blob)return;const url=URL.createObjectURL(row.blob);window.open(url,"_blank");setTimeout(()=>URL.revokeObjectURL(url),60000);}
+ return Object.freeze({put,get,byTransaction,byBatch,remove,retagBatchDocs,openBlob});
+})();

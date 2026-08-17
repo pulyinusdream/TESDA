@@ -1,0 +1,8 @@
+"use strict";
+NEXUS_SPECTRA.Controllers.AuditDetail=(()=>{
+ function load(root){const wrap=root.closest("[data-audit-transaction]"),no=wrap.dataset.auditTransaction,stage=wrap.dataset.auditStage,tx=NEXUS_SPECTRA.Repository.Transactions.get(no),key=wrap.querySelector("[data-audit-scholar]").value,reviewer=stage==="SCHOLARSHIP"?document.getElementById("scholarshipReviewer")?.value:document.getElementById("accountingReviewer")?.value;wrap.querySelector("[data-audit-daily]").innerHTML=NEXUS_SPECTRA.Views.AuditDetail.dailyTable(tx,stage,key,reviewer||"");}
+ function save(btn){const wrap=btn.closest("[data-audit-transaction]"),stage=wrap.dataset.auditStage,no=wrap.dataset.auditTransaction,row=btn.closest("tr"),reviewer=stage==="SCHOLARSHIP"?document.getElementById("scholarshipReviewer")?.value:document.getElementById("accountingReviewer")?.value;NEXUS_SPECTRA.Services.AuditDetail.saveNote(no,stage,{reportId:btn.dataset.reportId,reportNumber:btn.dataset.reportNo,attendanceDate:btn.dataset.date,scholarNo:btn.dataset.scholarNo,scholarName:btn.dataset.scholarName,finding:row.querySelector("[data-audit-finding]").value,remarks:row.querySelector("[data-audit-remarks]").value,reviewedBy:reviewer||""});NEXUS_SPECTRA.Views.App.notify("Attendance reviewer note saved.","success");}
+ function click(e){const l=e.target.closest("[data-audit-load]");if(l)return load(l);const s=e.target.closest("[data-audit-save]");if(s)return save(s);}
+ function initialize(){document.addEventListener("click",click);}
+ return Object.freeze({initialize});
+})();

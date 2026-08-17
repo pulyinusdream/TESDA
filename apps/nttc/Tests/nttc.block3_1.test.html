@@ -1,0 +1,18 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>NTTC Block 3.1 Tests</title><style>body{font-family:Segoe UI,Arial;padding:30px;background:#f4f7fb}.box{max-width:900px;margin:auto;background:#fff;padding:24px;border-radius:16px}.pass{color:#067647}.fail{color:#b42318}pre{line-height:1.7}</style></head><body><div class="box"><h1>NTTC Block 3.1 Tests</h1><pre id="out"></pre></div>
+<script src="../JS/core/namespace.js"></script><script src="../JS/config/nttc.constants.js"></script><script src="../JS/core/storage/local.storage.js"></script><script src="../Modules/application/models/nttc.application.model.js"></script><script src="../Modules/documents/models/document.model.js"></script><script src="../Modules/documents/repository/document.repository.js"></script><script src="../Modules/documents/services/document.service.js"></script>
+<script>
+const out=document.getElementById('out');let lines=[];function test(name,fn){try{if(!fn())throw new Error('false');lines.push('PASS '+name);}catch(e){lines.push('FAIL '+name+' :: '+e.message);}}
+localStorage.removeItem('nttc.block3.documents.meta');
+const D=TAESF.NTTC.Constants.DOCUMENT_TYPES,M=TAESF.NTTC.Constants.IWER_MODALITIES;
+test('NC and TMC are separate document types from IWER',()=>D.NC_CERTIFICATE!==D.IWER_EVIDENCE&&D.TMC_CERTIFICATE!==D.IWER_EVIDENCE);
+test('Pre-service modality guide exists',()=>M.PRE_SERVICE&&M.PRE_SERVICE.explanation.includes('before'));
+test('Industry immersion modality guide exists',()=>M.INDUSTRY_IMMERSION&&M.INDUSTRY_IMMERSION.label==='Industry Immersion');
+test('DTP/DTS modality guide exists',()=>M.DTP_DTS&&M.DTP_DTS.credit.length>10);
+test('Technical consulting modality guide exists',()=>M.TECHNICAL_CONSULTING&&M.TECHNICAL_CONSULTING.short.length>10);
+test('Teaching route warns teaching is not used alone',()=>M.TEACHING_EQUIVALENCY&&M.TEACHING_EQUIVALENCY.explanation.includes('not used alone'));
+const appId='TEST-B31';
+['NC_CERTIFICATE','TMC_CERTIFICATE','IWER_EVIDENCE'].forEach((type,i)=>TAESF.NTTC.DocumentRepository.saveMeta(new TAESF.NTTC.DocumentModel({applicationId:appId,documentType:type,modality:type==='IWER_EVIDENCE'?'PRE_SERVICE':'',fileName:'test'+i+'.pdf',mimeType:'application/pdf',sizeBytes:1000})));
+test('Required documentary set remains complete',()=>TAESF.NTTC.DocumentService.completeness(appId).complete===true);
+test('IWER guide can be retrieved from service',()=>TAESF.NTTC.DocumentService.modalityGuide('PRE_SERVICE').label==='Pre-Service Industry Work Experience');
+out.innerHTML=lines.map(x=>`<span class="${x.startsWith('PASS')?'pass':'fail'}">${x}</span>`).join('\n');
+</script></body></html>

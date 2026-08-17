@@ -1,0 +1,4 @@
+"use strict";
+NEXUS_SAM.Modules.Batch.Validator = Object.freeze({
+ validate(i){const e=[]; if(!i.rqmNo.trim())e.push("RQM Number is required."); if(!i.scholarshipProgram)e.push("Scholarship Program is required."); if(!i.implementationType)e.push("Implementation Type is required."); if(!i.qualificationCostMasterId)e.push("Qualification is required."); if(!i.tvi.trim())e.push("TVET Provider / TTI is required."); if(!i.trainingStartDate)e.push("Training start date is required."); if(!i.trainingEndDate)e.push("Training end date is required."); if(i.trainingStartDate&&i.trainingEndDate&&i.trainingEndDate<i.trainingStartDate)e.push("Training end date cannot be earlier than start date."); if(!Number.isInteger(Number(i.numberOfSlots))||Number(i.numberOfSlots)<=0)e.push("Number of slots must be a positive whole number."); return e;}
+});

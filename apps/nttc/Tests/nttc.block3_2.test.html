@@ -1,0 +1,6 @@
+<!doctype html><html><head><meta charset="utf-8"><title>NTTC Block 3.2 Test</title><style>body{font-family:Arial,sans-serif;padding:30px;background:#f5f8fb}.pass{color:#08783e}.fail{color:#b42318}li{margin:8px 0}</style></head><body><h1>NTTC Block 3.2 — Reference Tests</h1><ul id="out"></ul><script>const tests=[
+["Primary IWER reference path",()=>"References/TESDA_Circular_033_s2017_IWER.pdf".includes("033")],
+["RPIIT reference path",()=>"References/TESDA_Circular_050_s2017_RPIIT.pdf".includes("050")],
+["Equivalent IWER reference path",()=>"References/TESDA_Circular_051_s2017_Equivalent_IWER.pdf".includes("051")],
+["NTTC supporting reference path",()=>"References/TESDA_Circular_020_s2014_NTTC_Level_I.pdf".includes("020")]
+];const ul=document.getElementById("out");tests.forEach(([n,f])=>{const li=document.createElement("li");try{const ok=!!f();li.className=ok?"pass":"fail";li.textContent=(ok?"PASS ":"FAIL ")+n}catch(e){li.className="fail";li.textContent="FAIL "+n+" — "+e.message}ul.appendChild(li)});</script></body></html>

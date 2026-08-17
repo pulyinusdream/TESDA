@@ -1,0 +1,2 @@
+"use strict";
+TAESF.NTTC.ProcessingRepository=(()=>{const KEY="nttc.block8.processing.records";function all(){return TAESF.NTTC.LocalStorage.get(KEY)||[];}function byApplication(id){return all().find(x=>x.applicationId===id)||null;}function save(r){const rows=all(),i=rows.findIndex(x=>x.applicationId===r.applicationId);r.updatedAt=new Date().toISOString();if(i>=0)rows[i]=r;else rows.push(r);TAESF.NTTC.LocalStorage.set(KEY,rows);return r;}return Object.freeze({all,byApplication,save});})();

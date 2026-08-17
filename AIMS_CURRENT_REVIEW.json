@@ -1,0 +1,19 @@
+{
+  "source_lines": 18152,
+  "regular_receiving": {
+    "status": "implemented",
+    "frontend_function": "processReceive()",
+    "service": "ReceivingService.receive()"
+  },
+  "backtrack_issued_ris": {
+    "status": "implemented",
+    "backend_actions": [
+      "historicalRis.preview",
+      "historicalRis.post"
+    ]
+  },
+  "backtrack_receiving": {
+    "status": "not found",
+    "finding": "No separate module, form, service, preview command, or posting command was found."
+  }
+}

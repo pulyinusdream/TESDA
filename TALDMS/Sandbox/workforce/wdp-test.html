@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>WDP Business Layer Test</title>
+
+<link rel="stylesheet" href="../../CSS/app.css">
+
+<style>
+
+body{
+
+    font-family:Arial,sans-serif;
+
+    margin:30px;
+
+}
+
+button{
+
+    margin:5px;
+
+}
+
+pre{
+
+    background:#f4f4f4;
+
+    padding:10px;
+
+    border:1px solid #ccc;
+
+    overflow:auto;
+
+}
+
+.pass{
+
+    color:green;
+
+    font-weight:bold;
+
+}
+
+.fail{
+
+    color:red;
+
+    font-weight:bold;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Workforce Development Plan Sandbox</h1>
+
+<p>
+
+Business Layer Test
+
+(Model → Repository → Validator → Service)
+
+</p>
+
+<hr>
+
+<button onclick="testModel()">
+
+Test 1 - Model
+
+</button>
+
+<button onclick="testCreate()">
+
+Test 2 - Create Plan
+
+</button>
+
+<button onclick="testRepository()">
+
+Test 3 - Repository
+
+</button>
+
+<button onclick="testDuplicate()">
+
+Test 4 - Duplicate Validation
+
+</button>
+
+<button onclick="clearStorage()">
+
+Clear Storage
+
+</button>
+
+<hr>
+
+<pre id="output"></pre>
+
+<!-- Namespace -->
+<script src="../../JS/core/namespace.js"></script>
+
+<!-- Storage Provider -->
+<script src="../../JS/core/storage/local.storage.js"></script>
+
+<!-- Storage Service -->
+<script src="../../JS/core/storage/storage.service.js"></script>
+
+<!-- WDP -->
+<script src="../../Modules/workforce/wdp/models/wdp.model.js"></script>
+<script src="../../Modules/workforce/wdp/models/wdp.activity.model.js"></script>
+<script src="../../Modules/workforce/wdp/repository/wdp.repository.js"></script>
+<script src="../../Modules/workforce/wdp/repository/wdp.activity.repository.js"></script>
+<script src="../../Modules/workforce/wdp/validation/wdp.activity.validator.js"></script>
+<script src="../../Modules/workforce/wdp/services/wdp.activity.service.js"></script>
+<script>
+
+const output =
+
+document.getElementById("output");
+
+function print(value){
+
+    output.textContent =
+
+        JSON.stringify(
+
+            value,
+
+            null,
+
+            4
+
+        );
+
+}
+
+function testModel(){
+
+    const plan =
+
+        TAESF.Modules.Workforce.WDP.Model.create();
+
+    print(plan);
+
+}
+
+function testCreate(){
+
+    const plan =
+
+        TAESF.Modules.Workforce.WDP.Model.create({
+
+            office:
+
+                "TESDA Albay Provincial Office",
+
+            startYear:2025,
+
+            endYear:2027,
+
+            preparedBy:
+
+                "Laurence R. Arimado",
+
+            preparedPosition:
+
+                "Administrative Officer V",
+
+            approvedBy:
+
+                "MARIGLO L. MACABUHAY-SESE, CESE",
+
+            approvedPosition:
+
+                "Provincial Director"
+
+        });
+
+    const result =
+
+        TAESF.Modules.Workforce.WDP.Service.create(plan);
+
+    print(result);
+
+}
+
+function testRepository(){
+
+    const plans =
+
+        TAESF.Modules.Workforce.WDP.Service.getAll();
+
+    print(plans);
+
+}
+
+function testDuplicate(){
+
+    const plan =
+
+        TAESF.Modules.Workforce.WDP.Model.create({
+
+            office:
+
+                "TESDA Albay Provincial Office",
+
+            startYear:2025,
+
+            endYear:2027,
+
+            preparedBy:
+
+                "Laurence R. Arimado",
+
+            preparedPosition:
+
+                "Administrative Officer V",
+
+            approvedBy:
+
+                "MARIGLO L. MACABUHAY-SESE, CESE",
+
+            approvedPosition:
+
+                "Provincial Director"
+
+        });
+
+    const result =
+
+        TAESF.Modules.Workforce.WDP.Service.create(plan);
+
+    print(result);
+
+}
+
+function clearStorage(){
+
+    localStorage.removeItem(
+
+        "taldms.wdp"
+
+    );
+
+    output.textContent =
+
+        "Storage Cleared";
+
+}
+
+</script>
+
+</body>
+
+</html>

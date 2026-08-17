@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>NEXUS Login | TESDA Albay</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    :root{--blue:#003399;--blue2:#0b5ed7;--ink:#172033;--muted:#64748b;--danger:#b42318;--success:#067647;--line:#dbe3ef}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%}body{font-family:"Segoe UI",Arial,sans-serif;color:var(--ink);background:linear-gradient(rgba(2,12,35,.52),rgba(2,12,35,.72)),url("assets/Background.jpg") center/cover fixed;display:grid;place-items:center;padding:24px}
+    .shell{width:min(980px,100%);display:grid;grid-template-columns:1.05fr .95fr;background:rgba(255,255,255,.97);border:1px solid rgba(255,255,255,.65);border-radius:26px;overflow:hidden;box-shadow:0 28px 80px rgba(0,0,0,.38)}
+    .brand{position:relative;padding:52px 46px;background:linear-gradient(145deg,#00256f,#0059b8);color:#fff;display:flex;flex-direction:column;justify-content:center;min-height:590px}.brand:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 85% 15%,rgba(255,255,255,.22),transparent 28%);pointer-events:none}.brand img{width:92px;height:92px;object-fit:contain;background:#fff;border-radius:50%;padding:8px;position:relative;z-index:1}.brand h1{font-size:3.2rem;letter-spacing:.18em;margin:24px 0 8px;position:relative;z-index:1}.brand h2{font-size:1.12rem;line-height:1.5;margin:0;position:relative;z-index:1}.brand p{line-height:1.7;color:#dbeafe;position:relative;z-index:1}.security-note{margin-top:28px;padding:14px 16px;border:1px solid rgba(255,255,255,.25);border-radius:14px;background:rgba(255,255,255,.09);font-size:.86rem;position:relative;z-index:1}
+    .panel{padding:52px 46px;display:flex;flex-direction:column;justify-content:center}.eyebrow{font-size:.76rem;font-weight:900;letter-spacing:.13em;text-transform:uppercase;color:var(--blue2)}.panel h3{font-size:2rem;margin:8px 0}.subtitle{color:var(--muted);line-height:1.55;margin:0 0 28px}.field{margin-bottom:18px}.field label{display:block;font-size:.82rem;font-weight:800;margin-bottom:7px}.control{position:relative}.control>i{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:#7c8da5}.control input{width:100%;padding:14px 46px;border:1px solid var(--line);border-radius:12px;font:inherit;outline:none;transition:.2s;background:#fff}.control input:focus{border-color:var(--blue2);box-shadow:0 0 0 4px rgba(11,94,215,.12)}.toggle{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:38px;height:38px;border:0;background:transparent;color:#64748b;cursor:pointer;border-radius:9px}.toggle:hover{background:#eef4ff;color:var(--blue)}
+    .login-btn{width:100%;border:0;border-radius:12px;padding:14px 18px;background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;font:inherit;font-weight:900;cursor:pointer;box-shadow:0 10px 22px rgba(0,51,153,.22)}.login-btn:hover{filter:brightness(1.05)}.login-btn:disabled{opacity:.7;cursor:wait}.message{margin:16px 0 0;padding:12px 14px;border-radius:10px;font-size:.88rem;font-weight:700}.message.error{background:#fef3f2;color:var(--danger);border:1px solid #fecdca}.message.success{background:#ecfdf3;color:var(--success);border:1px solid #abefc6}.foot{margin-top:26px;padding-top:18px;border-top:1px solid var(--line);font-size:.75rem;color:#7b8798;line-height:1.6;text-align:center}
+    @media(max-width:800px){.shell{grid-template-columns:1fr}.brand{min-height:auto;padding:34px 30px}.brand h1{font-size:2.5rem}.security-note{display:none}.panel{padding:36px 28px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="brand">
+      <img src="assets/Logo.png" alt="TESDA Logo">
+      <h1>NEXUS</h1>
+      <h2>TESDA Albay Network Enterprise Experience for Unified Systems</h2>
+      <p>One secure access point for TESDA Albay’s integrated administrative, technical, monitoring, records, and support applications.</p>
+      <div class="security-note"><i class="fas fa-shield-halved"></i> Access is limited to authorized Admin, Staff, and COA accounts. Application visibility is controlled by the NEXUS administrator.</div>
+    </section>
+    <section class="panel">
+      <div class="eyebrow">Authorized access</div>
+      <h3>Welcome back</h3>
+      <p class="subtitle">Use your designated TESDA Albay account. Your role and assigned applications will be loaded automatically.</p>
+      <form id="nexus-login-form" novalidate>
+        <div class="field"><label for="username">Username</label><div class="control"><i class="fas fa-user"></i><input id="username" name="username" type="text" autocomplete="username" maxlength="80" required></div></div>
+        <div class="field"><label for="password">Password</label><div class="control"><i class="fas fa-lock"></i><input id="password" name="password" type="password" autocomplete="current-password" required><button id="toggle-password" class="toggle" type="button" aria-label="Show or hide password"><i class="fas fa-eye"></i></button></div></div>
+        <button id="login-button" class="login-btn" type="submit"><i class="fas fa-right-to-bracket"></i> Sign in to NEXUS</button>
+        <div id="login-message" class="message error" role="alert" hidden></div>
+      </form>
+      <div class="foot">TESDA Albay Provincial Office<br>&copy; 2026 Technical Education and Skills Development Authority</div>
+    </section>
+  </main>
+  <script src="NEXUS/nexus.config.js"></script>
+  <script src="NEXUS/nexus.api.js"></script>
+  <script src="NEXUS/nexus.session.js"></script>
+  <script src="NEXUS/nexus.login.js"></script>
+</body>
+</html>

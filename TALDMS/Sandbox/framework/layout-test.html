@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Enterprise Layout Test</title>
+
+<link rel="stylesheet" href="../../css/app.css">
+
+</head>
+
+<body>
+
+<div id="app"></div>
+
+<script src="../../js/core/namespace.js"></script>
+
+<script src="../../js/core/ui/layouts/page.layout.js"></script>
+
+<script src="../../js/core/ui/components/card.js"></script>
+<script src="../../js/core/ui/components/button.js"></script>
+<script src="../../js/core/ui/components/form.js"></script>
+<script src="../../js/core/ui/components/table.js"></script>
+<script src="../../js/core/ui/components/badge.js"></script>
+<script src="../../js/core/ui/components/notification.js"></script>
+<script src="../../js/core/ui/components/modal.js"></script>
+<script src="../../js/core/ui/components/loading.js"></script>
+<script src="../../js/core/ui/layouts/page.layout.js"></script>
+<script src="../../js/core/ui/layouts/dashboard.layout.js"></script>
+<script src="../../js/core/ui/components/sidebar.js"></script>
+<script src="../../js/core/ui/components/header.js"></script>
+<script src="../../js/core/ui/components/breadcrumb.js"></script>
+<script>
+
+document.getElementById("app").innerHTML =
+
+TAESF.UI.Dashboard.render({
+
+    header: TAESF.UI.Header.render({
+
+    organization: "TESDA Albay",
+
+    application: "Enterprise Dashboard Shell"
+
+}),
+
+    sidebar: TAESF.UI.Sidebar.render(),
+
+    breadcrumb:
+
+TAESF.UI.Breadcrumb.render([
+
+    "Home",
+
+    "TAEDS",
+
+    "Showcase"
+
+]),
+
+    content: `
+
+        <div class="page-header">
+
+            <h1 class="page-title">
+                Enterprise UI Framework
+            </h1>
+
+            <p class="page-subtitle">
+                Framework Sprint F8.11 Dashboard Shell
+            </p>
+
+        </div>
+
+        ${TAESF.UI.Notification.render({
+
+            type: "notification-success",
+
+            title: "Framework Sprint Completed",
+
+            message: "TAEDS Enterprise Notification System has been successfully integrated."
+
+        })}
+
+        ${TAESF.UI.Card.render({
+
+            title: "Learning Interventions",
+
+            subtitle: "Current Month",
+
+            body: `
+
+                <div class="card-kpi">
+
+                    18
+
+                </div>
+
+                <div class="card-label">
+
+                    Learning Interventions Conducted
+
+                </div>
+
+                <div style="margin-top:16px; display:flex; gap:12px;">
+
+                    ${TAESF.UI.Button.render({
+
+                        label: "View Details",
+
+                        type: "btn-primary"
+
+                    })}
+
+                    ${TAESF.UI.Button.render({
+
+                        label: "Generate Report",
+
+                        type: "btn-success"
+
+                    })}
+
+                </div>
+
+            `,
+
+            footer: `
+
+                Last Updated:
+                July 2026
+
+            `
+
+        })}
+
+        ${TAESF.UI.Card.render({
+
+            title: "Sample Enterprise Form",
+
+            subtitle: "TAEDS Form System",
+
+            body: `
+
+                <form class="form">
+
+                    ${TAESF.UI.Form.textField({
+
+                        label: "Learning Intervention Title",
+
+                        placeholder: "Enter title",
+
+                        help: "Example: Leadership Development Program"
+
+                    })}
+
+                    ${TAESF.UI.Form.textField({
+
+                        label: "Venue",
+
+                        placeholder: "Training Venue"
+
+                    })}
+
+                    ${TAESF.UI.Form.textArea({
+
+                        label: "Description",
+
+                        placeholder: "Describe the intervention..."
+
+                    })}
+
+                    ${TAESF.UI.Button.render({
+
+                        label: "Save Form",
+
+                        type: "btn-primary"
+
+                    })}
+
+                </form>
+
+            `
+
+        })}
+
+        ${TAESF.UI.Card.render({
+
+            title: "Learning Intervention Registry",
+
+            subtitle: "Enterprise Table System",
+
+            body: `
+
+                ${TAESF.UI.Table.render(
+
+                    [
+
+                        "LI No.",
+                        "Title",
+                        "Venue",
+                        "Status"
+
+                    ],
+
+                    [
+
+                        [
+
+                            "LI-2026-0001",
+
+                            "Leadership Development",
+
+                            "Legazpi",
+
+                            TAESF.UI.Badge.render(
+
+                                "Completed",
+
+                                "badge-success"
+
+                            )
+
+                        ],
+
+                        [
+
+                            "LI-2026-0002",
+
+                            "Procurement Training",
+
+                            "Online",
+
+                            TAESF.UI.Badge.render(
+
+                                "Scheduled",
+
+                                "badge-info"
+
+                            )
+
+                        ],
+
+                        [
+
+                            "LI-2026-0003",
+
+                            "Knowledge Sharing",
+
+                            "TESDA Albay",
+
+                            TAESF.UI.Badge.render(
+
+                                "Ongoing",
+
+                                "badge-warning"
+
+                            )
+
+                        ]
+
+                    ]
+
+                )}
+
+            `
+
+        })}
+
+        ${TAESF.UI.Card.render({
+
+            title: "Loading Example",
+
+            subtitle: "Enterprise Loading State",
+
+            body: `
+
+                ${TAESF.UI.Loading.spinner(
+
+                    "Loading Learning Interventions..."
+
+                )}
+
+            `
+
+        })}
+
+        ${TAESF.UI.Card.render({
+
+            title: "Empty State Example",
+
+            subtitle: "Enterprise Empty State",
+
+            body: `
+
+                ${TAESF.UI.Loading.empty(
+
+                    "No Learning Interventions",
+
+                    "Create your first Learning Intervention to begin."
+
+                )}
+
+            `
+
+        })}
+
+    `
+
+});
+
+</script>
+
+</body>
+
+</html>

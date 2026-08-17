@@ -1,0 +1,2 @@
+"use strict";
+NEXUS_SPECTRA.Services.CashierDaily=(()=>{function pendingOrders(){return NEXUS_SPECTRA.Repository.Cashier.orders().filter(x=>x.status==="FOR_PAYMENT").sort((a,b)=>(a.createdAt||"").localeCompare(b.createdAt||""));}function undeposited(fund=""){return NEXUS_SPECTRA.Repository.Cashier.collections().filter(x=>Number(x.undeposited||0)>0&&(!fund||x.fund===fund)).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));}return Object.freeze({pendingOrders,undeposited});})();

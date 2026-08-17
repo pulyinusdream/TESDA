@@ -1,0 +1,63 @@
+/*
+==========================================================
+Enterprise Header
+==========================================================
+*/
+
+.header{
+
+    grid-area:header;
+
+    background:white;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:0 var(--space-6);
+
+    border-bottom:1px solid var(--color-border);
+
+    box-shadow:var(--shadow-small);
+
+}
+
+.header-title{
+
+    font-weight:600;
+
+}
+
+.header-user{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:var(--space-3);
+
+}
+/*
+==========================================================
+Enterprise Header Component
+Framework Sprint F9.2
+==========================================================
+*/
+
+.header-left{
+
+    font-size:1.2rem;
+
+    font-weight:600;
+
+}
+
+.header-right{
+
+    font-size:1rem;
+
+    color:var(--color-text-secondary);
+
+}
