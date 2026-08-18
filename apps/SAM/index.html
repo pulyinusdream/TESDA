@@ -1,45 +1,7063 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="description" content="NEXUS TVET Provider Scholarship and Billing Portal"><title>NEXUS Provider Portal | TESDA Albay</title><link rel="stylesheet" href="CSS/app.css"><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script></head><body><aside class="sam-sidebar"><div class="sam-side-brand"><img src="../../assets/Logo.png" alt="TESDA"><div><strong>NEXUS · Provider Portal</strong><small>TVET Provider Scholarship & Billing</small></div></div><nav><button data-sam-nav="home" class="active"><span>⌂</span> Home</button><button data-sam-nav="billing"><span>▤</span> Billing Center</button><button data-sam-nav="allowance"><span>▦</span> Allowance & Attendance</button><button data-sam-nav="mis"><span>□</span> MIS 03-02 Submission</button><button data-sam-nav="tracking"><span>◎</span> My Billing Tracking</button><button data-sam-nav="cost"><span>₱</span> Qualification Cost Reference</button></nav><a class="sam-back" href="../../index.html">← Back to NEXUS</a></aside><div class="sam-content-shell">
-<header class="app-header"><div class="brand"><img src="../../assets/Logo.png" alt="TESDA Logo"><div><h1>NEXUS Provider Portal</h1><p>Scholarship · Billing · MIS · Tracking</p></div></div><div class="sam-header-actions"><div class="sam-notification-anchor"><button id="samNotificationBell" class="sam-notification-bell" type="button" aria-label="Notifications" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg><span id="samNotificationBadge" class="sam-notification-badge" hidden>0</span></button><div id="samNotificationPanel" class="sam-notification-panel" hidden><div class="sam-notification-head"><div><strong>Notifications</strong><small id="samNotificationCount">All caught up</small></div><button id="samNotificationMarkAll" type="button">Mark all read</button></div><div id="samNotificationList" class="sam-notification-list"></div></div></div><div class="header-meta"><strong>TESDA Albay Provincial Office</strong><br><span>TVET Provider Workspace</span><span id="costScheduleLabel" hidden></span><span id="appVersion" hidden></span></div></div></header>
-<section class="school-home" data-utility-panel="home" hidden><div class="school-home-hero"><div><span>TESDA ALBAY · PROVIDER PORTAL</span><h1>TVET Provider Home</h1><p>Manage approved RQMs, submit scholarship billings, monitor Provincial Office queues, and receive action notifications.</p></div><button class="btn btn-primary" data-home-billing>Open Billing Center</button></div><div class="school-home-metrics" id="schoolHomeMetrics"></div><section class="school-home-rqms"><div class="home-section-head"><div><h2>My Approved RQMs & Scholar Status</h2><p>Only RQMs assigned to this TVET Provider are shown.</p></div><input id="schoolHomeQualificationFilter" placeholder="Filter by qualification"></div><div id="schoolHomeRqms" class="home-rqm-grid"></div></section><section class="school-home-queue"><div class="home-section-head"><div><h2>Provincial Office Billing Queue</h2><p>Queue positions are computed separately for each received billing transaction.</p></div></div><div id="schoolHomeQueue"></div></section><div class="school-home-grid"><section><div class="home-section-head"><h2>My Submitted Billings</h2><button class="text-btn" data-home-all-tracking>View full tracking</button></div><div id="schoolHomeBillings"></div></section><section><div class="home-section-head"><h2>Provincial Office Notifications</h2></div><div id="schoolHomeNotifications"></div></section></div></section><div class="workflow-shell"><div class="active-batch" id="activeBatchLabel"><strong>No active batch</strong><span>Create or open a batch in Step 1</span></div><div class="workflow-stepper" id="workflowStepper"><button type="button" data-workflow-step="1"><span class="step-no">1</span><span><b>Batch Setup</b><small class="step-state">Setup</small></span></button><button type="button" data-workflow-step="2"><span class="step-no">2</span><span><b>Attendance Import</b><small class="step-state">Pending</small></span></button><button type="button" data-workflow-step="3"><span class="step-no">3</span><span><b>Validate Attendance</b><small class="step-state">Pending</small></span></button><button type="button" data-workflow-step="4"><span class="step-no">4</span><span><b>Compute Allowance</b><small class="step-state">Pending</small></span></button><button type="button" data-workflow-step="5"><span class="step-no">5</span><span><b>School Reports</b><small class="step-state">Pending</small></span></button></div><div id="workflowGateMessage" class="workflow-gate warn"></div></div>
-<main class="app-main"><div data-workflow-panel="1"><section id="dashboard" class="grid-summary"><article class="card summary-card"><span>Scholarship Batches</span><strong data-summary="batches">0</strong></article><article class="card summary-card"><span>Allocated Slots</span><strong data-summary="slots">0</strong></article><article class="card summary-card"><span>Maximum Batch TSF</span><strong data-summary="maxTsf">₱0.00</strong></article><article class="card summary-card"><span>BSRS Reports</span><strong data-att-summary="reports">0</strong></article></section>
-<section class="card" id="tipRequestCard"><div class="panel-header"><h2>Training Induction Program (TIP)</h2><p>Request a TIP schedule for the active scholarship batch. The Scholarship Focal may approve the preferred slot or propose another schedule when there is a conflict.</p></div><div class="panel-body"><div class="form-grid"><div class="field"><label>Preferred TIP Date</label><input id="tipRequestedDate" type="date"></div><div class="field"><label>Preferred TIP Time</label><input id="tipRequestedTime" type="time"></div><div class="field"><label>Requested By</label><input id="tipRequestedBy"></div><div class="field"><label>TVI Official Email</label><input id="tipTviEmail" type="email"></div><div class="field field-full"><label>Remarks</label><input id="tipRemarks"></div></div><div class="form-actions"><button type="button" id="btnRequestTIP" class="btn btn-primary">Request Training Induction Program</button></div><h3>TIP Request / Schedule</h3><div id="tipRequestHistory"></div><h3>Scholarship Notifications</h3><div id="schoolNotifications"></div></div></section><section class="content-grid"><article class="card" id="batchSetup"><div class="panel-header"><h2 id="formTitle">Create Scholarship Batch</h2><p>Qualification hours, approved days, TSF rate, and maximum TSF are inherited from the official cost master and cannot be manually changed.</p></div><div class="panel-body"><div id="formErrors" class="error-panel" hidden></div><form id="batchForm" novalidate><input type="hidden" id="batchId"><div class="form-grid">
-<div class="field"><label class="required" for="rqmNo">RQM Number</label><input id="rqmNo" required placeholder="RQM No." readonly></div><div class="field"><label for="rqmCode">RQM Code</label><input id="rqmCode" placeholder="RQM Code / allocation line" readonly></div>
-<div class="field"><label class="required" for="scholarshipProgram">Scholarship Program</label><select id="scholarshipProgram"><option value="TWSP">TWSP</option><option value="TTSP">TTSP</option><option value="BKSTP">BKSTP</option><option value="PESFA">PESFA</option></select></div><div class="field"><label class="required" for="implementationType">Implementation Type</label><select id="implementationType"><option value="REGULAR">Regular</option></select></div>
-<div class="field field-full"><label class="required" for="qualificationCostMasterId">Qualification</label><select id="qualificationCostMasterId" required></select><small>Uses the exact qualification/SOC variant because assessment fees and schedules can differ.</small></div><div class="field field-full"><div id="qualificationPreview" class="qualification-preview">Select a qualification to load the official schedule values.</div></div>
-<div class="field field-full"><label class="required" for="tvi">TVET Provider / TTI</label><input id="tvi" required readonly></div><div class="field field-full"><label for="trainer">Trainer</label><input id="trainer"></div><div class="field"><label class="required" for="trainingStartDate">Training Start</label><input id="trainingStartDate" type="date" required></div><div class="field"><label class="required" for="trainingEndDate">Training End</label><input id="trainingEndDate" type="date" required></div><div class="field"><label class="required" for="numberOfSlots">No. of Slots</label><input id="numberOfSlots" type="number" min="1" step="1" required></div></div><div class="form-actions"><button type="button" id="btnResetForm" class="btn btn-secondary">Reset</button><button type="submit" class="btn btn-primary">Save Batch Setup</button></div></form></div></article>
-<article class="card"><div class="panel-header"><h2>Scholarship Batch Registry</h2><p>Block 1 setup records. Attendance import will attach to these batches in Block 2.</p></div><div class="panel-body"><div class="table-wrap"><table class="data-table"><thead><tr><th>Batch / RQM</th><th>Program</th><th>Qualification</th><th>TVI</th><th>Hours / Days</th><th>Max TSF / Scholar</th><th>Slots</th><th>Status</th><th>Actions</th></tr></thead><tbody id="batchTableBody"></tbody></table></div></div></article></section><div class="step-footer"><button type="button" class="btn btn-primary" data-step-next="2">Continue to Attendance Import</button></div></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="description" content="NEXUS TVET Provider Scholarship and Billing Portal">
+<title>NEXUS Provider Portal | TESDA Albay</title>
 
-<div data-workflow-panel="2" hidden><section class="card" id="attendanceImport"><div class="panel-header"><h2>BSRS Attendance Import</h2><p>Upload official BSRS Trainees'/Learners' Attendance Sheet PDFs and attach them to an existing scholarship batch. Original BSRS values are preserved and incomplete Time In/Time Out entries are automatically flagged for validation.</p></div><div class="panel-body"><div id="attendanceErrors" class="error-panel" hidden></div><div class="attendance-import-grid"><div><div class="field"><label class="required" for="attendanceBatchId">Scholarship Batch</label><select id="attendanceBatchId"><option value="">Select batch...</option></select></div><div class="file-drop"><label class="required" for="bsrsFiles"><strong>BSRS Attendance PDF</strong></label><input id="bsrsFiles" type="file" accept="application/pdf,.pdf" multiple><small>You may select multiple daily attendance PDFs for the same batch. Duplicate BSRS report numbers and dates are blocked.</small></div><div class="form-actions"><button type="button" id="btnImportBsrs" class="btn btn-primary">Import BSRS Attendance</button></div><div id="importProgress" class="progress-note" hidden></div></div><div><div class="grid-summary"><article class="summary-card"><span>Reports</span><strong data-att-summary="reports">0</strong></article><article class="summary-card"><span>Attendance Records</span><strong data-att-summary="records">0</strong></article><article class="summary-card"><span>Complete BSRS</span><strong data-att-summary="complete">0</strong></article><article class="summary-card"><span>For Validation</span><strong data-att-summary="exceptions">0</strong></article><article class="summary-card"><span>Critical Reports</span><strong data-att-summary="critical">0</strong></article><article class="summary-card"><span>Ready Reports</span><strong data-att-summary="ready">0</strong></article></div><div id="attendanceReportList"></div><div id="attendanceTimeline" class="attendance-timeline"></div></div></div></div></section>
-<section class="card" id="attendanceDetail" hidden><div class="panel-header"><h2>Extracted Daily Attendance</h2><p id="attendanceDetailMeta">Select an imported report to view extracted attendance.</p></div><div class="panel-body"><div class="table-wrap"><table class="data-table"><thead><tr><th>No.</th><th>Scholar</th><th>BSRS Time In</th><th>BSRS Time Out</th><th>Duration</th><th>Import Status</th><th>Final Attendance</th><th>Validation</th></tr></thead><tbody id="attendanceDetailBody"><tr><td colspan="8" class="empty-state">No report selected.</td></tr></tbody></table></div></div></section><div class="step-footer"><button type="button" class="btn btn-primary" data-step-next="3">Continue to Attendance Validation</button></div></div>
-<div data-workflow-panel="3" hidden><section class="card" id="attendanceValidation"><div class="panel-header"><h2>Attendance Validation Center</h2><p>Resolve incomplete BSRS Time In/Time Out records using the applicable manual attendance evidence. The original BSRS values remain unchanged; validation is stored separately for audit trail and future allowance computation.</p></div><div class="panel-body"><div class="field validation-batch-field"><label class="required" for="validationBatchId">Scholarship Batch</label><select id="validationBatchId"><option value="">Select batch...</option></select></div><div class="grid-summary validation-summary"><article class="summary-card"><span>Attendance Records</span><strong data-val-summary="records">0</strong></article><article class="summary-card"><span>Complete BSRS</span><strong data-val-summary="bsrs">0</strong></article><article class="summary-card"><span>Manual Validated</span><strong data-val-summary="manual">0</strong></article><article class="summary-card"><span>Absent</span><strong data-val-summary="absent">0</strong></article><article class="summary-card"><span>Pending</span><strong data-val-summary="pending">0</strong></article></div><div id="validationReadyState" class="readiness pending">Select a batch and resolve all pending attendance exceptions before allowance computation.</div><div class="table-wrap"><table class="data-table"><thead><tr><th>Date</th><th>Scholar</th><th>BSRS In</th><th>BSRS Out</th><th>Final In</th><th>Final Out</th><th>Final Status</th><th>Validation</th><th>Action</th></tr></thead><tbody id="validationQueueBody"><tr><td colspan="9" class="empty-state">Select a scholarship batch.</td></tr></tbody></table></div></div></section><div class="step-footer"><button type="button" class="btn btn-primary" data-step-next="4">Continue to Allowance Computation</button></div></div>
+<link rel="stylesheet" href="CSS/app.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<div data-workflow-panel="4" hidden><section class="card" id="allowanceComputation"><div class="panel-header"><h2>Allowance Computation & Payroll Preview</h2><p>Consolidates validated daily attendance against the qualification's approved training days and ₱160 TSF rate. Amounts remain provisional while attendance exceptions, time anomalies, missing report days, or critical import issues are unresolved.</p></div><div class="panel-body">
-<div class="field validation-batch-field"><label class="required" for="allowanceBatchId">Scholarship Batch</label><select id="allowanceBatchId"><option value="">Select batch...</option></select></div>
-<div class="grid-summary validation-summary"><article class="summary-card"><span>Scholars</span><strong data-allow-summary="scholars">0</strong></article><article class="summary-card"><span>Reports / Approved Days</span><strong data-allow-summary="reports">0/0</strong></article><article class="summary-card"><span>Pending Logs</span><strong data-allow-summary="pending">0</strong></article><article class="summary-card"><span>Time Review</span><strong data-allow-summary="review">0</strong></article><article class="summary-card"><span>Projected TSF</span><strong data-allow-summary="projected">₱0.00</strong></article></div>
-<div id="allowanceReadyState" class="readiness pending">Select a batch to compute allowance.</div><div id="allowanceIssues" class="error-panel" hidden></div>
-<div class="table-wrap"><table class="data-table"><thead><tr><th>Scholar</th><th>Present</th><th>Absent</th><th>Pending</th><th>Time Review</th><th>Missing Days</th><th>Attendance Progress</th><th>Max TSF</th><th>Projected Earned</th><th>Unresolved Value</th><th>Status</th></tr></thead><tbody id="allowanceTableBody"><tr><td colspan="11" class="empty-state">Select a batch.</td></tr></tbody></table></div>
-<h3 style="margin-top:24px">Payroll Preview</h3><p class="muted">Only scholars with fully resolved attendance and no batch-level critical report issue appear below.</p>
-<div class="table-wrap"><table class="data-table"><thead><tr><th>No.</th><th>Scholar</th><th>Payable Days</th><th>Absences</th><th>Rate</th><th>Net TSF</th></tr></thead><tbody id="payrollPreviewBody"><tr><td colspan="6" class="empty-state">No scholar is payroll-ready yet.</td></tr></tbody></table></div>
-</div></section>
+<style>
 
-<section class="card" id="reportGeneration"><div class="panel-header"><h2>Final Report Generation</h2><p>After attendance validation and allowance computation are complete, generate the required A4 Summary of Attendance and Billing Statement. These are the TVET provider outputs after attendance finalization. Each output is prepared in three (3) identical copies for printing or Save as PDF.</p></div><div class="panel-body"><div id="reportErrors" class="error-panel" hidden></div><div class="form-grid"><div class="field field-full"><label class="required" for="reportBatchId">Scholarship Batch</label><select id="reportBatchId"><option value="">Select batch...</option></select></div><div class="field field-full"><label for="reportEntityAddress">TVET Provider Address</label><input id="reportEntityAddress" placeholder="Address appearing on the report header"></div><div class="field"><label for="reportPreparedBy">Prepared By</label><input id="reportPreparedBy"></div><div class="field"><label for="reportPreparedTitle">Position</label><input id="reportPreparedTitle" value="Registrar"></div><div class="field"><label for="reportApprovedBy">Approved By</label><input id="reportApprovedBy"></div><div class="field"><label for="reportApprovedTitle">Position</label><input id="reportApprovedTitle" value="Center Administrator"></div></div><div class="form-actions"><button type="button" id="btnSaveReportProfile" class="btn btn-secondary">Save Report Details</button><span id="reportSaveStatus" class="save-status">Not yet saved</span></div><div id="reportReadyState" class="readiness pending">Select a finalized batch.</div><h3 style="margin-top:22px">Scholar ULI</h3><p class="muted">ULI is not contained in the BSRS attendance PDF. Encode it here for the Billing Statement. This can later be sourced automatically from the Scholar Registry/T2MIS integration.</p><div class="table-wrap report-uli-table"><table class="data-table"><thead><tr><th>No.</th><th>Scholar</th><th>ULI</th></tr></thead><tbody id="reportUliBody"><tr><td colspan="3" class="empty-state">Select a finalized batch.</td></tr></tbody></table></div><div class="report-buttons"><button type="button" id="btnGenerateSummary" data-report-generate class="btn btn-primary" disabled>Generate Summary of Attendance - 3 Copies</button><button type="button" id="btnGenerateBilling" data-report-generate class="btn btn-primary" disabled>Generate Billing Statement - 3 Copies</button></div><p class="muted" style="margin-top:10px">The browser print window opens automatically. Choose <b>Save as PDF</b> or your printer. A4 paper size and the required orientation are already defined by the report.</p></div></section>
-<section class="card" id="onlineDocuments"><div class="panel-header"><h2>Online Supporting Documents</h2><p>Upload the signed/scanned documents that reviewers in SPECTRA should be able to open online. Hard copies are still submitted physically to TESDA Provincial Office.</p></div><div class="panel-body"><div class="form-grid"><div class="field"><label>Document Type</label><select id="onlineDocumentType"><option value="BILLING_STATEMENT">Billing Statement</option><option value="ATTENDANCE_SUMMARY">Summary of Attendance</option><option value="BSRS_ATTENDANCE">BSRS / Daily Attendance</option><option value="MANUAL_ATTENDANCE">Manual Attendance / Supporting Attendance</option><option value="TERMINAL_REPORT">Terminal / MIS Report</option><option value="OTHER">Other Supporting Document</option></select></div><div class="field"><label>PDF / Image</label><input type="file" id="onlineDocumentFile" accept=".pdf,image/jpeg,image/png"></div><div class="field field-full"><label>Remarks</label><input id="onlineDocumentRemarks" placeholder="Optional document note"></div></div><div class="form-actions"><button type="button" class="btn btn-secondary" id="btnUploadOnlineDocument">Upload Supporting Document</button></div><div id="onlineDocumentList"></div></div></section><section class="card" id="billingHandoff"><div class="panel-header"><h2>Finalize & Submit Billing Package</h2><p>This is the final TVET Provider action in SAM. The system freezes the attendance, validations, allowance computation, and saved report details into a versioned snapshot and creates a SPECTRA Billing Transaction Number.</p></div><div class="panel-body"><div id="handoffState" class="readiness pending">Complete the school-report requirements first.</div><div class="form-actions"><button type="button" id="btnSubmitBilling" class="btn btn-primary" disabled>Finalize & Submit for Billing</button></div><h3 style="margin-top:20px">Submitted Billing Tracking</h3><p class="muted">After physical submission to TESDA, the same transaction will show Receiving, Scholarship Review, Accounting, Budget/Obligation, Cashiering, and Payment status through SPECTRA.</p><div id="submittedBillingList"></div></div></section></div>
-<section class="provider-billing-center" data-utility-panel="billing" hidden><div class="provider-page-head"><div><span>NEXUS · PROVIDER BILLING CENTER</span><h2>Scholarship Billing Center</h2><p>Select an approved RQM and submit the applicable billing component without re-encoding the RQM, school or qualification.</p></div></div><section class="card"><div class="panel-header"><h2>1. Select Approved RQM</h2><p>Use the qualification filter when your school has many approved RQMs.</p></div><div class="panel-body"><div class="field"><label>Filter by Qualification</label><input id="billingQualificationFilter" placeholder="Type qualification title..."></div><div id="providerRqmCards" class="provider-rqm-grid"></div><div class="field"><label>Selected RQM</label><select id="billingRqm"><option value="">Select approved RQM...</option></select></div></div></section><section class="card"><div class="panel-header"><h2>2. Select Billing Type</h2><p>The available components follow the approved RQM cost profile. Current TESDA policy/documentary compliance is verified by the Provincial Scholarship Section.</p></div><div class="panel-body"><div id="billingTypeCards" class="billing-type-grid"></div><div id="billingReview"></div><div class="form-actions"><button id="btnSubmitProviderBilling" class="btn btn-primary" disabled>Finalize & Submit Selected Billing</button></div></div></section><section class="card"><div class="panel-header"><h2>Supporting Documents</h2><p>Upload the documents for the selected RQM/billing component. PDF, JPG and PNG are supported in the current prototype.</p></div><div class="panel-body"><div class="form-grid"><div class="field"><label>Document Type</label><select id="billingDocumentType"><option value="BILLING_STATEMENT">Billing Statement</option><option value="ATTENDANCE_SUMMARY">Summary of Attendance</option><option value="TERMINAL_REPORT">Terminal Report</option><option value="ASSESSMENT_REPORT">Assessment Report / Result Support</option><option value="ENTREPRENEURSHIP_REPORT">Entrepreneurship Support</option><option value="OTHER">Other Supporting Document</option></select></div><div class="field"><label>File</label><input id="billingDocumentFile" type="file" accept=".pdf,.jpg,.jpeg,.png"></div><div class="field span-2"><label>Remarks</label><input id="billingDocumentRemarks" placeholder="Optional document description"></div></div><div class="form-actions"><button id="btnUploadBillingDocument" class="btn btn-secondary">Upload Supporting Document</button></div><div id="providerBillingDocuments"></div></div></section><section class="card"><div class="panel-header"><h2>My Billing Transactions</h2><p>Each billing component has its own transaction and Provincial Office queue position after hard-copy receipt.</p></div><div class="panel-body" id="providerBillingHistory"></div></section></section><section class="provider-mis-workspace" data-utility-panel="mis" hidden><div class="provider-page-head"><div><span>NEXUS · MIS SUBMISSION</span><h2>MIS 03-02 Submission</h2><p>Upload the school MIS for the selected RQM. The portal compares it against the current official Provincial SPMOR/MIS registry for Scholarship review.</p></div></div><section class="card"><div class="panel-body"><div class="form-grid"><div class="field"><label>Approved RQM</label><select id="misRqm"><option value="">Select approved RQM...</option></select></div><div class="field"><label>MIS 03-02 Workbook</label><input id="misFile" type="file" accept=".xlsx,.xls"></div></div><div class="form-actions"><button id="btnSubmitMis" class="btn btn-primary">Upload & Compare MIS</button></div><div id="misCompareResult"></div></div></section><section class="card"><div class="panel-header"><h2>Submission History</h2></div><div class="panel-body" id="misSubmissionHistory"></div></section></section><section class="tracking-workspace" data-utility-panel="tracking" hidden><div class="tracking-page-head"><div><span>NEXUS · SCHOOL BILLING MONITORING</span><h2>My Submitted Billings</h2><p>Use the same Billing Transaction Number when following up with TESDA Albay Provincial Office.</p></div><button type="button" class="btn btn-secondary" onclick="NEXUS_SAM.Modules.Workflow.Controller.go(1,true)">Back to Allowance Module</button></div><div class="tracking-layout"><aside id="schoolTrackingList"></aside><main id="schoolTrackingDetail"></main></div></section><section class="card" id="provincialOffice" data-utility-panel="po" hidden><div class="panel-header"><div class="po-only-badge">PROVINCIAL OFFICE USE ONLY</div><h2>Scholar Allowance Payroll</h2><p>This workspace is intentionally separate from the TVET provider workflow. Schools do not generate this payroll. It is retained for Provincial Office processing and follows the uploaded TWSP Appendix 33 payroll format.</p></div><div class="panel-body"><div class="form-grid"><div class="field field-full"><label for="poBatchId">Finalized Scholarship Batch</label><select id="poBatchId"><option value="">Select finalized batch...</option></select></div><div class="field"><label for="poCertifiedBy">A — Certified Attendance By</label><input id="poCertifiedBy" placeholder="Authorized Official"></div><div class="field"><label for="poApprovedBy">C — Approved for Payment By</label><input id="poApprovedBy" placeholder="Head of Agency / Authorized Representative"></div><div class="field"><label for="poAccountingBy">B — Accounting Certification By</label><input id="poAccountingBy" placeholder="Head of Accounting Division/Unit"></div><div class="field"><label for="poDisbursingBy">D — Disbursing Officer</label><input id="poDisbursingBy" placeholder="Disbursing Officer"></div></div><div class="form-actions"><button type="button" id="btnSavePoProfile" class="btn btn-secondary">Save Payroll Details</button><span id="poSaveStatus" class="save-status">Not yet saved</span></div><div id="poReadyState" class="readiness pending">Select a finalized batch.</div><div class="report-buttons"><button type="button" id="btnGeneratePoPayroll" class="btn btn-primary" disabled>Generate Appendix 33 Payroll — 3 Copies</button></div><div class="info-callout"><strong>Payroll format:</strong> Serial No.; scholar name; Amount columns for TSF (initial 50%), H/PPE, IA, T-Shirt, IM, Total and Remarks; ID Presented; Signature of Recipient; plus Certification blocks A, B, C and D, ORS/BURS, JEV and Date fields.</div></div></section><section class="card" id="costMaster" data-utility-panel="cost" hidden><div class="panel-header"><h2>Qualification Cost Reference</h2><p>Read-only provider reference. The Scholarship Focal maintains the official qualification cost master and amendments in SPECTRA.</p></div><div class="panel-body"><div class="table-toolbar"><input id="costSearch" type="search" placeholder="Search qualification, code, SOC code, or sector"></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Qualification</th><th>Codes</th><th>Hours</th><th>Days</th><th>TSF Rate</th><th>Max TSF</th><th>Training Cost</th><th>Assessment Fee</th><th>Source</th></tr></thead><tbody id="costMasterBody"></tbody></table></div></div></section></main><div id="validationModal" class="modal-overlay" hidden><div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="validationModalTitle"><div class="modal-header"><div><h2 id="validationModalTitle">Validate Attendance</h2><p id="validationSourceSummary"></p></div><button type="button" id="btnCloseValidationModal" class="modal-close" aria-label="Close">×</button></div><div class="modal-body"><div id="validationModalErrors" class="error-panel" hidden></div><input type="hidden" id="validationReportId"><input type="hidden" id="validationScholarNo"><div class="form-grid"><div class="field"><label class="required" for="validationResolution">Resolution</label><select id="validationResolution"><option value="PRESENT">Present — Complete Using Supporting Attendance</option><option value="ABSENT">Absent</option></select></div><div class="field"><label for="validationSource">Supporting Source</label><select id="validationSource"><option value="MANUAL_ATTENDANCE_SHEET">Manual Daily Attendance Sheet</option><option value="APPROVED_BSRS_EXEMPTION">Approved BSRS Attendance Exemption</option><option value="BIOMETRIC_MACHINE">Biometric Machine Record</option></select></div><div class="field"><label for="manualTimeIn">Manual Time In</label><input id="manualTimeIn" type="time"></div><div class="field"><label for="manualTimeOut">Manual Time Out</label><input id="manualTimeOut" type="time"></div><div class="field field-full"><label class="required" for="validationReason">Reason / Validation Remarks</label><textarea id="validationReason" rows="3" placeholder="Example: BSRS Time Out was not captured; completed based on the signed manual Daily Attendance Sheet."></textarea></div><div class="field field-full"><label for="supportingReference">Supporting Document Reference</label><input id="supportingReference" placeholder="Example: Manual Attendance Sheet – 22 May 2025, page 1"></div><div class="field field-full"><label class="required" for="validatedBy">Validated By</label><input id="validatedBy" placeholder="Registrar / authorized validator"></div></div></div><div class="modal-footer"><button type="button" id="btnCancelValidation" class="btn btn-secondary">Cancel</button><button type="button" id="btnSaveValidation" class="btn btn-primary">Save Validation</button></div></div></div><div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="JS/core/namespace.js"></script><script src="JS/config/app.config.js"></script><script src="JS/core/storage/local.storage.js"></script><script src="JS/core/storage/storage.service.js"></script><script src="JS/core/ui/notification.service.js"></script><script src="JS/core/document.store.js"></script><script src="JS/core/tip.shared.js"></script><script src="Data/cost-master.seed.js"></script><script src="Modules/costMaster/models/cost.model.js"></script><script src="Modules/costMaster/repository/cost.repository.js"></script><script src="Modules/costMaster/services/cost.service.js"></script><script src="Modules/costMaster/views/cost.view.js"></script><script src="Modules/costMaster/controllers/cost.controller.js"></script><script src="Modules/rqm/rqm.service.js"></script><script src="Modules/batch/models/batch.model.js"></script><script src="Modules/batch/validation/batch.validator.js"></script><script src="Modules/batch/repository/batch.repository.js"></script><script src="Modules/batch/services/batch.service.js"></script><script src="Modules/batch/views/batch.view.js"></script><script src="Modules/batch/controllers/batch.controller.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><script src="JS/core/pdf/pdf.service.js"></script><script src="Modules/attendance/models/attendance.model.js"></script><script src="Modules/attendance/repository/attendance.repository.js"></script><script src="Modules/attendance/services/bsrs.parser.js"></script><script src="Modules/attendance/services/attendance.service.js"></script><script src="Modules/validation/models/validation.model.js"></script><script src="Modules/validation/repository/validation.repository.js"></script><script src="Modules/validation/services/validation.service.js"></script><script src="Modules/attendance/views/attendance.view.js"></script><script src="Modules/attendance/controllers/attendance.controller.js"></script><script src="Modules/validation/views/validation.view.js"></script><script src="Modules/validation/controllers/validation.controller.js"></script><script src="Modules/allowance/models/allowance.model.js"></script><script src="Modules/allowance/services/allowance.service.js"></script><script src="Modules/allowance/views/allowance.view.js"></script><script src="Modules/allowance/controllers/allowance.controller.js"></script><script src="Modules/reports/repository/report.repository.js"></script><script src="Modules/reports/services/report.service.js"></script><script src="Modules/reports/views/report.view.js"></script><script src="Modules/reports/controllers/report.controller.js"></script><script src="Modules/reports/views/po.view.js"></script><script src="Modules/reports/controllers/po.controller.js"></script>
+/* =========================================================
+   PROVIDER SETTINGS / RESOURCES
+========================================================= */
+
+.provider-settings,
+.provider-resources{
+  max-width:1180px;
+  margin:0 auto;
+  padding:24px 28px;
+}
+
+.provider-settings .provider-page-head,
+.provider-resources .provider-page-head{
+  margin-bottom:18px;
+}
+
+.provider-settings .provider-page-head span,
+.provider-resources .provider-page-head span{
+  font-size:.75rem;
+  font-weight:700;
+  letter-spacing:.08em;
+  opacity:.7;
+}
+
+.provider-settings .provider-page-head h2,
+.provider-resources .provider-page-head h2{
+  margin:.35rem 0 .3rem;
+}
+
+.provider-settings .provider-page-head p,
+.provider-resources .provider-page-head p{
+  margin:0;
+  opacity:.75;
+}
+
+.provider-settings textarea{
+  width:100%;
+  resize:vertical;
+}
+
+.provider-settings .save-status{
+  margin-left:8px;
+}
+
+.sam-sidebar nav button[data-sam-nav="settings"],
+.sam-sidebar nav button[data-sam-nav="resources"]{
+  margin-top:8px;
+}
+
+
+/* =========================================================
+   RESOURCES
+========================================================= */
+
+.provider-resources .resource-empty{
+  min-height:260px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px dashed #d4dfeb;
+  border-radius:14px;
+  background:#f9fbfe;
+  color:#6c7f93;
+  text-align:center;
+  padding:30px;
+}
+
+.provider-resources .resource-empty p{
+  margin:0;
+}
+
+
+/* =========================================================
+   SCHOOL PROFILE GATE
+========================================================= */
+
+.school-profile-gate{
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  background:linear-gradient(
+    135deg,
+    #eef5ff 0%,
+    #f7f9fc 48%,
+    #eef4fb 100%
+  );
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:22px;
+  overflow:auto;
+}
+
+.school-profile-gate[hidden]{
+  display:none!important;
+}
+
+.school-profile-card{
+  width:min(1040px,100%);
+  max-height:calc(100vh - 44px);
+  display:flex;
+  flex-direction:column;
+  background:#fff;
+  border:1px solid #d7e2f0;
+  border-radius:22px;
+  box-shadow:0 24px 70px rgba(8,47,92,.18);
+  overflow:hidden;
+}
+
+.school-profile-top{
+  flex:0 0 auto;
+  padding:22px 30px 18px;
+  background:linear-gradient(
+    135deg,
+    #064a8e,
+    #0e69b7
+  );
+  color:#fff;
+}
+
+.school-profile-top .eyebrow{
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  opacity:.9;
+}
+
+.school-profile-top h1{
+  margin:6px 0 5px;
+  font-size:27px;
+}
+
+.school-profile-top p{
+  margin:0;
+  font-size:14px;
+  opacity:.92;
+}
+
+.school-profile-body{
+  flex:1 1 auto;
+  overflow:auto;
+  padding:22px 30px 26px;
+}
+
+
+/* =========================================================
+   3-STEP WIZARD
+========================================================= */
+
+.profile-wizard-stepper{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-bottom:22px;
+}
+
+.profile-wizard-step{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-height:58px;
+  padding:10px 12px;
+  border:1px solid #dce5ef;
+  border-radius:12px;
+  background:#f7f9fc;
+}
+
+.profile-wizard-step .step-number{
+  width:31px;
+  height:31px;
+  flex:0 0 31px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  background:#dfe8f2;
+  color:#51667c;
+  font-weight:800;
+}
+
+.profile-wizard-step .step-text{
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+}
+
+.profile-wizard-step .step-text strong{
+  color:#0d2340;
+  font-size:13px;
+}
+
+.profile-wizard-step .step-text small{
+  color:#6b7d90;
+  font-size:11px;
+}
+
+.profile-wizard-step.active{
+  border-color:#0e69b7;
+  background:#edf6ff;
+}
+
+.profile-wizard-step.active .step-number{
+  background:#0e69b7;
+  color:#fff;
+}
+
+.profile-wizard-step.completed{
+  border-color:#8ab8dd;
+  background:#f2f9ff;
+}
+
+.profile-wizard-step.completed .step-number{
+  background:#064a8e;
+  color:#fff;
+}
+
+.profile-wizard-panel{
+  display:none;
+}
+
+.profile-wizard-panel.active{
+  display:block;
+}
+
+.profile-wizard-actions{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:22px;
+  padding-top:16px;
+  border-top:1px solid #edf2f7;
+}
+
+.profile-wizard-actions-left,
+.profile-wizard-actions-right{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.profile-wizard-note{
+  font-size:12px;
+  color:#62758a;
+}
+
+.profile-wizard-required{
+  font-size:12px;
+  color:#b42318;
+}
+
+
+/* =========================================================
+   CONTACT BLOCK
+========================================================= */
+
+.provider-contact-block{
+  border:1px solid #dce5ef;
+  border-radius:14px;
+  padding:16px;
+  background:#f9fbfe;
+}
+
+.provider-contact-block + .provider-contact-block{
+  margin-top:14px;
+}
+
+.provider-contact-block-title{
+  font-size:15px;
+  font-weight:800;
+  color:#0d2340;
+  margin-bottom:12px;
+}
+
+.profile-step-intro{
+  margin:0 0 16px;
+  color:#64778b;
+  font-size:13px;
+}
+
+
+/* =========================================================
+   PROFILE GRID
+========================================================= */
+
+.school-profile-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+
+.school-profile-grid .field-full{
+  grid-column:1/-1;
+}
+
+
+/* =========================================================
+   LETTERHEAD
+========================================================= */
+
+.school-profile-logo-box{
+  border:1px dashed #b7c9dc;
+  border-radius:14px;
+  padding:14px;
+  background:#f9fbfe;
+}
+
+.school-profile-logo-preview{
+  height:80px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-top:10px;
+  background:#fff;
+  border:1px solid #e1e8f0;
+  border-radius:10px;
+  overflow:hidden;
+}
+
+.school-profile-logo-preview img{
+  max-height:68px;
+  max-width:100%;
+  object-fit:contain;
+}
+
+.school-profile-header-preview{
+  margin-top:12px;
+  border:1px solid #d9e3ef;
+  border-radius:14px;
+  padding:16px;
+  background:#fff;
+}
+
+.school-profile-letterhead-preview{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  width:100%;
+  text-align:center;
+}
+
+.school-profile-top-logo-slot{
+  width:100%;
+  min-height:76px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:10px;
+}
+
+.school-profile-top-logo-slot img{
+  display:block;
+  max-width:100px;
+  max-height:70px;
+  object-fit:contain;
+}
+
+.school-profile-top-logo-slot img[hidden]{
+  display:none!important;
+}
+
+.school-profile-letterhead{
+  width:100%;
+  display:grid;
+  grid-template-columns:76px 1fr 76px;
+  gap:12px;
+  align-items:center;
+  text-align:center;
+}
+
+.school-profile-letterhead .logo-slot{
+  height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.school-profile-letterhead .logo-slot img{
+  display:block;
+  max-width:62px;
+  max-height:62px;
+  object-fit:contain;
+}
+
+.school-profile-letterhead .logo-slot img[hidden]{
+  display:none!important;
+}
+
+.school-profile-letterhead .line1{
+  font-size:12px;
+  font-weight:700;
+}
+
+.school-profile-letterhead .line2{
+  font-size:11px;
+  font-weight:700;
+}
+
+.school-profile-letterhead .region{
+  font-size:11px;
+  margin:2px 0 6px;
+}
+
+.school-profile-letterhead .school{
+  font-size:15px;
+  font-weight:800;
+  color:#0c2340;
+}
+
+.school-profile-letterhead .address{
+  font-size:11px;
+  color:#51667c;
+  margin-top:4px;
+}
+
+.school-profile-hint{
+  font-size:11px;
+  color:#62758a;
+  margin-top:6px;
+}
+
+
+/* =========================================================
+   HEADER LOGO
+========================================================= */
+
+#providerHeaderLogo{
+  width:58px;
+  height:58px;
+  object-fit:contain;
+  border-radius:10px;
+  background:#fff;
+  padding:4px;
+  border:1px solid #dce5ef;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:760px){
+
+  .school-profile-card{
+    max-height:calc(100vh - 20px);
+  }
+
+  .school-profile-top{
+    padding:18px 20px;
+  }
+
+  .school-profile-body{
+    padding:18px 20px 22px;
+  }
+
+  .profile-wizard-stepper{
+    grid-template-columns:1fr;
+    gap:7px;
+  }
+
+  .profile-wizard-step{
+    min-height:46px;
+  }
+
+  .school-profile-grid{
+    grid-template-columns:1fr;
+  }
+
+  .school-profile-grid .field-full{
+    grid-column:auto;
+  }
+
+  .profile-wizard-actions{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .profile-wizard-actions-left,
+  .profile-wizard-actions-right{
+    width:100%;
+    justify-content:space-between;
+  }
+
+  .school-profile-letterhead{
+    grid-template-columns:48px 1fr 48px;
+  }
+
+  .school-profile-letterhead .logo-slot img{
+    max-width:42px;
+    max-height:42px;
+  }
+
+  .school-profile-top-logo-slot{
+    min-height:65px;
+  }
+
+  .school-profile-top-logo-slot img{
+    max-width:80px;
+    max-height:55px;
+  }
+
+  #providerHeaderLogo{
+    width:48px;
+    height:48px;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+
+<!-- =========================================================
+     SCHOOL PROFILE CREATION GATE
+========================================================= -->
+
+<div
+  id="schoolProfileGate"
+  class="school-profile-gate"
+  hidden
+>
+
+  <div class="school-profile-card">
+
+
+    <!-- TOP -->
+
+    <div class="school-profile-top">
+
+      <div class="eyebrow">
+        NEXUS · PROVIDER PORTAL
+      </div>
+
+      <h1>
+        Create Account & School Profile
+      </h1>
+
+      <p>
+        Complete the three steps below to activate your TVET provider workspace.
+      </p>
+
+    </div>
+
+
+    <div class="school-profile-body">
+
+
+      <!-- =================================================
+           WIZARD STEPPER
+      ================================================== -->
+
+      <div
+        class="profile-wizard-stepper"
+        id="profileWizardStepper"
+      >
+
+        <div
+          class="profile-wizard-step active"
+          data-profile-step-indicator="1"
+        >
+
+          <span class="step-number">
+            1
+          </span>
+
+          <span class="step-text">
+
+            <strong>
+              Provider Contacts
+            </strong>
+
+            <small>
+              Authorized personnel
+            </small>
+
+          </span>
+
+        </div>
+
+
+        <div
+          class="profile-wizard-step"
+          data-profile-step-indicator="2"
+        >
+
+          <span class="step-number">
+            2
+          </span>
+
+          <span class="step-text">
+
+            <strong>
+              School Profile
+            </strong>
+
+            <small>
+              Provider information
+            </small>
+
+          </span>
+
+        </div>
+
+
+        <div
+          class="profile-wizard-step"
+          data-profile-step-indicator="3"
+        >
+
+          <span class="step-number">
+            3
+          </span>
+
+          <span class="step-text">
+
+            <strong>
+              Letterhead
+            </strong>
+
+            <small>
+              Official logos
+            </small>
+
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <form
+        id="schoolProfileGateForm"
+        novalidate
+      >
+
+
+        <!-- =================================================
+             STEP 1 — PROVIDER CONTACTS
+        ================================================== -->
+
+        <section
+          class="profile-wizard-panel active"
+          data-profile-step-panel="1"
+        >
+
+          <h2>
+            Authorized Provider Contacts
+          </h2>
+
+          <p class="profile-step-intro">
+            Enter the designated personnel who will represent and manage
+            the TVET Provider / Assessment Center in the portal.
+          </p>
+
+
+          <!-- REGISTRAR -->
+
+          <div class="provider-contact-block">
+
+            <div class="provider-contact-block-title">
+              Registrar
+            </div>
+
+            <div class="form-grid">
+
+              <div class="field">
+
+                <label
+                  class="required"
+                  for="gateRegistrarName"
+                >
+                  Name
+                </label>
+
+                <input
+                  id="gateRegistrarName"
+                  required
+                  placeholder="Registrar Name"
+                >
+
+              </div>
+
+
+              <div class="field">
+
+                <label
+                  class="required"
+                  for="gateRegistrarPhone"
+                >
+                  Mobile / Phone Number
+                </label>
+
+                <input
+                  id="gateRegistrarPhone"
+                  type="tel"
+                  required
+                  placeholder="09XX XXX XXXX"
+                >
+
+              </div>
+
+
+              <div class="field field-full">
+
+                <label
+                  class="required"
+                  for="gateRegistrarEmail"
+                >
+                  Email Address
+                </label>
+
+                <input
+                  id="gateRegistrarEmail"
+                  type="email"
+                  required
+                  placeholder="registrar@example.com"
+                >
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- CENTER ADMINISTRATOR / PRESIDENT -->
+
+          <div class="provider-contact-block">
+
+            <div class="provider-contact-block-title">
+              Center Administrator / President
+            </div>
+
+            <div class="form-grid">
+
+              <div class="field">
+
+                <label
+                  class="required"
+                  for="gateCenterAdminName"
+                >
+                  Name
+                </label>
+
+                <input
+                  id="gateCenterAdminName"
+                  required
+                  placeholder="Center Administrator / President"
+                >
+
+              </div>
+
+
+              <div class="field">
+
+                <label
+                  class="required"
+                  for="gateCenterAdminPhone"
+                >
+                  Mobile / Phone Number
+                </label>
+
+                <input
+                  id="gateCenterAdminPhone"
+                  type="tel"
+                  required
+                  placeholder="09XX XXX XXXX"
+                >
+
+              </div>
+
+
+              <div class="field field-full">
+
+                <label
+                  class="required"
+                  for="gateCenterAdminEmail"
+                >
+                  Email Address
+                </label>
+
+                <input
+                  id="gateCenterAdminEmail"
+                  type="email"
+                  required
+                  placeholder="admin@example.com"
+                >
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- ASSESSMENT CENTER MANAGER -->
+
+          <div class="provider-contact-block">
+
+            <div class="provider-contact-block-title">
+              Assessment Center Manager
+            </div>
+
+            <div class="form-grid">
+
+              <div class="field">
+
+                <label
+                  class="required"
+                  for="gateAssessmentManagerName"
+                >
+                  Name
+                </label>
+
+                <input
+                  id="gateAssessmentManagerName"
+                  required
+                  placeholder="Assessment Center Manager"
+                >
+
+              </div>
+
+
+              <div class="field">
+
+                <label
+                  class="required"
+                  for="gateAssessmentManagerPhone"
+                >
+                  Mobile / Phone Number
+                </label>
+
+                <input
+                  id="gateAssessmentManagerPhone"
+                  type="tel"
+                  required
+                  placeholder="09XX XXX XXXX"
+                >
+
+              </div>
+
+
+              <div class="field field-full">
+
+                <label
+                  class="required"
+                  for="gateAssessmentManagerEmail"
+                >
+                  Email Address
+                </label>
+
+                <input
+                  id="gateAssessmentManagerEmail"
+                  type="email"
+                  required
+                  placeholder="assessment@example.com"
+                >
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="profile-wizard-actions">
+
+            <div class="profile-wizard-actions-left">
+
+              <span class="profile-wizard-note">
+                Step 1 of 3
+              </span>
+
+            </div>
+
+
+            <div class="profile-wizard-actions-right">
+
+              <button
+                type="button"
+                class="btn btn-primary"
+                data-profile-next="2"
+              >
+                Next: School Profile →
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- =================================================
+             STEP 2 — SCHOOL PROFILE
+        ================================================== -->
+
+        <section
+          class="profile-wizard-panel"
+          data-profile-step-panel="2"
+        >
+
+          <h2>
+            School / TVET Provider Profile
+          </h2>
+
+          <p class="profile-step-intro">
+            Provide the official school or TVET provider information
+            that will be associated with your portal account.
+          </p>
+
+
+          <div class="school-profile-grid">
+
+
+            <div class="field field-full">
+
+              <label
+                class="required"
+                for="gateSchoolName"
+              >
+                School / TVET Provider Name
+              </label>
+
+              <input
+                id="gateSchoolName"
+                required
+                placeholder="Bloom Training and Assessment Center INC."
+              >
+
+            </div>
+
+
+            <div class="field field-full">
+
+              <label
+                class="required"
+                for="gateSchoolAddress"
+              >
+                Complete School Address
+              </label>
+
+              <textarea
+                id="gateSchoolAddress"
+                rows="3"
+                required
+                placeholder="2nd flr. Navia Bldg. Purok 2 Ilawod Camalig Albay"
+              ></textarea>
+
+            </div>
+
+
+            <div class="field">
+
+              <label
+                for="gateSchoolContact"
+              >
+                Authorized Contact Person
+              </label>
+
+              <input
+                id="gateSchoolContact"
+                placeholder="Optional"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label
+                for="gateSchoolEmail"
+              >
+                School Official Email
+              </label>
+
+              <input
+                id="gateSchoolEmail"
+                type="email"
+                placeholder="school@example.com"
+              >
+
+            </div>
+
+          </div>
+
+
+          <div class="profile-wizard-actions">
+
+            <div class="profile-wizard-actions-left">
+
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-profile-back="1"
+              >
+                ← Back
+              </button>
+
+            </div>
+
+
+            <div class="profile-wizard-actions-right">
+
+              <span class="profile-wizard-note">
+                Step 2 of 3
+              </span>
+
+              <button
+                type="button"
+                class="btn btn-primary"
+                data-profile-next="3"
+              >
+                Next: Letterhead →
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- =================================================
+             STEP 3 — LETTERHEAD
+        ================================================== -->
+
+        <section
+          class="profile-wizard-panel"
+          data-profile-step-panel="3"
+        >
+
+          <h2>
+            Official Header / Letterhead
+          </h2>
+
+          <p class="profile-step-intro">
+            Add the official Top, Left, and Right logos used on
+            your provider's letterhead. The live preview updates immediately.
+          </p>
+
+
+          <div class="school-profile-grid">
+
+
+            <!-- TOP -->
+
+            <div class="field">
+
+              <div class="school-profile-logo-box">
+
+                <label for="gateHeaderLogo">
+
+                  Top Logo
+
+                  <span class="school-profile-hint">
+                    (optional)
+                  </span>
+
+                </label>
+
+                <input
+                  id="gateHeaderLogo"
+                  type="file"
+                  accept="image/*"
+                >
+
+                <div class="school-profile-logo-preview">
+
+                  <img
+                    id="gateHeaderLogoPreview"
+                    alt="Top logo preview"
+                    hidden
+                  >
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- LEFT -->
+
+            <div class="field">
+
+              <div class="school-profile-logo-box">
+
+                <label for="gateLogoLeft">
+
+                  Left Logo
+
+                  <span class="school-profile-hint">
+                    (optional)
+                  </span>
+
+                </label>
+
+                <input
+                  id="gateLogoLeft"
+                  type="file"
+                  accept="image/*"
+                >
+
+                <div class="school-profile-logo-preview">
+
+                  <img
+                    id="gateLogoLeftPreview"
+                    alt="Left logo preview"
+                    hidden
+                  >
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- RIGHT -->
+
+            <div class="field">
+
+              <div class="school-profile-logo-box">
+
+                <label for="gateLogoRight">
+
+                  Right Logo
+
+                  <span class="school-profile-hint">
+                    (optional)
+                  </span>
+
+                </label>
+
+                <input
+                  id="gateLogoRight"
+                  type="file"
+                  accept="image/*"
+                >
+
+                <div class="school-profile-logo-preview">
+
+                  <img
+                    id="gateLogoRightPreview"
+                    alt="Right logo preview"
+                    hidden
+                  >
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- LIVE PREVIEW -->
+
+            <div class="field field-full">
+
+              <div class="school-profile-header-preview">
+
+                <div class="school-profile-letterhead-preview">
+
+
+                  <!-- TOP LOGO -->
+
+                  <div
+                    class="school-profile-top-logo-slot"
+                  >
+
+                    <img
+                      id="gatePreviewTop"
+                      alt="Top header logo"
+                      hidden
+                    >
+
+                  </div>
+
+
+                  <!-- LEFT / CENTER / RIGHT -->
+
+                  <div class="school-profile-letterhead">
+
+
+                    <div class="logo-slot">
+
+                      <img
+                        id="gatePreviewLeft"
+                        alt="Left header logo"
+                        hidden
+                      >
+
+                    </div>
+
+
+                    <div>
+
+                      <div class="line1">
+                        Republic of the Philippines
+                      </div>
+
+                      <div class="line2">
+                        Technical Education and Skills Development Authority
+                      </div>
+
+                      <div class="region">
+                        Region V
+                      </div>
+
+                      <div
+                        id="gatePreviewSchool"
+                        class="school"
+                      >
+                        Your School / TVET Provider Name
+                      </div>
+
+                      <div
+                        id="gatePreviewAddress"
+                        class="address"
+                      >
+                        Your complete school address
+                      </div>
+
+                    </div>
+
+
+                    <div class="logo-slot">
+
+                      <img
+                        id="gatePreviewRight"
+                        alt="Right header logo"
+                        hidden
+                      >
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <div class="school-profile-hint">
+                The preview updates immediately when you select or change any logo.
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="profile-wizard-actions">
+
+            <div class="profile-wizard-actions-left">
+
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-profile-back="2"
+              >
+                ← Back
+              </button>
+
+            </div>
+
+
+            <div class="profile-wizard-actions-right">
+
+              <span class="profile-wizard-note">
+                Step 3 of 3
+              </span>
+
+              <button
+                type="submit"
+                class="btn btn-primary"
+              >
+                Create Account & Continue to Portal
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div
+            class="profile-wizard-required"
+            style="margin-top:10px;"
+          >
+            Required: Registrar, Center Administrator / President,
+            Assessment Center Manager, school name, and school address.
+          </div>
+
+        </section>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+SIDEBAR
+========================================================= -->
+
+<aside class="sam-sidebar">
+
+  <div class="sam-side-brand">
+
+    <img
+      src="../../assets/Logo.png"
+      alt="TESDA"
+    >
+
+    <div>
+
+      <strong>
+        NEXUS · Provider Portal
+      </strong>
+
+      <small>
+        TVET Provider Scholarship & Billing
+      </small>
+
+    </div>
+
+  </div>
+
+
+  <nav>
+
+    <button
+      data-sam-nav="home"
+      class="active"
+    >
+      <span>⌂</span>
+      Home
+    </button>
+
+    <button data-sam-nav="billing">
+      <span>▤</span>
+      Billing Center
+    </button>
+
+    <button data-sam-nav="allowance">
+      <span>▦</span>
+      Allowance & Attendance
+    </button>
+
+    <button data-sam-nav="mis">
+      <span>□</span>
+      MIS 03-02 Submission
+    </button>
+
+    <button data-sam-nav="tracking">
+      <span>◎</span>
+      My Billing Tracking
+    </button>
+
+    <button data-sam-nav="cost">
+      <span>₱</span>
+      Qualification Cost Reference
+    </button>
+
+    <button data-sam-nav="resources">
+      <span>▣</span>
+      Resources
+    </button>
+
+    <button data-sam-nav="settings">
+      <span>⚙</span>
+      Settings
+    </button>
+
+  </nav>
+
+
+  <a
+    class="sam-back"
+    href="../../index.html"
+  >
+    ← Back to NEXUS
+  </a>
+
+</aside>
+
+
+<div class="sam-content-shell">
+
+
+<!-- =========================================================
+APP HEADER
+========================================================= -->
+
+<header class="app-header">
+
+  <div class="brand">
+
+    <img
+      id="providerHeaderLogo"
+      src="../../assets/Logo.png"
+      alt="Provider Logo"
+    >
+
+    <div>
+
+      <h1>
+        NEXUS Provider Portal
+      </h1>
+
+      <p>
+        Scholarship · Billing · MIS · Tracking
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="sam-header-actions">
+
+    <div class="sam-notification-anchor">
+
+      <button
+        id="samNotificationBell"
+        class="sam-notification-bell"
+        type="button"
+        aria-label="Notifications"
+        aria-expanded="false"
+      >
+
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+
+          <path
+            d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"
+          />
+
+          <path d="M10 21h4"/>
+
+        </svg>
+
+        <span
+          id="samNotificationBadge"
+          class="sam-notification-badge"
+          hidden
+        >
+          0
+        </span>
+
+      </button>
+
+
+      <div
+        id="samNotificationPanel"
+        class="sam-notification-panel"
+        hidden
+      >
+
+        <div class="sam-notification-head">
+
+          <div>
+
+            <strong>
+              Notifications
+            </strong>
+
+            <small id="samNotificationCount">
+              All caught up
+            </small>
+
+          </div>
+
+          <button
+            id="samNotificationMarkAll"
+            type="button"
+          >
+            Mark all read
+          </button>
+
+        </div>
+
+
+        <div
+          id="samNotificationList"
+          class="sam-notification-list"
+        ></div>
+
+      </div>
+
+    </div>
+
+
+    <div class="header-meta">
+
+      <strong>
+        TESDA Albay Provincial Office
+      </strong>
+
+      <br>
+
+      <span>
+        TVET Provider Workspace
+      </span>
+
+      <span
+        id="costScheduleLabel"
+        hidden
+      ></span>
+
+      <span
+        id="appVersion"
+        hidden
+      ></span>
+
+    </div>
+
+  </div>
+
+</header>
+
+
+<!-- =========================================================
+HOME
+========================================================= -->
+
+<section
+  class="school-home"
+  data-utility-panel="home"
+  hidden
+>
+
+  <div class="school-home-hero">
+
+    <div>
+
+      <span>
+        TESDA ALBAY · PROVIDER PORTAL
+      </span>
+
+      <h1>
+        TVET Provider Home
+      </h1>
+
+      <p>
+        Manage approved RQMs, submit scholarship billings,
+        monitor Provincial Office queues, and receive action notifications.
+      </p>
+
+    </div>
+
+
+    <button
+      class="btn btn-primary"
+      data-home-billing
+    >
+      Open Billing Center
+    </button>
+
+  </div>
+
+
+  <div
+    class="school-home-metrics"
+    id="schoolHomeMetrics"
+  ></div>
+
+
+  <section class="school-home-rqms">
+
+    <div class="home-section-head">
+
+      <div>
+
+        <h2>
+          My Approved RQMs & Scholar Status
+        </h2>
+
+        <p>
+          Only RQMs assigned to this TVET Provider are shown.
+        </p>
+
+      </div>
+
+      <input
+        id="schoolHomeQualificationFilter"
+        placeholder="Filter by qualification"
+      >
+
+    </div>
+
+
+    <div
+      id="schoolHomeRqms"
+      class="home-rqm-grid"
+    ></div>
+
+  </section>
+
+
+  <section class="school-home-queue">
+
+    <div class="home-section-head">
+
+      <div>
+
+        <h2>
+          Provincial Office Billing Queue
+        </h2>
+
+        <p>
+          Queue positions are computed separately for each received billing transaction.
+        </p>
+
+      </div>
+
+    </div>
+
+    <div id="schoolHomeQueue"></div>
+
+  </section>
+
+
+  <div class="school-home-grid">
+
+    <section>
+
+      <div class="home-section-head">
+
+        <h2>
+          My Submitted Billings
+        </h2>
+
+        <button
+          class="text-btn"
+          data-home-all-tracking
+        >
+          View full tracking
+        </button>
+
+      </div>
+
+      <div id="schoolHomeBillings"></div>
+
+    </section>
+
+
+    <section>
+
+      <div class="home-section-head">
+
+        <h2>
+          Provincial Office Notifications
+        </h2>
+
+      </div>
+
+      <div id="schoolHomeNotifications"></div>
+
+    </section>
+
+  </div>
+
+</section>
+
+
+<!-- =========================================================
+WORKFLOW SHELL
+========================================================= -->
+
+<div class="workflow-shell">
+
+  <div
+    class="active-batch"
+    id="activeBatchLabel"
+  >
+
+    <strong>
+      No active batch
+    </strong>
+
+    <span>
+      Create or open a batch in Step 1
+    </span>
+
+  </div>
+
+
+  <div
+    class="workflow-stepper"
+    id="workflowStepper"
+  >
+
+    <button
+      type="button"
+      data-workflow-step="1"
+    >
+
+      <span class="step-no">
+        1
+      </span>
+
+      <span>
+
+        <b>
+          Batch Setup
+        </b>
+
+        <small class="step-state">
+          Setup
+        </small>
+
+      </span>
+
+    </button>
+
+
+    <button
+      type="button"
+      data-workflow-step="2"
+    >
+
+      <span class="step-no">
+        2
+      </span>
+
+      <span>
+
+        <b>
+          Attendance Import
+        </b>
+
+        <small class="step-state">
+          Pending
+        </small>
+
+      </span>
+
+    </button>
+
+
+    <button
+      type="button"
+      data-workflow-step="3"
+    >
+
+      <span class="step-no">
+        3
+      </span>
+
+      <span>
+
+        <b>
+          Validate Attendance
+        </b>
+
+        <small class="step-state">
+          Pending
+        </small>
+
+      </span>
+
+    </button>
+
+
+    <button
+      type="button"
+      data-workflow-step="4"
+    >
+
+      <span class="step-no">
+        4
+      </span>
+
+      <span>
+
+        <b>
+          Compute Allowance
+        </b>
+
+        <small class="step-state">
+          Pending
+        </small>
+
+      </span>
+
+    </button>
+
+
+    <button
+      type="button"
+      data-workflow-step="5"
+    >
+
+      <span class="step-no">
+        5
+      </span>
+
+      <span>
+
+        <b>
+          School Reports
+        </b>
+
+        <small class="step-state">
+          Pending
+        </small>
+
+      </span>
+
+    </button>
+
+  </div>
+
+
+  <div
+    id="workflowGateMessage"
+    class="workflow-gate warn"
+  ></div>
+
+</div>
+
+
+<!-- =========================================================
+SETTINGS
+========================================================= -->
+
+<section
+  class="provider-settings"
+  data-utility-panel="settings"
+  hidden
+>
+
+  <div class="provider-page-head">
+
+    <div>
+
+      <span>
+        NEXUS · ACCOUNT SETTINGS
+      </span>
+
+      <h2>
+        Profile Settings
+      </h2>
+
+      <p>
+        Edit your authorized provider contacts and TVET provider profile information.
+        Changes are saved in this browser for this portal prototype.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <section class="card">
+
+    <div class="panel-header">
+
+      <h2>
+        Authorized Provider Contacts
+      </h2>
+
+      <p>
+        Keep the designated provider personnel contact information up to date.
+      </p>
+
+    </div>
+
+
+    <div class="panel-body">
+
+      <form
+        id="profileSettingsForm"
+        novalidate
+      >
+
+
+        <!-- REGISTRAR -->
+
+        <div class="provider-contact-block">
+
+          <div class="provider-contact-block-title">
+            Registrar
+          </div>
+
+          <div class="form-grid">
+
+            <div class="field">
+
+              <label
+                class="required"
+                for="profileRegistrarName"
+              >
+                Name
+              </label>
+
+              <input
+                id="profileRegistrarName"
+                required
+                placeholder="Registrar Name"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label
+                class="required"
+                for="profileRegistrarPhone"
+              >
+                Mobile / Phone Number
+              </label>
+
+              <input
+                id="profileRegistrarPhone"
+                type="tel"
+                required
+                placeholder="09XX XXX XXXX"
+              >
+
+            </div>
+
+
+            <div class="field field-full">
+
+              <label
+                class="required"
+                for="profileRegistrarEmail"
+              >
+                Email Address
+              </label>
+
+              <input
+                id="profileRegistrarEmail"
+                type="email"
+                required
+                placeholder="registrar@example.com"
+              >
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- CENTER ADMINISTRATOR -->
+
+        <div class="provider-contact-block">
+
+          <div class="provider-contact-block-title">
+            Center Administrator / President
+          </div>
+
+          <div class="form-grid">
+
+            <div class="field">
+
+              <label
+                class="required"
+                for="profileCenterAdminName"
+              >
+                Name
+              </label>
+
+              <input
+                id="profileCenterAdminName"
+                required
+                placeholder="Center Administrator / President"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label
+                class="required"
+                for="profileCenterAdminPhone"
+              >
+                Mobile / Phone Number
+              </label>
+
+              <input
+                id="profileCenterAdminPhone"
+                type="tel"
+                required
+                placeholder="09XX XXX XXXX"
+              >
+
+            </div>
+
+
+            <div class="field field-full">
+
+              <label
+                class="required"
+                for="profileCenterAdminEmail"
+              >
+                Email Address
+              </label>
+
+              <input
+                id="profileCenterAdminEmail"
+                type="email"
+                required
+                placeholder="admin@example.com"
+              >
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ASSESSMENT CENTER MANAGER -->
+
+        <div class="provider-contact-block">
+
+          <div class="provider-contact-block-title">
+            Assessment Center Manager
+          </div>
+
+          <div class="form-grid">
+
+            <div class="field">
+
+              <label
+                class="required"
+                for="profileAssessmentManagerName"
+              >
+                Name
+              </label>
+
+              <input
+                id="profileAssessmentManagerName"
+                required
+                placeholder="Assessment Center Manager"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label
+                class="required"
+                for="profileAssessmentManagerPhone"
+              >
+                Mobile / Phone Number
+              </label>
+
+              <input
+                id="profileAssessmentManagerPhone"
+                type="tel"
+                required
+                placeholder="09XX XXX XXXX"
+              >
+
+            </div>
+
+
+            <div class="field field-full">
+
+              <label
+                class="required"
+                for="profileAssessmentManagerEmail"
+              >
+                Email Address
+              </label>
+
+              <input
+                id="profileAssessmentManagerEmail"
+                type="email"
+                required
+                placeholder="assessment@example.com"
+              >
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- SCHOOL PROFILE -->
+
+        <div class="school-profile-step-title">
+          School / TVET Provider Profile
+        </div>
+
+
+        <div class="form-grid">
+
+          <div class="field field-full">
+
+            <label
+              class="required"
+              for="profileProvider"
+            >
+              TVET Provider / TTI
+            </label>
+
+            <input
+              id="profileProvider"
+              required
+              placeholder="Bloom Training and Assessment Center INC."
+            >
+
+          </div>
+
+
+          <div class="field field-full">
+
+            <label for="profileAddress">
+              Provider Address
+            </label>
+
+            <textarea
+              id="profileAddress"
+              rows="3"
+              placeholder="2nd flr. Navia Bldg. Purok 2 Ilawod Camalig Albay"
+            ></textarea>
+
+          </div>
+
+
+          <div class="field">
+
+            <label
+              for="profileSchoolEmail"
+            >
+              School Official Email
+            </label>
+
+            <input
+              id="profileSchoolEmail"
+              type="email"
+              placeholder="school@example.com"
+            >
+
+          </div>
+
+        </div>
+
+
+        <!-- LETTERHEAD -->
+
+        <div class="school-profile-step-title">
+          Official Header / Letterhead Logos
+        </div>
+
+
+        <div class="form-grid">
+
+
+          <!-- TOP -->
+
+          <div class="field">
+
+            <label
+              for="profileHeaderLogo"
+            >
+              Top Logo
+            </label>
+
+            <input
+              id="profileHeaderLogo"
+              type="file"
+              accept="image/*"
+            >
+
+            <div class="school-profile-logo-preview">
+
+              <img
+                id="profileHeaderLogoPreview"
+                alt="Saved top logo"
+                hidden
+              >
+
+            </div>
+
+          </div>
+
+
+          <!-- LEFT -->
+
+          <div class="field">
+
+            <label
+              for="profileLogoLeft"
+            >
+              Left Logo
+            </label>
+
+            <input
+              id="profileLogoLeft"
+              type="file"
+              accept="image/*"
+            >
+
+            <div class="school-profile-logo-preview">
+
+              <img
+                id="profileLogoLeftPreview"
+                alt="Saved left logo"
+                hidden
+              >
+
+            </div>
+
+          </div>
+
+
+          <!-- RIGHT -->
+
+          <div class="field">
+
+            <label
+              for="profileLogoRight"
+            >
+              Right Logo
+            </label>
+
+            <input
+              id="profileLogoRight"
+              type="file"
+              accept="image/*"
+            >
+
+            <div class="school-profile-logo-preview">
+
+              <img
+                id="profileLogoRightPreview"
+                alt="Saved right logo"
+                hidden
+              >
+
+            </div>
+
+          </div>
+
+
+          <!-- =================================================
+               SETTINGS LETTERHEAD PREVIEW
+          ================================================== -->
+
+          <div class="field field-full">
+
+            <div class="school-profile-section-title">
+              Official Letterhead Preview
+            </div>
+
+            <div class="school-profile-hint">
+              This preview updates while you edit the school information
+              or change any of the letterhead logos.
+            </div>
+
+
+            <div class="school-profile-header-preview">
+
+              <div class="school-profile-letterhead-preview">
+
+
+                <!-- TOP -->
+
+                <div class="school-profile-top-logo-slot">
+
+                  <img
+                    id="settingsPreviewTop"
+                    alt="Top header logo"
+                    hidden
+                  >
+
+                </div>
+
+
+                <!-- LEFT / CENTER / RIGHT -->
+
+                <div class="school-profile-letterhead">
+
+
+                  <div class="logo-slot">
+
+                    <img
+                      id="settingsPreviewLeft"
+                      alt="Left header logo"
+                      hidden
+                    >
+
+                  </div>
+
+
+                  <div>
+
+                    <div class="line1">
+                      Republic of the Philippines
+                    </div>
+
+                    <div class="line2">
+                      Technical Education and Skills Development Authority
+                    </div>
+
+                    <div class="region">
+                      Region V
+                    </div>
+
+                    <div
+                      id="settingsPreviewSchool"
+                      class="school"
+                    >
+                      Your School / TVET Provider Name
+                    </div>
+
+                    <div
+                      id="settingsPreviewAddress"
+                      class="address"
+                    >
+                      Your complete school address
+                    </div>
+
+                  </div>
+
+
+                  <div class="logo-slot">
+
+                    <img
+                      id="settingsPreviewRight"
+                      alt="Right header logo"
+                      hidden
+                    >
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ACTIONS -->
+
+        <div class="form-actions">
+
+          <button
+            type="button"
+            id="btnResetProfile"
+            class="btn btn-secondary"
+          >
+            Reset
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
+            Save Profile
+          </button>
+
+          <span
+            id="profileSaveStatus"
+            class="save-status"
+          >
+            Not yet saved
+          </span>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </section>
+
+</section>
+
+
+<!-- =========================================================
+RESOURCES
+========================================================= -->
+
+<section
+  class="provider-resources"
+  data-utility-panel="resources"
+  hidden
+>
+
+  <div class="provider-page-head">
+
+    <div>
+
+      <span>
+        NEXUS · PROVIDER RESOURCES
+      </span>
+
+      <h2>
+        Resources
+      </h2>
+
+      <p>
+        Provider resources and reference materials.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <section class="card">
+
+    <div class="panel-header">
+
+      <h2>
+        Provider Resources
+      </h2>
+
+      <p>
+        Resources will be added here.
+      </p>
+
+    </div>
+
+
+    <div class="panel-body">
+
+      <div class="resource-empty">
+
+        <p>
+          Resource section is currently blank.
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</section>
+
+
+<!-- =========================================================
+MAIN APP
+========================================================= -->
+
+<main class="app-main">
+
+
+<!-- =========================================================
+WORKFLOW PANEL 1
+========================================================= -->
+
+<div data-workflow-panel="1">
+
+<section
+  id="dashboard"
+  class="grid-summary"
+>
+
+<article class="card summary-card">
+<span>Scholarship Batches</span>
+<strong data-summary="batches">0</strong>
+</article>
+
+<article class="card summary-card">
+<span>Allocated Slots</span>
+<strong data-summary="slots">0</strong>
+</article>
+
+<article class="card summary-card">
+<span>Maximum Batch TSF</span>
+<strong data-summary="maxTsf">₱0.00</strong>
+</article>
+
+<article class="card summary-card">
+<span>BSRS Reports</span>
+<strong data-att-summary="reports">0</strong>
+</article>
+
+</section>
+
+
+<section
+  class="card"
+  id="tipRequestCard"
+>
+
+<div class="panel-header">
+
+<h2>
+Training Induction Program (TIP)
+</h2>
+
+<p>
+Request a TIP schedule for the active scholarship batch.
+The Scholarship Focal may approve the preferred slot or propose
+another schedule when there is a conflict.
+</p>
+
+</div>
+
+
+<div class="panel-body">
+
+<div class="form-grid">
+
+<div class="field">
+
+<label>
+Preferred TIP Date
+</label>
+
+<input
+  id="tipRequestedDate"
+  type="date"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Preferred TIP Time
+</label>
+
+<input
+  id="tipRequestedTime"
+  type="time"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Requested By
+</label>
+
+<input id="tipRequestedBy">
+
+</div>
+
+
+<div class="field">
+
+<label>
+TVI Official Email
+</label>
+
+<input
+  id="tipTviEmail"
+  type="email"
+>
+
+</div>
+
+
+<div class="field field-full">
+
+<label>
+Remarks
+</label>
+
+<input id="tipRemarks">
+
+</div>
+
+</div>
+
+
+<div class="form-actions">
+
+<button
+  type="button"
+  id="btnRequestTIP"
+  class="btn btn-primary"
+>
+Request Training Induction Program
+</button>
+
+</div>
+
+
+<h3>
+TIP Request / Schedule
+</h3>
+
+<div id="tipRequestHistory"></div>
+
+
+<h3>
+Scholarship Notifications
+</h3>
+
+<div id="schoolNotifications"></div>
+
+</div>
+
+</section>
+
+
+<section class="content-grid">
+
+
+<article
+  class="card"
+  id="batchSetup"
+>
+
+<div class="panel-header">
+
+<h2 id="formTitle">
+Create Scholarship Batch
+</h2>
+
+<p>
+Qualification hours, approved days, TSF rate, and maximum TSF
+are inherited from the official cost master and cannot be manually changed.
+</p>
+
+</div>
+
+
+<div class="panel-body">
+
+<div
+  id="formErrors"
+  class="error-panel"
+  hidden
+></div>
+
+
+<form
+  id="batchForm"
+  novalidate
+>
+
+<input
+  type="hidden"
+  id="batchId"
+>
+
+
+<div class="form-grid">
+
+
+<div class="field">
+
+<label
+  class="required"
+  for="rqmNo"
+>
+RQM Number
+</label>
+
+<input
+  id="rqmNo"
+  required
+  placeholder="RQM No."
+  readonly
+>
+
+</div>
+
+
+<div class="field">
+
+<label
+  for="rqmCode"
+>
+RQM Code
+</label>
+
+<input
+  id="rqmCode"
+  placeholder="RQM Code / allocation line"
+  readonly
+>
+
+</div>
+
+
+<div class="field">
+
+<label
+  class="required"
+  for="scholarshipProgram"
+>
+Scholarship Program
+</label>
+
+<select id="scholarshipProgram">
+
+<option value="TWSP">
+TWSP
+</option>
+
+<option value="TTSP">
+TTSP
+</option>
+
+<option value="BKSTP">
+BKSTP
+</option>
+
+<option value="PESFA">
+PESFA
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label
+  class="required"
+  for="implementationType"
+>
+Implementation Type
+</label>
+
+<select id="implementationType">
+
+<option value="REGULAR">
+Regular
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field field-full">
+
+<label
+  class="required"
+  for="qualificationCostMasterId"
+>
+Qualification
+</label>
+
+<select
+  id="qualificationCostMasterId"
+  required
+></select>
+
+<small>
+Uses the exact qualification/SOC variant because assessment fees and
+schedules can differ.
+</small>
+
+</div>
+
+
+<div class="field field-full">
+
+<div
+  id="qualificationPreview"
+  class="qualification-preview"
+>
+Select a qualification to load the official schedule values.
+</div>
+
+</div>
+
+
+<div class="field field-full">
+
+<label
+  class="required"
+  for="tvi"
+>
+TVET Provider / TTI
+</label>
+
+<input
+  id="tvi"
+  required
+  readonly
+>
+
+</div>
+
+
+<div class="field field-full">
+
+<label for="trainer">
+Trainer
+</label>
+
+<input id="trainer">
+
+</div>
+
+
+<div class="field">
+
+<label
+  class="required"
+  for="trainingStartDate"
+>
+Training Start
+</label>
+
+<input
+  id="trainingStartDate"
+  type="date"
+  required
+>
+
+</div>
+
+
+<div class="field">
+
+<label
+  class="required"
+  for="trainingEndDate"
+>
+Training End
+</label>
+
+<input
+  id="trainingEndDate"
+  type="date"
+  required
+>
+
+</div>
+
+
+<div class="field">
+
+<label
+  class="required"
+  for="numberOfSlots"
+>
+No. of Slots
+</label>
+
+<input
+  id="numberOfSlots"
+  type="number"
+  min="1"
+  step="1"
+  required
+>
+
+</div>
+
+</div>
+
+
+<div class="form-actions">
+
+<button
+  type="button"
+  id="btnResetForm"
+  class="btn btn-secondary"
+>
+Reset
+</button>
+
+<button
+  type="submit"
+  class="btn btn-primary"
+>
+Save Batch Setup
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</article>
+
+
+<article class="card">
+
+<div class="panel-header">
+
+<h2>
+Scholarship Batch Registry
+</h2>
+
+<p>
+Block 1 setup records. Attendance import will attach to these batches in Block 2.
+</p>
+
+</div>
+
+
+<div class="panel-body">
+
+<div class="table-wrap">
+
+<table class="data-table">
+
+<thead>
+
+<tr>
+
+<th>
+Batch / RQM
+</th>
+
+<th>
+Program
+</th>
+
+<th>
+Qualification
+</th>
+
+<th>
+TVI
+</th>
+
+<th>
+Hours / Days
+</th>
+
+<th>
+Max TSF / Scholar
+</th>
+
+<th>
+Slots
+</th>
+
+<th>
+Status
+</th>
+
+<th>
+Actions
+</th>
+
+</tr>
+
+</thead>
+
+<tbody id="batchTableBody"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</article>
+
+</section>
+
+
+<div class="step-footer">
+
+<button
+  type="button"
+  class="btn btn-primary"
+  data-step-next="2"
+>
+Continue to Attendance Import
+</button>
+
+</div>
+
+</div>
+
+
+<!-- =========================================================
+WORKFLOW PANEL 2
+========================================================= -->
+
+<div
+  data-workflow-panel="2"
+  hidden
+>
+
+<section
+  class="card"
+  id="attendanceImport"
+>
+
+<div class="panel-header">
+
+<h2>
+BSRS Attendance Import
+</h2>
+
+<p>
+Upload official BSRS Trainees'/Learners' Attendance Sheet PDFs and
+attach them to an existing scholarship batch. Original BSRS values
+are preserved and incomplete Time In/Time Out entries are automatically
+flagged for validation.
+</p>
+
+</div>
+
+
+<div class="panel-body">
+
+<div
+  id="attendanceErrors"
+  class="error-panel"
+  hidden
+></div>
+
+
+<div class="attendance-import-grid">
+
+
+<div>
+
+<div class="field">
+
+<label
+  class="required"
+  for="attendanceBatchId"
+>
+Scholarship Batch
+</label>
+
+<select id="attendanceBatchId">
+
+<option value="">
+Select batch...
+</option>
+
+</select>
+
+</div>
+
+
+<div class="file-drop">
+
+<label
+  class="required"
+  for="bsrsFiles"
+>
+
+<strong>
+BSRS Attendance PDF
+</strong>
+
+</label>
+
+<input
+  id="bsrsFiles"
+  type="file"
+  accept="application/pdf,.pdf"
+  multiple
+>
+
+<small>
+You may select multiple daily attendance PDFs for the same batch.
+Duplicate BSRS report numbers and dates are blocked.
+</small>
+
+</div>
+
+
+<div class="form-actions">
+
+<button
+  type="button"
+  id="btnImportBsrs"
+  class="btn btn-primary"
+>
+Import BSRS Attendance
+</button>
+
+</div>
+
+
+<div
+  id="importProgress"
+  class="progress-note"
+  hidden
+></div>
+
+</div>
+
+
+<div>
+
+<div class="grid-summary">
+
+<article class="summary-card">
+<span>Reports</span>
+<strong data-att-summary="reports">0</strong>
+</article>
+
+<article class="summary-card">
+<span>Attendance Records</span>
+<strong data-att-summary="records">0</strong>
+</article>
+
+<article class="summary-card">
+<span>Complete BSRS</span>
+<strong data-att-summary="complete">0</strong>
+</article>
+
+<article class="summary-card">
+<span>For Validation</span>
+<strong data-att-summary="exceptions">0</strong>
+</article>
+
+<article class="summary-card">
+<span>Critical Reports</span>
+<strong data-att-summary="critical">0</strong>
+</article>
+
+<article class="summary-card">
+<span>Ready Reports</span>
+<strong data-att-summary="ready">0</strong>
+</article>
+
+</div>
+
+
+<div id="attendanceReportList"></div>
+
+<div
+  id="attendanceTimeline"
+  class="attendance-timeline"
+></div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<section
+  class="card"
+  id="attendanceDetail"
+  hidden
+>
+
+<div class="panel-header">
+
+<h2>
+Extracted Daily Attendance
+</h2>
+
+<p id="attendanceDetailMeta">
+Select an imported report to view extracted attendance.
+</p>
+
+</div>
+
+
+<div class="panel-body">
+
+<div class="table-wrap">
+
+<table class="data-table">
+
+<thead>
+
+<tr>
+<th>No.</th>
+<th>Scholar</th>
+<th>BSRS Time In</th>
+<th>BSRS Time Out</th>
+<th>Duration</th>
+<th>Import Status</th>
+<th>Final Attendance</th>
+<th>Validation</th>
+</tr>
+
+</thead>
+
+
+<tbody id="attendanceDetailBody">
+
+<tr>
+
+<td
+  colspan="8"
+  class="empty-state"
+>
+No report selected.
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<div class="step-footer">
+
+<button
+  type="button"
+  class="btn btn-primary"
+  data-step-next="3"
+>
+Continue to Attendance Validation
+</button>
+
+</div>
+
+</div>
+
+
+<!-- =========================================================
+WORKFLOW PANEL 3
+========================================================= -->
+
+<div
+  data-workflow-panel="3"
+  hidden
+>
+
+<section
+  class="card"
+  id="attendanceValidation"
+>
+
+<div class="panel-header">
+
+<h2>
+Attendance Validation Center
+</h2>
+
+<p>
+Resolve incomplete BSRS Time In/Time Out records using the applicable
+manual attendance evidence. The original BSRS values remain unchanged;
+validation is stored separately for audit trail and future allowance computation.
+</p>
+
+</div>
+
+
+<div class="panel-body">
+
+
+<div class="field validation-batch-field">
+
+<label
+  class="required"
+  for="validationBatchId"
+>
+Scholarship Batch
+</label>
+
+<select id="validationBatchId">
+
+<option value="">
+Select batch...
+</option>
+
+</select>
+
+</div>
+
+
+<div class="grid-summary validation-summary">
+
+<article class="summary-card">
+<span>Attendance Records</span>
+<strong data-val-summary="records">0</strong>
+</article>
+
+<article class="summary-card">
+<span>Complete BSRS</span>
+<strong data-val-summary="bsrs">0</strong>
+</article>
+
+<article class="summary-card">
+<span>Manual Validated</span>
+<strong data-val-summary="manual">0</strong>
+</article>
+
+<article class="summary-card">
+<span>Absent</span>
+<strong data-val-summary="absent">0</strong>
+</article>
+
+<article class="summary-card">
+<span>Pending</span>
+<strong data-val-summary="pending">0</strong>
+</article>
+
+</div>
+
+
+<div
+  id="validationReadyState"
+  class="readiness pending"
+>
+Select a batch and resolve all pending attendance exceptions before allowance computation.
+</div>
+
+
+<div class="table-wrap">
+
+<table class="data-table">
+
+<thead>
+
+<tr>
+
+<th>
+Date
+</th>
+
+<th>
+Scholar
+</th>
+
+<th>
+BSRS In
+</th>
+
+<th>
+BSRS Out
+</th>
+
+<th>
+Final In
+</th>
+
+<th>
+Final Out
+</th>
+
+<th>
+Final Status
+</th>
+
+<th>
+Validation
+</th>
+
+<th>
+Action
+</th>
+
+</tr>
+
+</thead>
+
+
+<tbody id="validationQueueBody">
+
+<tr>
+
+<td
+  colspan="9"
+  class="empty-state"
+>
+Select a scholarship batch.
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<div class="step-footer">
+
+<button
+  type="button"
+  class="btn btn-primary"
+  data-step-next="4"
+>
+Continue to Allowance Computation
+</button>
+
+</div>
+
+</div>
+
+
+<!-- =========================================================
+WORKFLOW PANEL 4
+========================================================= -->
+
+<div
+  data-workflow-panel="4"
+  hidden
+>
+
+<section
+  class="card"
+  id="allowanceComputation"
+>
+
+<div class="panel-header">
+
+<h2>
+Allowance Computation & Payroll Preview
+</h2>
+
+<p>
+Consolidates validated daily attendance against the qualification's
+approved training days and ₱160 TSF rate.
+</p>
+
+</div>
+
+
+<div class="panel-body">
+
+
+<div class="field validation-batch-field">
+
+<label
+  class="required"
+  for="allowanceBatchId"
+>
+Scholarship Batch
+</label>
+
+<select id="allowanceBatchId">
+
+<option value="">
+Select batch...
+</option>
+
+</select>
+
+</div>
+
+
+<div class="grid-summary validation-summary">
+
+<article class="summary-card">
+<span>Scholars</span>
+<strong data-allow-summary="scholars">0</strong>
+</article>
+
+<article class="summary-card">
+<span>Reports / Approved Days</span>
+<strong data-allow-summary="reports">0/0</strong>
+</article>
+
+<article class="summary-card">
+<span>Pending Logs</span>
+<strong data-allow-summary="pending">0</strong>
+</article>
+
+<article class="summary-card">
+<span>Time Review</span>
+<strong data-allow-summary="review">0</strong>
+</article>
+
+<article class="summary-card">
+<span>Projected TSF</span>
+<strong data-allow-summary="projected">₱0.00</strong>
+</article>
+
+</div>
+
+
+<div
+  id="allowanceReadyState"
+  class="readiness pending"
+>
+Select a batch to compute allowance.
+</div>
+
+
+<div
+  id="allowanceIssues"
+  class="error-panel"
+  hidden
+></div>
+
+
+<div class="table-wrap">
+
+<table class="data-table">
+
+<thead>
+
+<tr>
+
+<th>Scholar</th>
+<th>Present</th>
+<th>Absent</th>
+<th>Pending</th>
+<th>Time Review</th>
+<th>Missing Days</th>
+<th>Attendance Progress</th>
+<th>Max TSF</th>
+<th>Projected Earned</th>
+<th>Unresolved Value</th>
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+
+<tbody id="allowanceTableBody">
+
+<tr>
+
+<td
+  colspan="11"
+  class="empty-state"
+>
+Select a batch.
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+
+<h3 style="margin-top:24px">
+Payroll Preview
+</h3>
+
+
+<p class="muted">
+Only scholars with fully resolved attendance and no batch-level
+critical report issue appear below.
+</p>
+
+
+<div class="table-wrap">
+
+<table class="data-table">
+
+<thead>
+
+<tr>
+<th>No.</th>
+<th>Scholar</th>
+<th>Payable Days</th>
+<th>Absences</th>
+<th>Rate</th>
+<th>Net TSF</th>
+</tr>
+
+</thead>
+
+
+<tbody id="payrollPreviewBody">
+
+<tr>
+
+<td
+  colspan="6"
+  class="empty-state"
+>
+No scholar is payroll-ready yet.
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+FINAL REPORT GENERATION
+========================================================= -->
+
+<section
+  class="card"
+  id="reportGeneration"
+>
+
+<div class="panel-header">
+
+<h2>
+Final Report Generation
+</h2>
+
+<p>
+After attendance validation and allowance computation are complete,
+generate the required A4 Summary of Attendance and Billing Statement.
+</p>
+
+</div>
+
+
+<div class="panel-body">
+
+
+<div
+  id="reportErrors"
+  class="error-panel"
+  hidden
+></div>
+
+
+<div class="form-grid">
+
+<div class="field field-full">
+
+<label
+  class="required"
+  for="reportBatchId"
+>
+Scholarship Batch
+</label>
+
+<select id="reportBatchId">
+
+<option value="">
+Select batch...
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field field-full">
+
+<label for="reportEntityAddress">
+TVET Provider Address
+</label>
+
+<input
+  id="reportEntityAddress"
+  placeholder="Address appearing on the report header"
+>
+
+</div>
+
+
+<div class="field">
+
+<label for="reportPreparedBy">
+Prepared By
+</label>
+
+<input id="reportPreparedBy">
+
+</div>
+
+
+<div class="field">
+
+<label for="reportPreparedTitle">
+Position
+</label>
+
+<input
+  id="reportPreparedTitle"
+  value="Registrar"
+>
+
+</div>
+
+
+<div class="field">
+
+<label for="reportApprovedBy">
+Approved By
+</label>
+
+<input id="reportApprovedBy">
+
+</div>
+
+
+<div class="field">
+
+<label for="reportApprovedTitle">
+Position
+</label>
+
+<input
+  id="reportApprovedTitle"
+  value="Center Administrator"
+>
+
+</div>
+
+</div>
+
+
+<div class="form-actions">
+
+<button
+  type="button"
+  id="btnSaveReportProfile"
+  class="btn btn-secondary"
+>
+Save Report Details
+</button>
+
+<span
+  id="reportSaveStatus"
+  class="save-status"
+>
+Not yet saved
+</span>
+
+</div>
+
+
+<div
+  id="reportReadyState"
+  class="readiness pending"
+>
+Select a finalized batch.
+</div>
+
+
+<h3 style="margin-top:22px">
+Scholar ULI
+</h3>
+
+
+<p class="muted">
+ULI is not contained in the BSRS attendance PDF.
+Encode it here for the Billing Statement.
+</p>
+
+
+<div class="table-wrap report-uli-table">
+
+<table class="data-table">
+
+<thead>
+
+<tr>
+<th>No.</th>
+<th>Scholar</th>
+<th>ULI</th>
+</tr>
+
+</thead>
+
+
+<tbody id="reportUliBody">
+
+<tr>
+
+<td
+  colspan="3"
+  class="empty-state"
+>
+Select a finalized batch.
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+
+<div class="report-buttons">
+
+<button
+  type="button"
+  id="btnGenerateSummary"
+  data-report-generate
+  class="btn btn-primary"
+  disabled
+>
+Generate Summary of Attendance - 3 Copies
+</button>
+
+
+<button
+  type="button"
+  id="btnGenerateBilling"
+  data-report-generate
+  class="btn btn-primary"
+  disabled
+>
+Generate Billing Statement - 3 Copies
+</button>
+
+</div>
+
+
+<p
+  class="muted"
+  style="margin-top:10px"
+>
+The browser print window opens automatically.
+Choose <b>Save as PDF</b> or your printer.
+A4 paper size and the required orientation are already defined by the report.
+</p>
+
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+ONLINE SUPPORTING DOCUMENTS
+========================================================= -->
+
+<section
+  class="card"
+  id="onlineDocuments"
+>
+
+<div class="panel-header">
+
+<h2>
+Online Supporting Documents
+</h2>
+
+<p>
+Upload the signed/scanned documents that reviewers in SPECTRA should be
+able to open online. Hard copies are still submitted physically to TESDA Provincial Office.
+</p>
+
+</div>
+
+
+<div class="panel-body">
+
+<div class="form-grid">
+
+
+<div class="field">
+
+<label>
+Document Type
+</label>
+
+<select id="onlineDocumentType">
+
+<option value="BILLING_STATEMENT">
+Billing Statement
+</option>
+
+<option value="ATTENDANCE_SUMMARY">
+Summary of Attendance
+</option>
+
+<option value="BSRS_ATTENDANCE">
+BSRS / Daily Attendance
+</option>
+
+<option value="MANUAL_ATTENDANCE">
+Manual Attendance / Supporting Attendance
+</option>
+
+<option value="TERMINAL_REPORT">
+Terminal / MIS Report
+</option>
+
+<option value="OTHER">
+Other Supporting Document
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+PDF / Image
+</label>
+
+<input
+  type="file"
+  id="onlineDocumentFile"
+  accept=".pdf,image/jpeg,image/png"
+>
+
+</div>
+
+
+<div class="field field-full">
+
+<label>
+Remarks
+</label>
+
+<input
+  id="onlineDocumentRemarks"
+  placeholder="Optional document note"
+>
+
+</div>
+
+
+</div>
+
+
+<div class="form-actions">
+
+<button
+  type="button"
+  class="btn btn-secondary"
+  id="btnUploadOnlineDocument"
+>
+Upload Supporting Document
+</button>
+
+</div>
+
+
+<div id="onlineDocumentList"></div>
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+BILLING HANDOFF
+========================================================= -->
+
+<section
+  class="card"
+  id="billingHandoff"
+>
+
+<div class="panel-header">
+
+<h2>
+Finalize & Submit Billing Package
+</h2>
+
+<p>
+This is the final TVET Provider action in SAM.
+The system freezes the attendance, validations, allowance computation,
+and saved report details into a versioned snapshot and creates a
+SPECTRA Billing Transaction Number.
+</p>
+
+</div>
+
+
+<div class="panel-body">
+
+<div
+  id="handoffState"
+  class="readiness pending"
+>
+Complete the school-report requirements first.
+</div>
+
+
+<div class="form-actions">
+
+<button
+  type="button"
+  id="btnSubmitBilling"
+  class="btn btn-primary"
+  disabled
+>
+Finalize & Submit for Billing
+</button>
+
+</div>
+
+
+<h3 style="margin-top:20px">
+Submitted Billing Tracking
+</h3>
+
+
+<p class="muted">
+After physical submission to TESDA, the same transaction will show
+Receiving, Scholarship Review, Accounting, Budget/Obligation,
+Cashiering, and Payment status through SPECTRA.
+</p>
+
+
+<div id="submittedBillingList"></div>
+
+</div>
+
+</section>
+
+</div>
+
+
+<!-- =========================================================
+BILLING CENTER
+========================================================= -->
+
+<section
+  class="provider-billing-center"
+  data-utility-panel="billing"
+  hidden
+>
+
+<div class="provider-page-head">
+
+<div>
+
+<span>
+NEXUS · PROVIDER BILLING CENTER
+</span>
+
+<h2>
+Scholarship Billing Center
+</h2>
+
+<p>
+Select an approved RQM and submit the applicable billing component
+without re-encoding the RQM, school or qualification.
+</p>
+
+</div>
+
+</div>
+
+
+<section class="card">
+
+<div class="panel-header">
+
+<h2>
+1. Select Approved RQM
+</h2>
+
+<p>
+Use the qualification filter when your school has many approved RQMs.
+</p>
+
+</div>
+
+
+<div class="panel-body">
+
+<div class="field">
+
+<label>
+Filter by Qualification
+</label>
+
+<input
+  id="billingQualificationFilter"
+  placeholder="Type qualification title..."
+>
+
+</div>
+
+
+<div
+  id="providerRqmCards"
+  class="provider-rqm-grid"
+></div>
+
+
+<div class="field">
+
+<label>
+Selected RQM
+</label>
+
+<select id="billingRqm">
+
+<option value="">
+Select approved RQM...
+</option>
+
+</select>
+
+</div>
+
+</div>
+
+</section>
+
+
+<section class="card">
+
+<div class="panel-header">
+
+<h2>
+2. Select Billing Type
+</h2>
+
+<p>
+The available components follow the approved RQM cost profile.
+Current TESDA policy/documentary compliance is verified by the Provincial Scholarship Section.
+</p>
+
+</div>
+
+
+<div class="panel-body">
+
+<div
+  id="billingTypeCards"
+  class="billing-type-grid"
+></div>
+
+<div id="billingReview"></div>
+
+
+<div class="form-actions">
+
+<button
+  id="btnSubmitProviderBilling"
+  class="btn btn-primary"
+  disabled
+>
+Finalize & Submit Selected Billing
+</button>
+
+</div>
+
+</div>
+
+</section>
+
+
+<section class="card">
+
+<div class="panel-header">
+
+<h2>
+Supporting Documents
+</h2>
+
+<p>
+Upload the documents for the selected RQM/billing component.
+PDF, JPG and PNG are supported in the current prototype.
+</p>
+
+</div>
+
+
+<div class="panel-body">
+
+<div class="form-grid">
+
+
+<div class="field">
+
+<label>
+Document Type
+</label>
+
+<select id="billingDocumentType">
+
+<option value="BILLING_STATEMENT">
+Billing Statement
+</option>
+
+<option value="ATTENDANCE_SUMMARY">
+Summary of Attendance
+</option>
+
+<option value="TERMINAL_REPORT">
+Terminal Report
+</option>
+
+<option value="ASSESSMENT_REPORT">
+Assessment Report / Result Support
+</option>
+
+<option value="ENTREPRENEURSHIP_REPORT">
+Entrepreneurship Support
+</option>
+
+<option value="OTHER">
+Other Supporting Document
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+File
+</label>
+
+<input
+  id="billingDocumentFile"
+  type="file"
+  accept=".pdf,.jpg,.jpeg,.png"
+>
+
+</div>
+
+
+<div class="field span-2">
+
+<label>
+Remarks
+</label>
+
+<input
+  id="billingDocumentRemarks"
+  placeholder="Optional document description"
+>
+
+</div>
+
+
+</div>
+
+
+<div class="form-actions">
+
+<button
+  id="btnUploadBillingDocument"
+  class="btn btn-secondary"
+>
+Upload Supporting Document
+</button>
+
+</div>
+
+
+<div id="providerBillingDocuments"></div>
+
+</div>
+
+</section>
+
+
+<section class="card">
+
+<div class="panel-header">
+
+<h2>
+My Billing Transactions
+</h2>
+
+<p>
+Each billing component has its own transaction and Provincial Office queue position after hard-copy receipt.
+</p>
+
+</div>
+
+
+<div
+  class="panel-body"
+  id="providerBillingHistory"
+></div>
+
+</section>
+
+</section>
+
+
+<!-- =========================================================
+MIS
+========================================================= -->
+
+<section
+  class="provider-mis-workspace"
+  data-utility-panel="mis"
+  hidden
+>
+
+<div class="provider-page-head">
+
+<div>
+
+<span>
+NEXUS · MIS SUBMISSION
+</span>
+
+<h2>
+MIS 03-02 Submission
+</h2>
+
+<p>
+Upload the school MIS for the selected RQM.
+The portal compares it against the current official Provincial SPMOR/MIS registry for Scholarship review.
+</p>
+
+</div>
+
+</div>
+
+
+<section class="card">
+
+<div class="panel-body">
+
+<div class="form-grid">
+
+
+<div class="field">
+
+<label>
+Approved RQM
+</label>
+
+<select id="misRqm">
+
+<option value="">
+Select approved RQM...
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+MIS 03-02 Workbook
+</label>
+
+<input
+  id="misFile"
+  type="file"
+  accept=".xlsx,.xls"
+>
+
+</div>
+
+
+</div>
+
+
+<div class="form-actions">
+
+<button
+  id="btnSubmitMis"
+  class="btn btn-primary"
+>
+Upload & Compare MIS
+</button>
+
+</div>
+
+
+<div id="misCompareResult"></div>
+
+</div>
+
+</section>
+
+
+<section class="card">
+
+<div class="panel-header">
+
+<h2>
+Submission History
+</h2>
+
+</div>
+
+
+<div
+  class="panel-body"
+  id="misSubmissionHistory"
+></div>
+
+</section>
+
+</section>
+
+
+<!-- =========================================================
+TRACKING
+========================================================= -->
+
+<section
+  class="tracking-workspace"
+  data-utility-panel="tracking"
+  hidden
+>
+
+<div class="tracking-page-head">
+
+<div>
+
+<span>
+NEXUS · SCHOOL BILLING MONITORING
+</span>
+
+<h2>
+My Submitted Billings
+</h2>
+
+<p>
+Use the same Billing Transaction Number when following up with TESDA Albay Provincial Office.
+</p>
+
+</div>
+
+
+<button
+  type="button"
+  class="btn btn-secondary"
+  onclick="NEXUS_SAM.Modules.Workflow.Controller.go(1,true)"
+>
+Back to Allowance Module
+</button>
+
+</div>
+
+
+<div class="tracking-layout">
+
+<aside id="schoolTrackingList"></aside>
+
+<main id="schoolTrackingDetail"></main>
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+PROVINCIAL OFFICE
+========================================================= -->
+
+<section
+  class="card"
+  id="provincialOffice"
+  data-utility-panel="po"
+  hidden
+>
+
+<div class="panel-header">
+
+<div class="po-only-badge">
+PROVINCIAL OFFICE USE ONLY
+</div>
+
+<h2>
+Scholar Allowance Payroll
+</h2>
+
+<p>
+This workspace is intentionally separate from the TVET provider workflow.
+Schools do not generate this payroll.
+</p>
+
+</div>
+
+
+<div class="panel-body">
+
+<div class="form-grid">
+
+
+<div class="field field-full">
+
+<label for="poBatchId">
+Finalized Scholarship Batch
+</label>
+
+<select id="poBatchId">
+
+<option value="">
+Select finalized batch...
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label for="poCertifiedBy">
+A — Certified Attendance By
+</label>
+
+<input
+  id="poCertifiedBy"
+  placeholder="Authorized Official"
+>
+
+</div>
+
+
+<div class="field">
+
+<label for="poApprovedBy">
+C — Approved for Payment By
+</label>
+
+<input
+  id="poApprovedBy"
+  placeholder="Head of Agency / Authorized Representative"
+>
+
+</div>
+
+
+<div class="field">
+
+<label for="poAccountingBy">
+B — Accounting Certification By
+</label>
+
+<input
+  id="poAccountingBy"
+  placeholder="Head of Accounting Division/Unit"
+>
+
+</div>
+
+
+<div class="field">
+
+<label for="poDisbursingBy">
+D — Disbursing Officer
+</label>
+
+<input
+  id="poDisbursingBy"
+  placeholder="Disbursing Officer"
+>
+
+</div>
+
+
+</div>
+
+
+<div class="form-actions">
+
+<button
+  type="button"
+  id="btnSavePoProfile"
+  class="btn btn-secondary"
+>
+Save Payroll Details
+</button>
+
+<span
+  id="poSaveStatus"
+  class="save-status"
+>
+Not yet saved
+</span>
+
+</div>
+
+
+<div
+  id="poReadyState"
+  class="readiness pending"
+>
+Select a finalized batch.
+</div>
+
+
+<div class="report-buttons">
+
+<button
+  type="button"
+  id="btnGeneratePoPayroll"
+  class="btn btn-primary"
+  disabled
+>
+Generate Appendix 33 Payroll — 3 Copies
+</button>
+
+</div>
+
+
+<div class="info-callout">
+
+<strong>
+Payroll format:
+</strong>
+
+Serial No.; scholar name; Amount columns for TSF (initial 50%),
+H/PPE, IA, T-Shirt, IM, Total and Remarks; ID Presented;
+Signature of Recipient; plus Certification blocks A, B, C and D,
+ORS/BURS, JEV and Date fields.
+
+</div>
+
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+COST MASTER
+========================================================= -->
+
+<section
+  class="card"
+  id="costMaster"
+  data-utility-panel="cost"
+  hidden
+>
+
+<div class="panel-header">
+
+<h2>
+Qualification Cost Reference
+</h2>
+
+<p>
+Read-only provider reference. The Scholarship Focal maintains
+the official qualification cost master and amendments in SPECTRA.
+</p>
+
+</div>
+
+
+<div class="panel-body">
+
+<div class="table-toolbar">
+
+<input
+  id="costSearch"
+  type="search"
+  placeholder="Search qualification, code, SOC code, or sector"
+>
+
+</div>
+
+
+<div class="table-wrap">
+
+<table class="data-table">
+
+<thead>
+
+<tr>
+<th>Qualification</th>
+<th>Codes</th>
+<th>Hours</th>
+<th>Days</th>
+<th>TSF Rate</th>
+<th>Max TSF</th>
+<th>Training Cost</th>
+<th>Assessment Fee</th>
+<th>Source</th>
+</tr>
+
+</thead>
+
+<tbody id="costMasterBody"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+</main>
+
+
+<!-- =========================================================
+VALIDATION MODAL
+========================================================= -->
+
+<div
+  id="validationModal"
+  class="modal-overlay"
+  hidden
+>
+
+<div
+  class="modal-card"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="validationModalTitle"
+>
+
+<div class="modal-header">
+
+<div>
+
+<h2 id="validationModalTitle">
+Validate Attendance
+</h2>
+
+<p id="validationSourceSummary"></p>
+
+</div>
+
+
+<button
+  type="button"
+  id="btnCloseValidationModal"
+  class="modal-close"
+  aria-label="Close"
+>
+×
+</button>
+
+</div>
+
+
+<div class="modal-body">
+
+<div
+  id="validationModalErrors"
+  class="error-panel"
+  hidden
+></div>
+
+<input
+  type="hidden"
+  id="validationReportId"
+>
+
+<input
+  type="hidden"
+  id="validationScholarNo"
+>
+
+
+<div class="form-grid">
+
+<div class="field">
+
+<label
+  class="required"
+  for="validationResolution"
+>
+Resolution
+</label>
+
+<select id="validationResolution">
+
+<option value="PRESENT">
+Present — Complete Using Supporting Attendance
+</option>
+
+<option value="ABSENT">
+Absent
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label for="validationSource">
+Supporting Source
+</label>
+
+<select id="validationSource">
+
+<option value="MANUAL_ATTENDANCE_SHEET">
+Manual Daily Attendance Sheet
+</option>
+
+<option value="APPROVED_BSRS_EXEMPTION">
+Approved BSRS Attendance Exemption
+</option>
+
+<option value="BIOMETRIC_MACHINE">
+Biometric Machine Record
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label for="manualTimeIn">
+Manual Time In
+</label>
+
+<input
+  id="manualTimeIn"
+  type="time"
+>
+
+</div>
+
+
+<div class="field">
+
+<label for="manualTimeOut">
+Manual Time Out
+</label>
+
+<input
+  id="manualTimeOut"
+  type="time"
+>
+
+</div>
+
+
+<div class="field field-full">
+
+<label
+  class="required"
+  for="validationReason"
+>
+Reason / Validation Remarks
+</label>
+
+<textarea
+  id="validationReason"
+  rows="3"
+  placeholder="Example: BSRS Time Out was not captured; completed based on the signed manual Daily Attendance Sheet."
+></textarea>
+
+</div>
+
+
+<div class="field field-full">
+
+<label for="supportingReference">
+Supporting Document Reference
+</label>
+
+<input
+  id="supportingReference"
+  placeholder="Example: Manual Attendance Sheet – 22 May 2025, page 1"
+>
+
+</div>
+
+
+<div class="field field-full">
+
+<label
+  class="required"
+  for="validatedBy"
+>
+Validated By
+</label>
+
+<input
+  id="validatedBy"
+  placeholder="Registrar / authorized validator"
+>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="modal-footer">
+
+<button
+  type="button"
+  id="btnCancelValidation"
+  class="btn btn-secondary"
+>
+Cancel
+</button>
+
+<button
+  type="button"
+  id="btnSaveValidation"
+  class="btn btn-primary"
+>
+Save Validation
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div
+  id="toast"
+  class="toast"
+  role="status"
+  aria-live="polite"
+></div>
+
+
+<!-- =========================================================
+MODULE SCRIPTS
+========================================================= -->
+
+<script src="JS/core/namespace.js"></script>
+<script src="JS/config/app.config.js"></script>
+<script src="JS/core/storage/local.storage.js"></script>
+<script src="JS/core/storage/storage.service.js"></script>
+<script src="JS/core/ui/notification.service.js"></script>
+<script src="JS/core/document.store.js"></script>
+<script src="JS/core/tip.shared.js"></script>
+
+<script src="Data/cost-master.seed.js"></script>
+
+<script src="Modules/costMaster/models/cost.model.js"></script>
+<script src="Modules/costMaster/repository/cost.repository.js"></script>
+<script src="Modules/costMaster/services/cost.service.js"></script>
+<script src="Modules/costMaster/views/cost.view.js"></script>
+<script src="Modules/costMaster/controllers/cost.controller.js"></script>
+
+<script src="Modules/rqm/rqm.service.js"></script>
+
+<script src="Modules/batch/models/batch.model.js"></script>
+<script src="Modules/batch/validation/batch.validator.js"></script>
+<script src="Modules/batch/repository/batch.repository.js"></script>
+<script src="Modules/batch/services/batch.service.js"></script>
+<script src="Modules/batch/views/batch.view.js"></script>
+<script src="Modules/batch/controllers/batch.controller.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<script src="JS/core/pdf/pdf.service.js"></script>
+
+<script src="Modules/attendance/models/attendance.model.js"></script>
+<script src="Modules/attendance/repository/attendance.repository.js"></script>
+<script src="Modules/attendance/services/bsrs.parser.js"></script>
+<script src="Modules/attendance/services/attendance.service.js"></script>
+
+<script src="Modules/validation/models/validation.model.js"></script>
+<script src="Modules/validation/repository/validation.repository.js"></script>
+<script src="Modules/validation/services/validation.service.js"></script>
+
+<script src="Modules/attendance/views/attendance.view.js"></script>
+<script src="Modules/attendance/controllers/attendance.controller.js"></script>
+
+<script src="Modules/validation/views/validation.view.js"></script>
+<script src="Modules/validation/controllers/validation.controller.js"></script>
+
+<script src="Modules/allowance/models/allowance.model.js"></script>
+<script src="Modules/allowance/services/allowance.service.js"></script>
+<script src="Modules/allowance/views/allowance.view.js"></script>
+<script src="Modules/allowance/controllers/allowance.controller.js"></script>
+
+<script src="Modules/reports/repository/report.repository.js"></script>
+<script src="Modules/reports/services/report.service.js"></script>
+<script src="Modules/reports/views/report.view.js"></script>
+<script src="Modules/reports/controllers/report.controller.js"></script>
+
+<script src="Modules/reports/views/po.view.js"></script>
+<script src="Modules/reports/controllers/po.controller.js"></script>
+
 <script src="Modules/handoff/repository/billing.repository.js"></script>
-<script src="Modules/handoff/services/document.service.js"></script><script src="Modules/handoff/services/billing-handoff.service.js"></script><script src="Modules/mis/mis.service.js"></script><script src="Modules/mis/mis.view.js"></script><script src="Modules/mis/mis.controller.js"></script><script src="Modules/billingCenter/billing-center.service.js"></script><script src="Modules/billingCenter/billing-center.view.js"></script><script src="Modules/billingCenter/billing-center.controller.js"></script><script src="Modules/handoff/views/document.view.js"></script><script src="Modules/handoff/controllers/document.controller.js"></script>
+<script src="Modules/handoff/services/document.service.js"></script>
+<script src="Modules/handoff/services/billing-handoff.service.js"></script>
+
+<script src="Modules/mis/mis.service.js"></script>
+<script src="Modules/mis/mis.view.js"></script>
+<script src="Modules/mis/mis.controller.js"></script>
+
+<script src="Modules/billingCenter/billing-center.service.js"></script>
+<script src="Modules/billingCenter/billing-center.view.js"></script>
+<script src="Modules/billingCenter/billing-center.controller.js"></script>
+
+<script src="Modules/handoff/views/document.view.js"></script>
+<script src="Modules/handoff/controllers/document.controller.js"></script>
+
 <script src="Modules/handoff/views/handoff.view.js"></script>
 <script src="Modules/handoff/controllers/handoff.controller.js"></script>
+
 <script src="Modules/tracking/services/tracking.service.js"></script>
 <script src="Modules/tracking/views/tracking.view.js"></script>
-<script src="Modules/tracking/controllers/tracking.controller.js"></script><script src="Modules/tip/services/tip.service.js"></script><script src="Modules/tip/views/tip.view.js"></script><script src="Modules/tip/controllers/tip.controller.js"></script><script src="Modules/notifications/services/notification.service.js"></script><script src="Modules/notifications/views/notification.view.js"></script><script src="Modules/notifications/controllers/notification.controller.js"></script><script src="Modules/home/services/home.service.js"></script><script src="Modules/home/views/home.view.js"></script><script src="Modules/home/controllers/home.controller.js"></script><script src="Modules/workflow/services/workflow.service.js"></script><script src="Modules/workflow/controllers/workflow.controller.js"></script><script src="JS/core/application/app.js"></script><script>
-document.addEventListener("DOMContentLoaded",()=>{const p=NEXUS_SAM.Modules.RQM.provider(),id=document.getElementById("providerIdentity"),sel=document.getElementById("approvedRqmSelect"),info=document.getElementById("approvedRqmInfo");function load(){const mine=NEXUS_SAM.Modules.RQM.mine(),current=sel.value;sel.innerHTML='<option value="">Select approved RQM assigned to this school...</option>'+mine.map(x=>`<option value="${String(x.rqmNo).replaceAll('"','&quot;')}">${x.rqmNo} · ${x.qualification||''} · ${x.slots||0} slot(s)</option>`).join('');if(mine.some(x=>x.rqmNo===current))sel.value=current;info.textContent=mine.length?`${mine.length} approved RQM(s) available for ${NEXUS_SAM.Modules.RQM.provider().tviName}.`:'No approved RQM found for this TVET Provider. Scholarship must publish the SPMOR/RQM Registry first.';}if(id)id.value=p.tviName||'';document.getElementById("btnSaveProviderIdentity")?.addEventListener("click",()=>{NEXUS_SAM.Modules.RQM.saveProvider(id.value);load();NEXUS_SAM.UI.Notification.success("Provider identity saved.","Only RQMs assigned to this TVET Provider are shown.");});sel?.addEventListener("change",()=>{const r=NEXUS_SAM.Modules.RQM.get(sel.value);if(!r)return;document.getElementById("rqmNo").value=r.rqmNo;document.getElementById("rqmCode").value=r.rqmCode||r.rqmNo;document.getElementById("tvi").value=r.tvi;document.getElementById("scholarshipProgram").value=r.scholarshipProgram||document.getElementById("scholarshipProgram").value;if(r.slots)document.getElementById("numberOfSlots").value=r.slots;info.textContent=`${r.rqmNo} · ${r.tvi} · ${r.qualification||''} · ${r.slots||0} approved slot(s)`;});load();});
-</script><script>document.addEventListener("DOMContentLoaded",()=>{NEXUS_SAM.Core.Application.initialize();NEXUS_SAM.Modules.Notifications.Controller.initialize();});</script><script>
+<script src="Modules/tracking/controllers/tracking.controller.js"></script>
+
+<script src="Modules/tip/services/tip.service.js"></script>
+<script src="Modules/tip/views/tip.view.js"></script>
+<script src="Modules/tip/controllers/tip.controller.js"></script>
+
+<script src="Modules/notifications/services/notification.service.js"></script>
+<script src="Modules/notifications/views/notification.view.js"></script>
+<script src="Modules/notifications/controllers/notification.controller.js"></script>
+
+<script src="Modules/home/services/home.service.js"></script>
+<script src="Modules/home/views/home.view.js"></script>
+<script src="Modules/home/controllers/home.controller.js"></script>
+
+<script src="Modules/workflow/services/workflow.service.js"></script>
+<script src="Modules/workflow/controllers/workflow.controller.js"></script>
+
+<script src="JS/core/application/app.js"></script>
+
+
+<!-- =========================================================
+RQM HANDLER
+========================================================= -->
+
+<script>
+
+document.addEventListener(
+  "DOMContentLoaded",
+  ()=>{
+
+    const p=
+      NEXUS_SAM.Modules.RQM.provider();
+
+    const id=
+      document.getElementById(
+        "providerIdentity"
+      );
+
+    const sel=
+      document.getElementById(
+        "approvedRqmSelect"
+      );
+
+    const info=
+      document.getElementById(
+        "approvedRqmInfo"
+      );
+
+
+    function load(){
+
+      if(!sel || !info){
+        return;
+      }
+
+
+      const mine=
+        NEXUS_SAM.Modules.RQM.mine();
+
+      const current=
+        sel.value;
+
+
+      sel.innerHTML=
+        '<option value="">Select approved RQM assigned to this school...</option>'+
+        mine.map(
+          x=>
+            `<option value="${String(x.rqmNo).replaceAll('"','&quot;')}">
+              ${x.rqmNo} · ${x.qualification||''} · ${x.slots||0} slot(s)
+            </option>`
+        ).join("");
+
+
+      if(
+        mine.some(
+          x=>x.rqmNo===current
+        )
+      ){
+
+        sel.value=
+          current;
+
+      }
+
+
+      info.textContent=
+        mine.length
+        ? `${mine.length} approved RQM(s) available for ${NEXUS_SAM.Modules.RQM.provider().tviName}.`
+        : "No approved RQM found for this TVET Provider. Scholarship must publish the SPMOR/RQM Registry first.";
+
+    }
+
+
+    if(id){
+
+      id.value=
+        p.tviName||"";
+
+    }
+
+
+    document
+      .getElementById(
+        "btnSaveProviderIdentity"
+      )
+      ?.addEventListener(
+        "click",
+        ()=>{
+
+          NEXUS_SAM.Modules.RQM
+            .saveProvider(
+              id.value
+            );
+
+          load();
+
+          NEXUS_SAM.UI.Notification.success(
+            "Provider identity saved.",
+            "Only RQMs assigned to this TVET Provider are shown."
+          );
+
+        }
+      );
+
+
+    sel?.addEventListener(
+      "change",
+      ()=>{
+
+        const r=
+          NEXUS_SAM.Modules.RQM.get(
+            sel.value
+          );
+
+
+        if(!r){
+          return;
+        }
+
+
+        document.getElementById(
+          "rqmNo"
+        ).value=
+          r.rqmNo;
+
+
+        document.getElementById(
+          "rqmCode"
+        ).value=
+          r.rqmCode||r.rqmNo;
+
+
+        document.getElementById(
+          "tvi"
+        ).value=
+          r.tvi;
+
+
+        document.getElementById(
+          "scholarshipProgram"
+        ).value=
+          r.scholarshipProgram||
+          document.getElementById(
+            "scholarshipProgram"
+          ).value;
+
+
+        if(r.slots){
+
+          document.getElementById(
+            "numberOfSlots"
+          ).value=
+            r.slots;
+
+        }
+
+
+        info.textContent=
+          `${r.rqmNo} · ${r.tvi} · ${r.qualification||''} · ${r.slots||0} approved slot(s)`;
+
+      }
+    );
+
+
+    load();
+
+  }
+);
+
+</script>
+
+
+<!-- =========================================================
+APP INITIALIZATION
+========================================================= -->
+
+<script>
+
+document.addEventListener(
+  "DOMContentLoaded",
+  ()=>{
+
+    NEXUS_SAM.Core.Application.initialize();
+
+    NEXUS_SAM.Modules.Notifications.Controller.initialize();
+
+  }
+);
+
+</script>
+
+
+<!-- =========================================================
+SIDEBAR NAVIGATION
+========================================================= -->
+
+<script>
+
 (function(){
- const nav=document.querySelector('.sam-sidebar nav');
- function activate(name){document.querySelectorAll('[data-sam-nav]').forEach(b=>b.classList.toggle('active',b.dataset.samNav===name));if(name==='home')NEXUS_SAM.Modules.Workflow.Controller.openUtility('home');else if(name==='billing')NEXUS_SAM.Modules.Workflow.Controller.openUtility('billing');else if(name==='mis')NEXUS_SAM.Modules.Workflow.Controller.openUtility('mis');else if(name==='tracking')NEXUS_SAM.Modules.Workflow.Controller.openUtility('tracking');else if(name==='cost')NEXUS_SAM.Modules.Workflow.Controller.openUtility('cost');else if(name==='allowance')NEXUS_SAM.Modules.Workflow.Controller.go(1,true);}
- nav?.addEventListener('click',e=>{const b=e.target.closest('[data-sam-nav]');if(b)activate(b.dataset.samNav);});
- document.querySelector('[data-home-billing]')?.addEventListener('click',()=>activate('billing'));document.querySelector('[data-home-all-tracking]')?.addEventListener('click',()=>activate('tracking'));
- window.addEventListener('load',()=>setTimeout(()=>{NEXUS_SAM.Modules.Home.Controller.refresh();activate('home');},50));
+
+  const nav=
+    document.querySelector(
+      ".sam-sidebar nav"
+    );
+
+
+  function activate(name){
+
+    document
+      .querySelectorAll(
+        "[data-sam-nav]"
+      )
+      .forEach(
+        b=>
+          b.classList.toggle(
+            "active",
+            b.dataset.samNav===name
+          )
+      );
+
+
+    if(name==="home"){
+
+      NEXUS_SAM.Modules.Workflow.Controller
+        .openUtility("home");
+
+    }else if(name==="billing"){
+
+      NEXUS_SAM.Modules.Workflow.Controller
+        .openUtility("billing");
+
+    }else if(name==="mis"){
+
+      NEXUS_SAM.Modules.Workflow.Controller
+        .openUtility("mis");
+
+    }else if(name==="tracking"){
+
+      NEXUS_SAM.Modules.Workflow.Controller
+        .openUtility("tracking");
+
+    }else if(name==="cost"){
+
+      NEXUS_SAM.Modules.Workflow.Controller
+        .openUtility("cost");
+
+    }else if(name==="resources"){
+
+      NEXUS_SAM.Modules.Workflow.Controller
+        .openUtility("resources");
+
+    }else if(name==="settings"){
+
+      NEXUS_SAM.Modules.Workflow.Controller
+        .openUtility("settings");
+
+    }else if(name==="allowance"){
+
+      NEXUS_SAM.Modules.Workflow.Controller
+        .go(1,true);
+
+    }
+
+  }
+
+
+  nav?.addEventListener(
+    "click",
+    event=>{
+
+      const b=
+        event.target.closest(
+          "[data-sam-nav]"
+        );
+
+
+      if(b){
+
+        activate(
+          b.dataset.samNav
+        );
+
+      }
+
+    }
+  );
+
+
+  document
+    .querySelector(
+      "[data-home-billing]"
+    )
+    ?.addEventListener(
+      "click",
+      ()=>activate("billing")
+    );
+
+
+  document
+    .querySelector(
+      "[data-home-all-tracking]"
+    )
+    ?.addEventListener(
+      "click",
+      ()=>activate("tracking")
+    );
+
+
+  window.addEventListener(
+    "load",
+    ()=>{
+
+      setTimeout(
+        ()=>{
+
+          NEXUS_SAM.Modules.Home.Controller.refresh();
+
+          activate("home");
+
+        },
+        50
+      );
+
+    }
+  );
+
 })();
-</script></div></body></html>
+
+</script>
+
+
+<!-- =========================================================
+3-STEP SCHOOL PROFILE WIZARD SCRIPT
+========================================================= -->
+
+<script>
+
+(function(){
+
+  const gate=
+    document.getElementById(
+      "schoolProfileGate"
+    );
+
+  const form=
+    document.getElementById(
+      "schoolProfileGateForm"
+    );
+
+
+  if(!gate || !form){
+    return;
+  }
+
+
+  const KEY=
+    "nexus_school_profile";
+
+
+  const els={
+
+    registrarName:
+      document.getElementById(
+        "gateRegistrarName"
+      ),
+
+    registrarPhone:
+      document.getElementById(
+        "gateRegistrarPhone"
+      ),
+
+    registrarEmail:
+      document.getElementById(
+        "gateRegistrarEmail"
+      ),
+
+
+    centerAdminName:
+      document.getElementById(
+        "gateCenterAdminName"
+      ),
+
+    centerAdminPhone:
+      document.getElementById(
+        "gateCenterAdminPhone"
+      ),
+
+    centerAdminEmail:
+      document.getElementById(
+        "gateCenterAdminEmail"
+      ),
+
+
+    assessmentManagerName:
+      document.getElementById(
+        "gateAssessmentManagerName"
+      ),
+
+    assessmentManagerPhone:
+      document.getElementById(
+        "gateAssessmentManagerPhone"
+      ),
+
+    assessmentManagerEmail:
+      document.getElementById(
+        "gateAssessmentManagerEmail"
+      ),
+
+
+    schoolName:
+      document.getElementById(
+        "gateSchoolName"
+      ),
+
+    schoolAddress:
+      document.getElementById(
+        "gateSchoolAddress"
+      ),
+
+    schoolContact:
+      document.getElementById(
+        "gateSchoolContact"
+      ),
+
+    schoolEmail:
+      document.getElementById(
+        "gateSchoolEmail"
+      ),
+
+
+    headerLogo:
+      document.getElementById(
+        "gateHeaderLogo"
+      ),
+
+    headerLogoPreview:
+      document.getElementById(
+        "gateHeaderLogoPreview"
+      ),
+
+    logoLeft:
+      document.getElementById(
+        "gateLogoLeft"
+      ),
+
+    logoLeftPreview:
+      document.getElementById(
+        "gateLogoLeftPreview"
+      ),
+
+    logoRight:
+      document.getElementById(
+        "gateLogoRight"
+      ),
+
+    logoRightPreview:
+      document.getElementById(
+        "gateLogoRightPreview"
+      ),
+
+
+    previewTop:
+      document.getElementById(
+        "gatePreviewTop"
+      ),
+
+    previewLeft:
+      document.getElementById(
+        "gatePreviewLeft"
+      ),
+
+    previewRight:
+      document.getElementById(
+        "gatePreviewRight"
+      ),
+
+    previewSchool:
+      document.getElementById(
+        "gatePreviewSchool"
+      ),
+
+    previewAddress:
+      document.getElementById(
+        "gatePreviewAddress"
+      )
+
+  };
+
+
+  let currentStep=
+    1;
+
+
+  function read(){
+
+    try{
+
+      return JSON.parse(
+        localStorage.getItem(
+          KEY
+        )||"null"
+      );
+
+    }catch(error){
+
+      return null;
+
+    }
+
+  }
+
+
+  function put(
+    value
+  ){
+
+    localStorage.setItem(
+      KEY,
+      JSON.stringify(
+        value
+      )
+    );
+
+  }
+
+
+  function showImage(
+    img,
+    src
+  ){
+
+    if(!img){
+      return;
+    }
+
+
+    if(src){
+
+      img.src=
+        src;
+
+      img.hidden=
+        false;
+
+      img.style.display=
+        "block";
+
+    }else{
+
+      img.removeAttribute(
+        "src"
+      );
+
+      img.hidden=
+        true;
+
+      img.style.display=
+        "none";
+
+    }
+
+  }
+
+
+  /* =======================================================
+     SHOW STEP
+  ======================================================== */
+
+  function showStep(
+    step
+  ){
+
+    currentStep=
+      Math.min(
+        3,
+        Math.max(
+          1,
+          Number(step)
+        )
+      );
+
+
+    document
+      .querySelectorAll(
+        "[data-profile-step-panel]"
+      )
+      .forEach(
+        panel=>{
+
+          panel.classList.toggle(
+            "active",
+            Number(
+              panel.dataset.profileStepPanel
+            )===currentStep
+          );
+
+        }
+      );
+
+
+    document
+      .querySelectorAll(
+        "[data-profile-step-indicator]"
+      )
+      .forEach(
+        indicator=>{
+
+          const number=
+            Number(
+              indicator.dataset.profileStepIndicator
+            );
+
+
+          indicator.classList.toggle(
+            "active",
+            number===currentStep
+          );
+
+
+          indicator.classList.toggle(
+            "completed",
+            number<currentStep
+          );
+
+        }
+      );
+
+  }
+
+
+  /* =======================================================
+     VALIDATE STEP
+  ======================================================== */
+
+  function validateStep(
+    step
+  ){
+
+    const panel=
+      document.querySelector(
+        `[data-profile-step-panel="${step}"]`
+      );
+
+
+    if(!panel){
+      return false;
+    }
+
+
+    let valid=true;
+
+
+    panel
+      .querySelectorAll(
+        "input,textarea,select"
+      )
+      .forEach(
+        input=>{
+
+          if(
+            input.willValidate &&
+            !input.checkValidity()
+          ){
+
+            valid=false;
+
+          }
+
+        }
+      );
+
+
+    if(!valid){
+
+      const firstInvalid=
+        panel.querySelector(
+          "input:invalid,textarea:invalid,select:invalid"
+        );
+
+
+      if(firstInvalid){
+
+        firstInvalid.reportValidity();
+
+      }
+
+    }
+
+
+    return valid;
+
+  }
+
+
+  /* =======================================================
+     NEXT
+  ======================================================== */
+
+  document
+    .querySelectorAll(
+      "[data-profile-next]"
+    )
+    .forEach(
+      button=>{
+
+        button.addEventListener(
+          "click",
+          ()=>{
+
+            if(
+              !validateStep(
+                currentStep
+              )
+            ){
+
+              return;
+
+            }
+
+
+            showStep(
+              button.dataset.profileNext
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  /* =======================================================
+     BACK
+  ======================================================== */
+
+  document
+    .querySelectorAll(
+      "[data-profile-back]"
+    )
+    .forEach(
+      button=>{
+
+        button.addEventListener(
+          "click",
+          ()=>{
+
+            showStep(
+              button.dataset.profileBack
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  /* =======================================================
+     SCHOOL PREVIEW
+  ======================================================== */
+
+  function updateSchoolPreview(){
+
+    els.previewSchool.textContent=
+      els.schoolName.value.trim()||
+      "Your School / TVET Provider Name";
+
+
+    els.previewAddress.textContent=
+      els.schoolAddress.value.trim()||
+      "Your complete school address";
+
+  }
+
+
+  [
+    els.schoolName,
+    els.schoolAddress
+  ]
+  .forEach(
+    input=>{
+
+      input.addEventListener(
+        "input",
+        updateSchoolPreview
+      );
+
+    }
+  );
+
+
+  /* =======================================================
+     LOGO PREVIEW
+  ======================================================== */
+
+  function bindLogo(
+    input,
+    uploadPreview,
+    letterheadPreview
+  ){
+
+    if(!input){
+      return;
+    }
+
+
+    input.addEventListener(
+      "change",
+      function(){
+
+        const file=
+          this.files?.[0];
+
+
+        if(!file){
+          return;
+        }
+
+
+        if(
+          !file.type.startsWith(
+            "image/"
+          )
+        ){
+
+          alert(
+            "Please select a valid image file."
+          );
+
+          this.value=
+            "";
+
+          return;
+
+        }
+
+
+        const reader=
+          new FileReader();
+
+
+        reader.onload=
+          event=>{
+
+            const source=
+              event.target.result;
+
+
+            input.dataset.data=
+              source;
+
+
+            showImage(
+              uploadPreview,
+              source
+            );
+
+
+            showImage(
+              letterheadPreview,
+              source
+            );
+
+          };
+
+
+        reader.readAsDataURL(
+          file
+        );
+
+      }
+    );
+
+  }
+
+
+  bindLogo(
+    els.headerLogo,
+    els.headerLogoPreview,
+    els.previewTop
+  );
+
+
+  bindLogo(
+    els.logoLeft,
+    els.logoLeftPreview,
+    els.previewLeft
+  );
+
+
+  bindLogo(
+    els.logoRight,
+    els.logoRightPreview,
+    els.previewRight
+  );
+
+
+  /* =======================================================
+     LOAD EXISTING
+  ======================================================== */
+
+  function loadProfile(
+    profile
+  ){
+
+    if(!profile){
+      return;
+    }
+
+
+    els.registrarName.value=
+      profile.registrarName||
+      "";
+
+    els.registrarPhone.value=
+      profile.registrarPhone||
+      "";
+
+    els.registrarEmail.value=
+      profile.registrarEmail||
+      "";
+
+
+    els.centerAdminName.value=
+      profile.centerAdminName||
+      "";
+
+    els.centerAdminPhone.value=
+      profile.centerAdminPhone||
+      "";
+
+    els.centerAdminEmail.value=
+      profile.centerAdminEmail||
+      "";
+
+
+    els.assessmentManagerName.value=
+      profile.assessmentManagerName||
+      "";
+
+    els.assessmentManagerPhone.value=
+      profile.assessmentManagerPhone||
+      "";
+
+    els.assessmentManagerEmail.value=
+      profile.assessmentManagerEmail||
+      "";
+
+
+    els.schoolName.value=
+      profile.schoolName||
+      "";
+
+    els.schoolAddress.value=
+      profile.schoolAddress||
+      "";
+
+    els.schoolContact.value=
+      profile.contact||
+      "";
+
+    els.schoolEmail.value=
+      profile.schoolEmail||
+      "";
+
+
+    updateSchoolPreview();
+
+
+    if(profile.headerLogo){
+
+      els.headerLogo.dataset.data=
+        profile.headerLogo;
+
+      showImage(
+        els.headerLogoPreview,
+        profile.headerLogo
+      );
+
+      showImage(
+        els.previewTop,
+        profile.headerLogo
+      );
+
+    }
+
+
+    if(profile.logoLeft){
+
+      els.logoLeft.dataset.data=
+        profile.logoLeft;
+
+      showImage(
+        els.logoLeftPreview,
+        profile.logoLeft
+      );
+
+      showImage(
+        els.previewLeft,
+        profile.logoLeft
+      );
+
+    }
+
+
+    if(profile.logoRight){
+
+      els.logoRight.dataset.data=
+        profile.logoRight;
+
+      showImage(
+        els.logoRightPreview,
+        profile.logoRight
+      );
+
+      showImage(
+        els.previewRight,
+        profile.logoRight
+      );
+
+    }
+
+  }
+
+
+  /* =======================================================
+     PROFILE EXISTS
+  ======================================================== */
+
+  function profileExists(
+    profile
+  ){
+
+    return !!(
+
+      profile &&
+
+      profile.schoolName &&
+
+      profile.schoolAddress &&
+
+      profile.registrarName &&
+
+      profile.registrarPhone &&
+
+      profile.registrarEmail &&
+
+      profile.centerAdminName &&
+
+      profile.centerAdminPhone &&
+
+      profile.centerAdminEmail &&
+
+      profile.assessmentManagerName &&
+
+      profile.assessmentManagerPhone &&
+
+      profile.assessmentManagerEmail
+
+    );
+
+  }
+
+
+  function unlock(){
+
+    gate.hidden=
+      true;
+
+    document.body.classList.remove(
+      "profile-locked"
+    );
+
+  }
+
+
+  function lock(){
+
+    gate.hidden=
+      false;
+
+    document.body.classList.add(
+      "profile-locked"
+    );
+
+  }
+
+
+  const existing=
+    read();
+
+
+  if(
+    profileExists(
+      existing
+    )
+  ){
+
+    unlock();
+
+  }else{
+
+    lock();
+    showStep(1);
+
+  }
+
+
+  loadProfile(
+    existing
+  );
+
+
+  /* =======================================================
+     FINAL SAVE
+  ======================================================== */
+
+  form.addEventListener(
+    "submit",
+    event=>{
+
+      event.preventDefault();
+
+
+      if(
+        !validateStep(1)
+      ){
+
+        showStep(1);
+        return;
+
+      }
+
+
+      if(
+        !validateStep(2)
+      ){
+
+        showStep(2);
+        return;
+
+      }
+
+
+      if(
+        !validateStep(3)
+      ){
+
+        showStep(3);
+        return;
+
+      }
+
+
+      const oldProfile=
+        read();
+
+
+      const profile={
+
+        schoolName:
+          els.schoolName.value.trim(),
+
+        schoolAddress:
+          els.schoolAddress.value.trim(),
+
+        contact:
+          els.schoolContact.value.trim(),
+
+        schoolEmail:
+          els.schoolEmail.value.trim(),
+
+
+        registrarName:
+          els.registrarName.value.trim(),
+
+        registrarPhone:
+          els.registrarPhone.value.trim(),
+
+        registrarEmail:
+          els.registrarEmail.value.trim(),
+
+
+        centerAdminName:
+          els.centerAdminName.value.trim(),
+
+        centerAdminPhone:
+          els.centerAdminPhone.value.trim(),
+
+        centerAdminEmail:
+          els.centerAdminEmail.value.trim(),
+
+
+        assessmentManagerName:
+          els.assessmentManagerName.value.trim(),
+
+        assessmentManagerPhone:
+          els.assessmentManagerPhone.value.trim(),
+
+        assessmentManagerEmail:
+          els.assessmentManagerEmail.value.trim(),
+
+
+        headerLogo:
+          els.headerLogo.dataset.data||
+          oldProfile?.headerLogo||
+          null,
+
+        logoLeft:
+          els.logoLeft.dataset.data||
+          oldProfile?.logoLeft||
+          null,
+
+        logoRight:
+          els.logoRight.dataset.data||
+          oldProfile?.logoRight||
+          null,
+
+
+        createdAt:
+          oldProfile?.createdAt||
+          new Date().toISOString(),
+
+        updatedAt:
+          new Date().toISOString()
+
+      };
+
+
+      put(
+        profile
+      );
+
+
+      try{
+
+        localStorage.setItem(
+          "nexus_provider_profile",
+          JSON.stringify(
+            profile
+          )
+        );
+
+      }catch(error){}
+
+
+      try{
+
+        NEXUS_SAM.Modules.RQM
+          .saveProvider(
+            profile.schoolName
+          );
+
+      }catch(error){}
+
+
+      const portalHeaderLogo=
+        document.getElementById(
+          "providerHeaderLogo"
+        );
+
+
+      if(
+        portalHeaderLogo
+      ){
+
+        portalHeaderLogo.src=
+          profile.headerLogo||
+          "../../assets/Logo.png";
+
+      }
+
+
+      unlock();
+
+
+      try{
+
+        NEXUS_SAM.UI.Notification.success(
+          "Account and school profile created.",
+          "Your authorized contacts, school information, and letterhead logos have been saved."
+        );
+
+      }catch(error){}
+
+    }
+  );
+
+
+  window.NEXUSSchoolProfile={
+
+    get:
+      read,
+
+    save:
+      value=>{
+        put(
+          value
+        );
+      },
+
+    hasProfile:
+      ()=>{
+        return profileExists(
+          read()
+        );
+      },
+
+    show:
+      lock,
+
+    hide:
+      unlock
+
+  };
+
+})();
+
+</script>
+
+
+<!-- =========================================================
+SETTINGS PROFILE SCRIPT WITH LIVE PREVIEW
+========================================================= -->
+
+<script>
+
+document.addEventListener(
+  "DOMContentLoaded",
+  ()=>{
+
+    const form=
+      document.getElementById(
+        "profileSettingsForm"
+      );
+
+
+    if(!form){
+      return;
+    }
+
+
+    const fields={
+
+      registrarName:
+        document.getElementById(
+          "profileRegistrarName"
+        ),
+
+      registrarPhone:
+        document.getElementById(
+          "profileRegistrarPhone"
+        ),
+
+      registrarEmail:
+        document.getElementById(
+          "profileRegistrarEmail"
+        ),
+
+
+      centerAdminName:
+        document.getElementById(
+          "profileCenterAdminName"
+        ),
+
+      centerAdminPhone:
+        document.getElementById(
+          "profileCenterAdminPhone"
+        ),
+
+      centerAdminEmail:
+        document.getElementById(
+          "profileCenterAdminEmail"
+        ),
+
+
+      assessmentManagerName:
+        document.getElementById(
+          "profileAssessmentManagerName"
+        ),
+
+      assessmentManagerPhone:
+        document.getElementById(
+          "profileAssessmentManagerPhone"
+        ),
+
+      assessmentManagerEmail:
+        document.getElementById(
+          "profileAssessmentManagerEmail"
+        ),
+
+
+      provider:
+        document.getElementById(
+          "profileProvider"
+        ),
+
+      address:
+        document.getElementById(
+          "profileAddress"
+        ),
+
+      schoolEmail:
+        document.getElementById(
+          "profileSchoolEmail"
+        )
+
+    };
+
+
+    /* =====================================================
+       LOGO INPUTS
+    ===================================================== */
+
+    const topLogo=
+      document.getElementById(
+        "profileHeaderLogo"
+      );
+
+    const leftLogo=
+      document.getElementById(
+        "profileLogoLeft"
+      );
+
+    const rightLogo=
+      document.getElementById(
+        "profileLogoRight"
+      );
+
+
+    /* =====================================================
+       UPLOAD PREVIEWS
+    ===================================================== */
+
+    const topLogoPreview=
+      document.getElementById(
+        "profileHeaderLogoPreview"
+      );
+
+    const leftLogoPreview=
+      document.getElementById(
+        "profileLogoLeftPreview"
+      );
+
+    const rightLogoPreview=
+      document.getElementById(
+        "profileLogoRightPreview"
+      );
+
+
+    /* =====================================================
+       SETTINGS LETTERHEAD PREVIEW
+    ===================================================== */
+
+    const previewTop=
+      document.getElementById(
+        "settingsPreviewTop"
+      );
+
+    const previewLeft=
+      document.getElementById(
+        "settingsPreviewLeft"
+      );
+
+    const previewRight=
+      document.getElementById(
+        "settingsPreviewRight"
+      );
+
+    const previewSchool=
+      document.getElementById(
+        "settingsPreviewSchool"
+      );
+
+    const previewAddress=
+      document.getElementById(
+        "settingsPreviewAddress"
+      );
+
+
+    /* =====================================================
+       PORTAL HEADER LOGO
+    ===================================================== */
+
+    const portalHeaderLogo=
+      document.getElementById(
+        "providerHeaderLogo"
+      );
+
+
+    const status=
+      document.getElementById(
+        "profileSaveStatus"
+      );
+
+
+    const KEY=
+      "nexus_school_profile";
+
+
+    /* =====================================================
+       READ PROFILE
+    ===================================================== */
+
+    function readProfile(){
+
+      try{
+
+        return JSON.parse(
+          localStorage.getItem(
+            KEY
+          )||"{}"
+        );
+
+      }catch(error){
+
+        return {};
+
+      }
+
+    }
+
+
+    /* =====================================================
+       SHOW IMAGE
+    ===================================================== */
+
+    function showImage(
+      img,
+      src
+    ){
+
+      if(!img){
+        return;
+      }
+
+
+      if(src){
+
+        img.src=
+          src;
+
+        img.hidden=
+          false;
+
+        img.style.display=
+          "block";
+
+      }else{
+
+        img.removeAttribute(
+          "src"
+        );
+
+        img.hidden=
+          true;
+
+        img.style.display=
+          "none";
+
+      }
+
+    }
+
+
+    /* =====================================================
+       HEADER LOGO
+    ===================================================== */
+
+    function updatePortalHeader(
+      src
+    ){
+
+      if(!portalHeaderLogo){
+        return;
+      }
+
+
+      portalHeaderLogo.src=
+        src||
+        "../../assets/Logo.png";
+
+    }
+
+
+    /* =====================================================
+       SCHOOL NAME / ADDRESS PREVIEW
+    ===================================================== */
+
+    function updateLetterheadText(){
+
+      if(previewSchool){
+
+        previewSchool.textContent=
+          fields.provider.value.trim()||
+          "Your School / TVET Provider Name";
+
+      }
+
+
+      if(previewAddress){
+
+        previewAddress.textContent=
+          fields.address.value.trim()||
+          "Your complete school address";
+
+      }
+
+    }
+
+
+    /* =====================================================
+       LETTERHEAD LOGO PREVIEW
+    ===================================================== */
+
+    function updateLetterheadLogos(
+      data
+    ){
+
+      showImage(
+        previewTop,
+        data.headerLogo
+      );
+
+      showImage(
+        previewLeft,
+        data.logoLeft
+      );
+
+      showImage(
+        previewRight,
+        data.logoRight
+      );
+
+    }
+
+
+    /* =====================================================
+       LOAD PROFILE
+    ===================================================== */
+
+    function load(){
+
+      const data=
+        readProfile();
+
+
+      Object.keys(fields)
+        .forEach(
+          key=>{
+
+            fields[key].value=
+              data[key]||
+              "";
+
+          }
+        );
+
+
+      showImage(
+        topLogoPreview,
+        data.headerLogo
+      );
+
+      showImage(
+        leftLogoPreview,
+        data.logoLeft
+      );
+
+      showImage(
+        rightLogoPreview,
+        data.logoRight
+      );
+
+
+      if(data.headerLogo){
+
+        topLogo.dataset.data=
+          data.headerLogo;
+
+      }else{
+
+        delete topLogo.dataset.data;
+
+      }
+
+
+      if(data.logoLeft){
+
+        leftLogo.dataset.data=
+          data.logoLeft;
+
+      }else{
+
+        delete leftLogo.dataset.data;
+
+      }
+
+
+      if(data.logoRight){
+
+        rightLogo.dataset.data=
+          data.logoRight;
+
+      }else{
+
+        delete rightLogo.dataset.data;
+
+      }
+
+
+      updateLetterheadText();
+
+
+      updateLetterheadLogos(
+        data
+      );
+
+
+      updatePortalHeader(
+        data.headerLogo
+      );
+
+
+      status.textContent=
+        "Saved profile loaded.";
+
+    }
+
+
+    /* =====================================================
+       LOGO UPLOAD
+    ===================================================== */
+
+    function bindLogo(
+      input,
+      uploadPreview,
+      letterheadPreview
+    ){
+
+      if(!input){
+        return;
+      }
+
+
+      input.addEventListener(
+        "change",
+        function(){
+
+          const file=
+            this.files?.[0];
+
+
+          if(!file){
+            return;
+          }
+
+
+          if(
+            !file.type.startsWith(
+              "image/"
+            )
+          ){
+
+            alert(
+              "Please select a valid image file."
+            );
+
+            this.value=
+              "";
+
+            return;
+
+          }
+
+
+          const reader=
+            new FileReader();
+
+
+          reader.onload=
+            event=>{
+
+              const source=
+                event.target.result;
+
+
+              input.dataset.data=
+                source;
+
+
+              showImage(
+                uploadPreview,
+                source
+              );
+
+
+              showImage(
+                letterheadPreview,
+                source
+              );
+
+
+              if(
+                input===topLogo
+              ){
+
+                updatePortalHeader(
+                  source
+                );
+
+              }
+
+            };
+
+
+          reader.readAsDataURL(
+            file
+          );
+
+        }
+      );
+
+    }
+
+
+    bindLogo(
+      topLogo,
+      topLogoPreview,
+      previewTop
+    );
+
+
+    bindLogo(
+      leftLogo,
+      leftLogoPreview,
+      previewLeft
+    );
+
+
+    bindLogo(
+      rightLogo,
+      rightLogoPreview,
+      previewRight
+    );
+
+
+    /* =====================================================
+       LIVE TEXT UPDATE
+    ===================================================== */
+
+    fields.provider?.addEventListener(
+      "input",
+      updateLetterheadText
+    );
+
+
+    fields.address?.addEventListener(
+      "input",
+      updateLetterheadText
+    );
+
+
+    /* =====================================================
+       SAVE
+    ===================================================== */
+
+    form.addEventListener(
+      "submit",
+      event=>{
+
+        event.preventDefault();
+
+
+        if(
+          !form.checkValidity()
+        ){
+
+          form.reportValidity();
+
+          return;
+
+        }
+
+
+        const previous=
+          readProfile();
+
+
+        const data={
+          ...previous
+        };
+
+
+        Object.keys(fields)
+          .forEach(
+            key=>{
+
+              data[key]=
+                fields[key].value.trim();
+
+            }
+          );
+
+
+        data.headerLogo=
+          topLogo.dataset.data||
+          previous.headerLogo||
+          null;
+
+
+        data.logoLeft=
+          leftLogo.dataset.data||
+          previous.logoLeft||
+          null;
+
+
+        data.logoRight=
+          rightLogo.dataset.data||
+          previous.logoRight||
+          null;
+
+
+        data.updatedAt=
+          new Date().toISOString();
+
+
+        localStorage.setItem(
+          KEY,
+          JSON.stringify(
+            data
+          )
+        );
+
+
+        try{
+
+          localStorage.setItem(
+            "nexus_provider_profile",
+            JSON.stringify(
+              data
+            )
+          );
+
+        }catch(error){}
+
+
+        try{
+
+          NEXUS_SAM.Modules.RQM
+            .saveProvider(
+              data.provider
+            );
+
+        }catch(error){}
+
+
+        updateLetterheadText();
+
+
+        updateLetterheadLogos(
+          data
+        );
+
+
+        updatePortalHeader(
+          data.headerLogo
+        );
+
+
+        status.textContent=
+          "School profile, contacts, and letterhead saved.";
+
+
+        try{
+
+          NEXUS_SAM.UI.Notification.success(
+            "Profile saved.",
+            "Your profile and official letterhead preview have been updated."
+          );
+
+        }catch(error){}
+
+      }
+    );
+
+
+    /* =====================================================
+       RESET
+    ===================================================== */
+
+    document
+      .getElementById(
+        "btnResetProfile"
+      )
+      ?.addEventListener(
+        "click",
+        load
+      );
+
+
+    /* =====================================================
+       INITIAL LOAD
+    ===================================================== */
+
+    load();
+
+  }
+);
+
+</script>
+
+</body>
+</html>
