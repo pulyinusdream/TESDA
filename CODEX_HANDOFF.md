@@ -58,7 +58,66 @@ Do not use statements such as:
 when the repository can be inspected directly.
 
 ---
+# 2.1 REPOSITORY SCOPE
 
+This GitHub repository currently contains the deployed NEXUS frontend files only.
+
+The repository corresponds to the Firebase Hosting frontend that was previously maintained under the `public/` directory.
+
+Therefore, in this repository:
+
+REPOSITORY ROOT = FIREBASE PUBLIC FRONTEND
+
+Example:
+
+/
+├── index.html
+├── AIMS.html
+├── apps/
+├── TALDMS/
+├── RRMS/
+├── assets/
+└── CODEX_HANDOFF.md
+
+There may NOT be a nested `public/` folder.
+
+Codex must inspect the repository root to determine the actual structure.
+
+---
+
+# 2.2 TAESF / GOOGLE APPS SCRIPT BACKEND SCOPE
+
+The TAESF backend and Google Apps Script backend source are currently maintained separately and are NOT necessarily included in this GitHub repository.
+
+This includes backend components such as:
+
+- ApplicationService
+- command dispatcher
+- InventoryService
+- InventoryMovementService
+- InventoryEngine
+- BaseRepository
+- InventoryRepository
+- SettingsRepository
+- AuditRepository
+- InventoryLedgerRepository
+- ReservationRepository
+- NEXUS identity/session backend
+- ATLAS Apps Script backend
+- RRRO backend services
+- other Google Apps Script services
+
+Codex MUST NOT assume these components are missing merely because they are not present in GitHub.
+
+Codex MUST NOT recreate, replace, or invent backend implementations without first receiving and inspecting the actual Google Apps Script source.
+
+When a task requires backend modification, Codex must identify the frontend/backend contract first and state:
+
+"Backend source is not present in this repository. The actual Google Apps Script/TAESF backend must be inspected before backend changes are proposed."
+
+Frontend changes may proceed only when they can be safely verified against the existing API contract.
+
+---
 # 3. AUTHORITATIVE REPOSITORY RULE
 
 The live NEXUS frontend code is under:
