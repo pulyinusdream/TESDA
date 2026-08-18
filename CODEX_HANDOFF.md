@@ -1,75 +1,108 @@
 # NEXUS — CODEX DEVELOPMENT HANDOFF
 
-**Project:** TESDA Albay Network Enterprise Experience for Unified Systems
-**Short Name:** NEXUS
+**Project:** TESDA Albay Integrated Digital Systems Program — NEXUS
 **Organization:** TESDA Provincial Office – Albay
-**Development Environment:** GitHub + Firebase Hosting + Google Apps Script + Google Sheets
-**Primary Live Frontend Directory:** `public/`
+**Frontend:** HTML / CSS / JavaScript
+**Frontend Hosting:** Firebase Hosting
+**Backend:** Google Apps Script + TAESF Architecture
+**Operational Data Storage:** Google Sheets and related Google Workspace services
+**Repository Scope:** Deployed frontend only
+**Last Handoff Update:** August 2026
 
 ---
 
-# 1. PURPOSE OF THIS FILE
+# 1. PURPOSE
 
 This document is the authoritative development handoff for Codex.
 
-Codex must read this document before analyzing, proposing, or modifying NEXUS code.
+Codex must read this document before analyzing, recommending, editing, creating, deleting, renaming, or refactoring NEXUS project files.
 
-This file consolidates the established architecture, development conventions, module status, integration rules, migration decisions, security requirements, and coding workflow developed during previous NEXUS development sessions.
+This document consolidates the important architectural decisions, business rules, migration history, security requirements, integration rules, development practices, and module status established during prior development work.
 
-The purpose is to prevent Codex from:
+Its purpose is to prevent Codex from:
 
-* rebuilding already completed work;
-* inventing architecture that does not exist;
-* assuming filenames, functions, IDs, services, repositories, or HTML structures;
-* changing working legacy behavior without verification;
-* bypassing established NEXUS and TAESF architecture;
-* editing backup or obsolete copies of the system;
-* creating parallel implementations of features already present in the codebase.
+* rebuilding functionality that already exists;
+* inventing missing backend components;
+* assuming filenames or functions;
+* introducing a second architecture beside TAESF;
+* modifying backup or obsolete files;
+* removing working legacy behavior prematurely;
+* bypassing NEXUS authentication and authorization;
+* creating conflicting sources of truth;
+* treating this project as a new/greenfield application.
 
-The repository itself remains the ultimate source of truth for actual current code.
+The **actual current repository remains the source of truth for frontend implementation details**.
 
-**This document provides architectural and historical context. The actual repository must always be inspected before implementation.**
+For backend changes, the **actual Google Apps Script / TAESF source must be inspected separately** before implementation.
 
 ---
 
-# 2. CRITICAL CODEX OPERATING RULE
+# 2. MANDATORY CODEX OPERATING RULE
 
-## DO NOT ASSUME THE CODE.
+## INSPECT FIRST. NEVER ASSUME THE CODE.
 
 Before recommending or implementing any change:
 
 1. Inspect the actual repository.
-2. Inspect the exact target file.
-3. Locate the actual function, class, HTML block, service, repository, event handler, or CSS rule.
-4. Determine how the existing implementation currently works.
-5. Trace dependencies before changing the code.
-6. Preserve existing working behavior unless the task explicitly requires changing it.
-7. Never invent filenames, functions, IDs, APIs, database fields, or file locations.
+2. Locate the actual target file.
+3. Locate the exact existing function, class, HTML block, event handler, CSS rule, API wrapper, or configuration involved.
+4. Trace how it is currently used.
+5. Search for dependencies and callers.
+6. Determine whether the functionality already exists elsewhere.
+7. Identify the authoritative data source.
+8. Make the smallest safe change.
+9. Test the change.
+10. Preserve working behavior until its replacement has been verified.
 
-Do not use statements such as:
+Codex must not use speculative instructions such as:
 
 * "probably"
 * "likely"
 * "wherever this exists"
 * "you may have"
-* "for example, your function might look like"
 * "find something similar"
+* "your function might look like"
 
-when the repository can be inspected directly.
+when the repository can be inspected.
+
+Never invent:
+
+* filenames;
+* functions;
+* DOM IDs;
+* classes;
+* API commands;
+* Apps Script services;
+* Google Sheet names;
+* permissions;
+* roles;
+* backend methods;
+* database fields;
+* endpoints.
 
 ---
-# 2.1 REPOSITORY SCOPE
 
-This GitHub repository currently contains the deployed NEXUS frontend files only.
+# 3. REPOSITORY SCOPE
 
-The repository corresponds to the Firebase Hosting frontend that was previously maintained under the `public/` directory.
+This GitHub repository currently contains the **deployed NEXUS frontend files only**.
 
-Therefore, in this repository:
+The repository corresponds to the files that were previously maintained inside the Firebase Hosting:
 
+```text
+public/
+```
+
+directory.
+
+For the current GitHub repository:
+
+```text
 REPOSITORY ROOT = FIREBASE PUBLIC FRONTEND
+```
 
-Example:
+The repository may therefore look similar to:
 
+```text
 /
 ├── index.html
 ├── AIMS.html
@@ -77,459 +110,176 @@ Example:
 ├── TALDMS/
 ├── RRMS/
 ├── assets/
+├── concepts/
 └── CODEX_HANDOFF.md
+```
 
-There may NOT be a nested `public/` folder.
+There may **NOT** be a nested:
 
-Codex must inspect the repository root to determine the actual structure.
+```text
+public/
+```
+
+directory.
+
+Codex must inspect the repository root to determine the actual current structure.
+
+Do not recreate a `public/` directory unless the user explicitly changes the repository structure.
 
 ---
 
-# 2.2 TAESF / GOOGLE APPS SCRIPT BACKEND SCOPE
+# 4. FIREBASE CONFIGURATION SCOPE
 
-The TAESF backend and Google Apps Script backend source are currently maintained separately and are NOT necessarily included in this GitHub repository.
+Because only the former Firebase `public/` contents were uploaded to GitHub, files such as:
+
+```text
+firebase.json
+.firebaserc
+```
+
+may exist only in the user's local deployment workspace and may not be included in this repository.
+
+Their absence from GitHub must **NOT** be interpreted as evidence that Firebase Hosting is not being used.
+
+The live deployment architecture historically uses Firebase Hosting for the frontend.
+
+If deployment configuration must be changed, request or inspect the actual configuration before making recommendations.
+
+---
+
+# 5. TAESF / GOOGLE APPS SCRIPT BACKEND SCOPE
+
+The **TAESF backend and Google Apps Script backend source are maintained separately** and are currently not necessarily part of this GitHub repository.
 
 This includes backend components such as:
 
-- ApplicationService
-- command dispatcher
-- InventoryService
-- InventoryMovementService
-- InventoryEngine
-- BaseRepository
-- InventoryRepository
-- SettingsRepository
-- AuditRepository
-- InventoryLedgerRepository
-- ReservationRepository
-- NEXUS identity/session backend
-- ATLAS Apps Script backend
-- RRRO backend services
-- other Google Apps Script services
+* ApplicationService;
+* command dispatcher;
+* BaseRepository;
+* InventoryRepository;
+* SettingsRepository;
+* AuditRepository;
+* InventoryLedgerRepository;
+* ReservationRepository;
+* InventoryService;
+* InventoryMovementService;
+* InventoryEngine;
+* NEXUS identity/session services;
+* ATLAS Apps Script backend;
+* AIMS Apps Script backend;
+* RRRO/RRMS backend services;
+* TALDMS backend services;
+* other Google Apps Script modules and repositories.
 
-Codex MUST NOT assume these components are missing merely because they are not present in GitHub.
+Codex MUST NOT assume these components are missing simply because they do not appear in GitHub.
 
-Codex MUST NOT recreate, replace, or invent backend implementations without first receiving and inspecting the actual Google Apps Script source.
+Codex MUST NOT recreate, replace, or invent these components without inspecting the actual backend source first.
 
-When a task requires backend modification, Codex must identify the frontend/backend contract first and state:
+When a task requires backend modification and the backend is unavailable, Codex must state:
 
-"Backend source is not present in this repository. The actual Google Apps Script/TAESF backend must be inspected before backend changes are proposed."
+> Backend source is not present in this repository. The actual Google Apps Script / TAESF backend must be inspected before backend changes are proposed.
 
-Frontend changes may proceed only when they can be safely verified against the existing API contract.
-
----
-# 3. AUTHORITATIVE REPOSITORY RULE
-
-The live NEXUS frontend code is under:
-
-```text
-public/
-```
-
-Firebase Hosting deploys the contents of `public/`.
-
-Therefore:
-
-> `public/` is the authoritative live frontend tree.
-
-Do not make production changes in backup trees or historical copies.
-
-A known historical backup directory is:
-
-```text
-public_backup_2026-07-30
-```
-
-Do not implement production fixes there.
-
-Do not duplicate changes into unrelated root-level copies of the same application unless repository inspection proves they are part of the active build/deployment process.
-
-Before editing any file, determine whether it is actually loaded or deployed by the live application.
+Frontend changes may proceed only when they can safely be implemented using a verified existing frontend/backend contract.
 
 ---
 
-# 4. CURRENT HIGH-LEVEL PUBLIC ARCHITECTURE
+# 6. HIGH-LEVEL SYSTEM ARCHITECTURE
 
-Historically established frontend structure includes:
+The intended system architecture is:
 
 ```text
-public/
-│
-├── index.html
-├── AIMS.html
-│
-├── apps/
-│   ├── ATLAS.html
-│   ├── TITAN.html
-│   ├── AMS.html
-│   ├── ARMMS.html
-│   ├── ITSM.html
-│   ├── ORACLE.html
-│   └── PSP-PRTS.html
-│
-├── TALDMS/
-│   ├── index.html
-│   ├── CSS/
-│   ├── JS/
-│   └── Modules/
-│
-├── RRMS/
-│   └── [RRRO/RRMS implementation files]
-│
-├── concepts/
-│   ├── PROSPER.html
-│   └── AFLOW.html
-│
-└── assets/
-    ├── icons/
-    └── [shared assets]
+Users
+  │
+  ▼
+NEXUS Portal / Identity / Application Launcher
+  │
+  ├── AIMS
+  ├── ATLAS
+  ├── RRRO / RRMS
+  ├── TALDMS
+  ├── TITAN
+  ├── AMS
+  ├── ARMMS
+  ├── ITSM
+  ├── ORACLE
+  ├── PSP-PRTS
+  └── Other current/future modules
+  │
+  ▼
+Frontend API / Command Calls
+  │
+  ▼
+Google Apps Script / TAESF
+  │
+  ▼
+ApplicationService / Dispatcher
+  │
+  ▼
+Business / Domain Services
+  │
+  ▼
+Repositories
+  │
+  ▼
+Google Sheets / Google Workspace / Persistent Storage
 ```
 
-This structure must be verified against the current GitHub repository before making changes.
+NEXUS is not simply a landing page.
 
-Do not recreate these paths merely because they appear in this handoff.
+It is intended to provide shared:
 
-Use the repository as the final authority.
-
----
-
-# 5. NEXUS ARCHITECTURAL ROLE
-
-NEXUS is not merely a landing page.
-
-NEXUS serves as the integrated TESDA Albay framework for:
-
-* application access;
 * identity;
-* session handling;
+* session management;
 * authorization;
 * role-based access;
-* application registration;
-* shared governance;
-* security;
-* application integration;
-* common conventions;
-* shared user experience;
+* application launch;
+* governance;
+* integration;
 * auditability;
-* future inter-system communication.
-
-The intention is for individual TESDA Albay systems to operate as modules within a controlled NEXUS environment instead of completely independent applications.
+* common conventions.
 
 ---
 
-# 6. SYSTEMS UNDER NEXUS
+# 7. TAESF ARCHITECTURAL PRINCIPLE
 
-Major systems developed, integrated, planned, or being migrated include:
+TAESF is the reusable backend/service architecture used for NEXUS-related systems.
 
-## 6.1 ATLAS
-
-**Meaning:** Albay Travel And Leave Administration System
-
-Primary areas include:
-
-* Official Business
-* Activities / Meetings
-* To-Do / Reminders
-* Request to Render Overtime
-* Accomplishment Reports
-* Fare Registry / Reimbursement
-* Calendar
-* Reports
-* Regional balance/reference information
-* other administrative travel-related workflows
-
-### Leave Policy Decision
-
-ATLAS is no longer intended to maintain a full independent leave application subsystem.
-
-The established direction is:
-
-* Leave Monitoring is for **permanent employees only**.
-* Job Order personnel are excluded from leave monitoring.
-* Official leave balances originate from the Regional Office annual Google Sheet.
-* PO Albay records are the relevant scope.
-* ATLAS should consume/reference the official source instead of independently creating another leave balance authority.
-
-### Existing ATLAS UI
-
-ATLAS has undergone numerous frontend patches and enhancements.
-
-Known historical patch/version messages included versions around:
-
-* V3.9.x
-* V4.x
-* later patches through approximately V8.x
-
-Codex must not use version numbers alone to determine the actual current implementation.
-
-Inspect the repository.
-
----
-
-# 7. ATLAS DATA MIGRATION STATUS
-
-A new ATLAS Block 1 Google Sheet/backend environment was established during migration.
-
-Historical migration metrics recorded during development:
-
-* Source records: approximately **1,670**
-* migration preview and sync successfully identified inserted, updated, and unchanged records;
-* duplicate source IDs were identified and reviewed;
-* authoritative source rows were determined;
-* previously flagged pending update actions were cleared.
-
-Migration architecture includes mapping/record tracking.
-
-A known configuration requirement from development was:
-
-```text
-ATLAS_CONFIG.sheets.migrationRecordMap = "MigrationRecordMap"
-```
-
-Do not assume this remains unchanged.
-
-Inspect the current Apps Script backend.
-
----
-
-# 8. NEXUS ↔ ATLAS AUTHENTICATION
-
-NEXUS and ATLAS have already undergone shared-session integration.
-
-Important historical facts:
-
-* ATLAS receives a NEXUS launch session.
-* A trusted NEXUS session is registered with the ATLAS backend.
-* Shared-secret validation between NEXUS and ATLAS has been implemented.
-* A previous `SIGNATURE_INVALID` problem was resolved by aligning the shared secret.
-* ATLAS bootstrap authorization has previously succeeded.
-* Opening ATLAS directly without the NEXUS launch context previously produced:
-
-```text
-No NEXUS launch session received
-```
-
-This was expected for the integrated flow.
-
-A successful session historically included information such as:
-
-* session ID;
-* account ID;
-* employee ID;
-* username;
-* full name;
-* role;
-* status;
-* issued time;
-* expiration;
-* verification time.
-
-Never expose secrets in frontend files or commit secrets to GitHub.
-
-Secrets belong in secure backend configuration such as Apps Script Script Properties or another approved secret store.
-
----
-
-# 9. NEXUS SESSION / AUTHORIZATION EXPECTATION
-
-NEXUS authorization has previously returned results similar to:
-
-```text
-AUTHORIZED
-```
-
-with states indicating:
-
-```text
-authenticated: true
-authorized: true
-```
-
-Role information is carried as part of the trusted session.
-
-A historical administrative account used during testing had an `admin` role.
-
-Do not hard-code individual user identities into authorization logic.
-
-Use configured accounts, roles, permissions, or backend session information.
-
----
-
-# 10. ROLE-BASED ACCESS CONTROL
-
-NEXUS modules must follow RBAC principles.
-
-Historical ATLAS permissions included concepts such as:
-
-```text
-portal access
-entry view
-entry create
-entry edit
-OB generate
-OB approve
-activity create
-activity edit
-todo create
-todo edit
-OT create
-OT recommend
-OT approve
-trip ticket create
-trip ticket generate
-trip ticket approve
-report view
-report export
-regional balance view own
-regional balance view all
-session view
-admin audit
-```
-
-This is contextual information only.
-
-Codex must inspect the current permission registry before modifying access control.
-
-Do not create a second permission model without reviewing the existing implementation.
-
----
-
-# 11. AIMS
-
-**Meaning:** Albay Inventory Management System
-
-AIMS is an operational asset/inventory application already deployed and undergoing continuing modernization.
-
-AIMS supports TESDA property and supply processes including functions related to:
-
-* receiving;
-* issuance;
-* inventory;
-* RIS;
-* RSMI;
-* Stock Cards;
-* Supplies Ledger Cards;
-* RPCSP;
-* ICS;
-* PAR;
-* PPE;
-* WMR;
-* inventory reporting;
-* reservations;
-* audit/history;
-* stock monitoring.
-
-A critical stock threshold has historically been set around:
-
-```text
-10%
-```
-
-but Codex must inspect settings rather than hard-code this value.
-
----
-
-# 12. AIMS INVENTORY ENGINE
-
-Established AIMS modernization work introduced core inventory concepts including functions such as:
-
-```text
-receiveStock()
-issueStock()
-adjustStock()
-```
-
-and reservation handling.
-
-Inventory state historically included concepts such as:
-
-```text
-qtyOnHand
-qtyReserved
-qtyAvailable
-```
-
-The intended invariant is broadly:
-
-```text
-qtyAvailable = qtyOnHand - qtyReserved
-```
-
-but implementation must follow the actual service layer.
-
-Do not manipulate inventory totals directly in UI code if a backend engine/service already exists.
-
----
-
-# 13. AIMS RIS WORKFLOW
-
-The established RIS workflow has been designed around states similar to:
-
-```text
-Draft
-→ Submitted
-→ Verified
-→ Reserved
-→ Approved
-→ Issued
-→ Completed
-```
-
-Do not bypass workflow transitions by directly changing a status field.
-
-Workflow transitions should pass through the appropriate domain/application service and validation.
-
----
-
-# 14. AIMS NUMBERING CONVENTION
-
-Historical transaction numbering convention:
-
-```text
-PREFIX-YYYY-MM-######
-```
-
-with monthly sequence reset.
-
-Codex must inspect the actual numbering service before creating or modifying numbering logic.
-
-Do not generate document numbers solely in the frontend.
-
----
-
-# 15. TAESF
-
-TAESF is the backend/application architecture used as the reusable service framework behind NEXUS-related systems.
-
-The preferred direction is:
+Preferred flow:
 
 ```text
 Frontend / UI
       ↓
-ApplicationService / Command Dispatcher
+API / Command
       ↓
-Domain / Business Services
+ApplicationService
       ↓
-Repositories
+Domain / Business Service
+      ↓
+Repository
       ↓
 Google Sheets / Storage
 ```
 
-The architecture is designed to prevent business rules from being scattered throughout frontend JavaScript or Apps Script endpoint handlers.
+Business logic should not be unnecessarily duplicated across frontend JavaScript and Apps Script endpoint handlers.
+
+The frontend should normally request an operation.
+
+The backend service layer should:
+
+* validate;
+* authorize;
+* apply business rules;
+* update persistent state;
+* generate audit information;
+* return a structured response.
 
 ---
 
-# 16. TAESF APPLICATION SERVICE
+# 8. APPLICATION SERVICE / COMMAND DISPATCH
 
-The backend uses or has used an application-command dispatcher concept similar to:
+NEXUS/TAESF backend development uses a command-dispatch pattern.
 
-```text
-ApplicationService
-```
-
-Commands are dispatched through a central application layer.
-
-Historical AIMS commands included concepts such as:
+Historical commands include concepts such as:
 
 ```text
 inventory.receive
@@ -541,318 +291,511 @@ settings.get
 settings.save
 ```
 
-Codex must inspect the actual current dispatcher and registered commands.
+Codex must inspect the actual dispatcher before adding a command.
 
-Do not create a parallel dispatcher if an active one already exists.
+Do not create a parallel command dispatcher simply because the backend source is unavailable in GitHub.
+
+Do not bypass the service layer with direct Google Sheet manipulation from unrelated handlers.
 
 ---
 
-# 17. TAESF REPOSITORY PATTERN
+# 9. BACKEND RESPONSE CONTRACT
 
-Historical modernization work introduced or planned repositories such as:
+Historical NEXUS / TAESF responses have followed a structured contract similar to:
+
+```json
+{
+  "success": true,
+  "code": 200,
+  "status": "success",
+  "framework": "TAESF Backend",
+  "version": "...",
+  "api": "v1",
+  "build": "...",
+  "timestamp": "...",
+  "message": "...",
+  "data": {}
+}
+```
+
+The actual current response builder must be inspected before modifying this format.
+
+Do not casually change shared API response structures because multiple applications may rely on them.
+
+---
+
+# 10. NEXUS AUTHENTICATION AND SESSION PRINCIPLE
+
+NEXUS provides integrated identity/session handling.
+
+Conceptual flow:
 
 ```text
-BaseRepository
-InventoryRepository
-SettingsRepository
-AuditRepository
-InventoryLedgerRepository
-ReservationRepository
+User Login
+    ↓
+NEXUS Identity
+    ↓
+NEXUS Session
+    ↓
+Portal Authorization
+    ↓
+Application Launch
+    ↓
+Application Session Validation
+    ↓
+Permission Validation
+    ↓
+Application Bootstrap
 ```
 
-and services including concepts such as:
+An application page existing publicly on Firebase does not mean protected application operations are public.
+
+Protected backend operations must enforce authorization independently of UI visibility.
+
+---
+
+# 11. SECURITY RULE — FRONTEND IS NOT AUTHORIZATION
+
+The following are NOT sufficient security controls by themselves:
+
+* hiding a menu;
+* hiding a button;
+* redirecting from a page;
+* checking a JavaScript variable;
+* checking localStorage;
+* checking only `index.html`.
+
+Sensitive backend operations must verify trusted session and permission information.
+
+Never weaken backend authorization merely to make frontend integration easier.
+
+---
+
+# 12. NEXUS SESSION INTEGRATION HISTORY
+
+NEXUS integration has previously established trusted application sessions.
+
+Session information has historically included concepts such as:
+
+* sessionId;
+* accountId;
+* employeeId;
+* username;
+* fullName;
+* role;
+* status;
+* issuedAt;
+* expiresAt;
+* lastVerifiedAt.
+
+Historical authorization results included:
 
 ```text
-InventoryService
-InventoryMovementService
-InventoryEngine
+AUTHORIZED
+authenticated = true
+authorized = true
 ```
 
-The goal is separation of:
+Do not hard-code individual users as an authorization mechanism.
 
-* storage access;
-* business logic;
-* orchestration;
-* UI.
-
-Google Sheet access should normally occur through repositories or another defined persistence abstraction rather than being scattered across unrelated functions.
+Use the configured NEXUS session, role, and permission architecture.
 
 ---
 
-# 18. GOOGLE APPS SCRIPT BACKEND
+# 13. SECRET MANAGEMENT
 
-Google Apps Script is a major backend runtime for NEXUS applications.
+Never commit:
 
-Google Sheets serve as persistent operational data stores for several modules.
+* NEXUS shared secrets;
+* Apps Script Script Properties;
+* passwords;
+* private API keys;
+* access tokens;
+* Firebase administrative credentials;
+* private keys;
+* privileged service credentials.
 
-Backend development must consider:
+Shared secrets have historically been stored in Google Apps Script Script Properties.
 
-* Apps Script execution limits;
-* concurrent access;
-* locking where required;
-* batch reads/writes;
-* minimizing repeated spreadsheet calls;
-* stable headers/schema;
-* audit trails;
-* deterministic IDs;
-* configuration;
-* authorization;
-* data migration;
-* deployment versions.
+If Codex encounters credentials in repository files:
 
-Do not design frontend-only solutions for functionality that requires persistent authoritative data.
+1. flag them;
+2. do not duplicate them;
+3. do not expose them in responses;
+4. recommend appropriate secret handling.
 
 ---
 
-# 19. APPS SCRIPT DEPLOYMENT
+# 14. SCRIPT INITIALIZATION / BOOTSTRAP
 
-Historical backend deployment procedure has been:
+A previous NEXUS integration issue occurred because application initialization happened before the required identity/session integration was installed.
 
-1. Open Apps Script project.
-2. Manage deployment.
-3. Update the existing Web App deployment.
-4. Create/select a **New version**.
-5. Deploy.
-6. Preserve the production `/exec` endpoint where possible.
-
-Deployment settings historically used a model similar to:
+The conceptual order should be:
 
 ```text
-Execute as: Me
-Access: Anyone / appropriately configured deployment access
+NEXUS identity/session bootstrap
+        ↓
+Application authorization
+        ↓
+Application initialization
 ```
 
-Actual deployment settings must be verified before changing them.
+When investigating bootstrap issues, inspect:
 
-Do not create a new endpoint unnecessarily if existing applications depend on the current `/exec` URL.
+* script ordering;
+* `defer`;
+* `async`;
+* DOMContentLoaded handlers;
+* initialization functions;
+* bootstrap promises;
+* API readiness;
+* session registration;
+* authorization completion;
+* legacy startup code.
+
+Do not fix initialization races by inserting arbitrary `setTimeout()` delays.
+
+Fix dependency ordering.
 
 ---
 
-# 20. FIREBASE HOSTING
+# 15. AIMS — ALBAY INVENTORY MANAGEMENT SYSTEM
 
-The frontend is deployed using Firebase Hosting.
+AIMS supports TESDA property, supply, inventory, and asset-management processes.
 
-Typical established deployment flow:
+Historical/current scope includes concepts such as:
 
-```bash
-firebase deploy --only hosting
-```
+* Receiving;
+* Inventory;
+* Issuance;
+* RIS;
+* RSMI;
+* Stock Cards;
+* Supplies Ledger;
+* RPCSP;
+* ICS;
+* PAR;
+* PPE;
+* WMR;
+* inventory monitoring;
+* inventory reports;
+* reservations;
+* audit history.
 
-The deployment source is the repository's configured Firebase public directory, historically:
+AIMS Version 2 was deployed during the modernization effort.
+
+Codex must inspect the repository to determine the actual current implementation.
+
+---
+
+# 16. AIMS INVENTORY ENGINE
+
+Established AIMS modernization introduced inventory operations including concepts such as:
 
 ```text
-public/
+receiveStock()
+issueStock()
+adjustStock()
 ```
 
-After deployment, testing should include:
+and reservation handling.
 
-* hard refresh;
-* incognito/private browsing;
-* direct navigation;
-* NEXUS launch navigation;
-* browser console;
-* network requests;
-* authorization;
-* backend calls.
-
-Do not assume a local file test is equivalent to Firebase-hosted behavior.
-
----
-
-# 21. AIMS ↔ NEXUS INTEGRATION HISTORY
-
-A previous AIMS authorization issue occurred because an authorization request unexpectedly returned inventory data.
-
-The observed problem was approximately:
-
-* NEXUS authorization command was sent;
-* dispatcher was not reached correctly;
-* request fell back to legacy GET behavior;
-* Inventory array was returned;
-* frontend reported that NEXUS authorization was not accepted.
-
-This highlighted an important integration rule:
-
-> NEXUS/TAESF command dispatch must be installed and available before legacy fallback logic executes.
-
-Historical frontend integration files included concepts similar to:
+Inventory quantities include concepts such as:
 
 ```text
-nexus.portal.js
-aims.nexus-prebootstrap.js
-aims.nexus.js
+qtyOnHand
+qtyReserved
+qtyAvailable
 ```
 
-Do not assume these exact names still exist.
+Conceptually:
 
-Inspect the current repository.
+```text
+qtyAvailable = qtyOnHand - qtyReserved
+```
 
----
+but Codex must not independently implement this formula if the backend service already provides the authoritative value.
 
-# 22. LEGACY PRESERVATION POLICY
-
-A major development rule for NEXUS is:
-
-> Replace or migrate one workflow at a time.
-
-When modernizing an existing module:
-
-1. identify the working legacy workflow;
-2. map its dependencies;
-3. implement the TAESF replacement;
-4. connect only that workflow;
-5. test it;
-6. verify parity;
-7. only then retire the replaced legacy implementation.
-
-Do not perform broad rewrites simply because the current code is old or monolithic.
-
-Working behavior takes priority over architectural purity during migration.
+Inventory mutation belongs in the authoritative backend/service layer.
 
 ---
 
-# 23. RRRO / RRMS
+# 17. AIMS RIS WORKFLOW
 
-The Registry of Relevant Risks and Opportunities has been developed as a NEXUS module.
+The established RIS workflow uses states conceptually similar to:
 
-The long-term design replaces multiple yearly worksheet-based registries with a permanent risk registry plus annual/quarterly history.
+```text
+Draft
+  ↓
+Submitted
+  ↓
+Verified
+  ↓
+Reserved
+  ↓
+Approved
+  ↓
+Issued
+  ↓
+Completed
+```
 
-The design principles include:
+Do not bypass workflow rules by directly assigning a status.
 
-* permanent Risk Master;
-* year identified;
-* quarterly monitoring;
-* annual residual review;
-* action plans;
-* approvals;
-* audit history;
-* archived/closed risks;
+Transitions should validate:
+
+* current state;
+* intended transition;
+* actor;
+* permission;
+* inventory state;
+* required approvals;
+* business rules.
+
+---
+
+# 18. AIMS NUMBERING
+
+Historical numbering conventions include:
+
+```text
+PREFIX-YYYY-MM-######
+```
+
+with monthly sequence handling.
+
+Do not create frontend-only numbering logic.
+
+Document numbers must be generated using the authoritative backend numbering implementation to prevent duplicates and concurrency problems.
+
+---
+
+# 19. AIMS / NEXUS INTEGRATION HISTORY
+
+A previous AIMS authorization bug occurred when a NEXUS authorization request unexpectedly returned inventory data.
+
+Root behavior involved:
+
+```text
+Authorization request
+      ↓
+TAESF dispatcher not reached correctly
+      ↓
+legacy GET fallback executed
+      ↓
+inventory array returned
+      ↓
+frontend rejected authorization response
+```
+
+Important rule:
+
+> Command dispatch and identity handling must occur before inappropriate legacy fallback behavior.
+
+When modifying AIMS startup or API logic, inspect both the modern NEXUS integration and legacy compatibility path.
+
+---
+
+# 20. ATLAS — ALBAY TRAVEL AND LEAVE ADMINISTRATION SYSTEM
+
+ATLAS includes administrative workflows such as:
+
+* Official Business;
+* Activity / Meeting;
+* To Do / Reminder;
+* Request to Render Overtime;
+* Accomplishment Report;
+* calendar-related functions;
+* travel-related functions;
 * reporting;
-* notifications;
-* role separation;
-* maker-checker-approver control.
+* related administrative monitoring.
 
-Historical development has also referred to this technical module as:
+ATLAS has undergone many incremental frontend patches.
+
+Do not infer the current version from historical version-log messages.
+
+Inspect the actual current file.
+
+---
+
+# 21. ATLAS LEAVE POLICY
+
+Established business decision:
+
+### Leave monitoring applies to permanent personnel only.
+
+Job Order personnel are not included in official leave balance monitoring.
+
+Official leave/CTO-related reference balances are intended to use the Regional Office authoritative source where applicable rather than maintain a competing independent PO balance.
+
+Do not reintroduce a standalone authoritative leave balance source into ATLAS without an explicit business decision.
+
+---
+
+# 22. ATLAS NEXUS INTEGRATION
+
+ATLAS has already undergone NEXUS shared-session integration.
+
+Historical implementation included:
+
+* NEXUS launch context;
+* trusted session registration;
+* backend validation;
+* shared-secret validation;
+* role authorization.
+
+A previous:
+
+```text
+SIGNATURE_INVALID
+```
+
+problem was resolved by aligning the NEXUS and ATLAS shared-secret configuration.
+
+Direct opening of ATLAS without NEXUS launch context historically produced:
+
+```text
+No NEXUS launch session received
+```
+
+Do not remove integrated launch/session checks without understanding the intended access model.
+
+---
+
+# 23. ATLAS DATA MIGRATION
+
+ATLAS Block 1 records were migrated into a new Google Sheet/backend environment.
+
+Historical migration baseline:
+
+```text
+Source records: approximately 1,670
+```
+
+Migration processes included:
+
+* preview;
+* insert detection;
+* update detection;
+* unchanged detection;
+* duplicate source-ID identification;
+* source-record mapping;
+* authoritative-row selection.
+
+A known historical configuration included:
+
+```text
+ATLAS_CONFIG.sheets.migrationRecordMap = "MigrationRecordMap"
+```
+
+This is historical context only.
+
+Verify the current Apps Script code before relying on this setting.
+
+---
+
+# 24. RRRO / RRMS
+
+The Registry of Relevant Risks and Opportunities is being developed as a NEXUS module.
+
+The technical implementation may use the name:
 
 ```text
 RRMS
 ```
 
-Codex must inspect current naming before renaming anything.
+while the business process is referred to as:
+
+```text
+RRRO
+```
+
+Do not rename paths or modules solely to make these names identical.
+
+Inspect current implementation.
 
 ---
 
-# 24. RRRO DATA MODEL PRINCIPLE
+# 25. RRRO PERMANENT REGISTRY PRINCIPLE
 
-A risk is not recreated simply because a new calendar year begins.
+A risk should not automatically become an entirely new master record merely because a new calendar year starts.
 
-The intended model is approximately:
+Intended design:
 
 ```text
 Risk Master
-   │
-   ├── Action Plans
-   ├── Quarterly Monitoring
-   ├── Annual Residual Reviews
-   ├── Approval History
-   ├── Risk History
-   └── Audit History
+    │
+    ├── Action Plans
+    ├── Quarterly Monitoring
+    ├── Annual Residual Reviews
+    ├── Approval History
+    ├── Risk History
+    └── Audit History
 ```
 
-Year-specific activity is recorded as history/monitoring associated with the permanent risk record.
+The permanent registry preserves historical continuity.
 
 ---
 
-# 25. RRRO GOVERNANCE
+# 26. RRRO FUNCTIONAL AREAS
 
-RRRO design requires strong traceability.
+Historical/current RRRO design contains areas such as:
 
-Important requirements include:
+* Dashboard;
+* Monitoring Center;
+* Risk Registry;
+* Reports;
+* Audit Room.
 
-* RBAC;
-* maker-checker-approver controls;
-* immutable or protected history;
-* transaction/audit trail;
-* source lineage;
-* official report generation;
-* conservative migration;
-* no silent data merging.
+Risk-record functionality has included:
 
-Historical output requirements included official TESDA risk/QMS report formats such as TESDA-QM-F01-related outputs.
+* Open Record;
+* Action Plans;
+* Quarterly Monitoring;
+* Annual Residual Review;
+* Risk History;
+* Approvals.
 
-Inspect the current specification and code before implementing reports.
+Do not assume every feature is complete.
+
+Inspect current code and current UI behavior.
 
 ---
 
-# 26. RRRO MIGRATION RULE
+# 27. RRRO APPROVAL / GOVERNANCE PRINCIPLE
 
-Historical RRRO migration planning covered multiple existing worksheets spanning approximately 2023–2026.
+RRRO should preserve strong traceability and segregation of duties.
 
-Migration rules established were:
+Important concepts include:
+
+* maker;
+* checker/reviewer;
+* approver;
+* action-plan responsibility;
+* quarterly monitoring;
+* approval history;
+* audit history;
+* report generation;
+* source lineage.
+
+Frontend buttons must not be the only protection around approval transitions.
+
+---
+
+# 28. RRRO MIGRATION RULE
+
+Existing RRRO information from historical annual worksheets must be migrated conservatively.
+
+Rules:
 
 * preserve source lineage;
-* conservatively match records;
+* retain original IDs where possible;
 * identify duplicates;
-* do not silently merge;
-* do not auto-correct uncertain data;
-* send uncertain matches for human review;
-* require business validation/sign-off before accepting the migrated baseline.
-
-Codex must never write a migration routine that destructively normalizes source data without an audit trail.
-
----
-
-# 27. RRRO CURRENT/FUNCTIONAL UI AREAS
-
-Historical RRRO functionality has included:
-
-* Dashboard
-* Monitoring Center
-* Risk Registry
-* Reports
-* Audit Room
-
-Risk modal/tab concepts include:
-
-* Open Record
-* Action Plans
-* Quarterly Monitoring
-* Annual Residual Review
-* Risk History
-* Approvals
-
-Known historical UI issues included:
-
-* overlapping buttons;
-* dropdown clipping;
-* modal overflow;
-* missing scrollbars;
-* annual history loading problems;
-* monitoring history rendering problems;
-* hidden Add/Edit controls;
-* inconsistent margins;
-* table readability;
-* hidden Open Task controls.
-
-Do not assume these issues are still present.
-
-Verify current behavior first.
-
----
-
-# 28. RRRO ISOLATION DURING DEVELOPMENT
-
-A prior implementation decision placed RRRO/RRMS development under an isolated path such as:
-
-```text
-public/RRMS/
-```
-
-The module should be linked into the main NEXUS portal only after smoke testing.
-
-This approach was intended to protect existing production modules while RRRO was being developed.
-
-Inspect the current routing before changing integration.
+* do not silently merge uncertain records;
+* do not silently correct questionable source data;
+* flag uncertain matching for human validation;
+* maintain an auditable migration mapping;
+* require validation before accepting migrated records as authoritative.
 
 ---
 
@@ -860,17 +803,17 @@ Inspect the current routing before changing integration.
 
 TALDMS is the Training and Learning Development Management System.
 
-Its planned/implemented scope has included multiple development phases.
+Development scope has included:
 
-## Phase 1
+### Phase 1
 
 * Login
-* Role management
-* Employee management
+* Role
+* Employee
 * Settings
 * Dashboard
 
-## Phase 2
+### Phase 2
 
 * Training
 * Workforce
@@ -878,32 +821,32 @@ Its planned/implemented scope has included multiple development phases.
 * TREAP
 * TDOR
 
-## Phase 3
+### Phase 3
 
 * Analytics
-* Email integration
+* Email
 * Drive integration
 * Audit Dashboard
 
-Additional concepts include:
+Additional design concepts include:
 
-* Learning Intervention
-* Knowledge Transfer
-* Outcomes
-* Audit Room
-* Organizational Capability Index
-* Config-Driven Workflow
-* Dynamic Permission
-* Policy Engine
-* Executive Storyboard
+* Learning Intervention;
+* Knowledge Transfer;
+* Outcomes;
+* Audit Room;
+* Organization Capability Index;
+* Config-Driven Workflow;
+* Dynamic Permission;
+* Policy Engine;
+* Executive Storyboard.
 
 ---
 
-# 30. TALDMS IMPLEMENTATION NOTES
+# 30. TALDMS ARCHITECTURAL CAUTION
 
-TALDMS uses a more modular frontend structure compared with several older single-HTML applications.
+TALDMS historically uses a more modular frontend layout than some older NEXUS applications.
 
-Historically it has included directories such as:
+It has included concepts such as:
 
 ```text
 TALDMS/
@@ -913,838 +856,203 @@ TALDMS/
 └── Modules/
 ```
 
-Previous codebase review found some architecture/components incomplete or not fully wired.
-
-Examples historically observed included:
-
-* router/workflow/notification files unfinished or empty;
-* authentication/authorization files existing but not fully connected to the TALDMS entry flow;
-* browser localStorage used through an abstraction.
-
-Do not rebuild these areas before checking whether newer commits have completed them.
-
----
-
-# 31. TITAN
-
-TITAN is the Toolkit Inventory and Tracking Allocation Network.
-
-It is part of the NEXUS ecosystem.
-
-It previously served as one of the modules used for piloting or validating NEXUS access/security patterns.
-
-Codex must inspect the current implementation rather than extrapolate security behavior from TITAN to other applications.
-
----
-
-# 32. OTHER NEXUS MODULES
-
-Other modules historically represented in the portal include systems such as:
-
-```text
-AMS
-ARMMS
-ITSM
-ORACLE
-PSP-PRTS
-PROSPER
-AFLOW
-```
-
-Some may be operational, conceptual, planned, or under development.
-
-Do not assume module status from filename existence alone.
-
-Inspect:
-
-* portal metadata;
-* application registry;
-* status configuration;
-* route;
-* actual page implementation.
-
----
-
-# 33. NEXUS SECURITY PRINCIPLE
-
-The NEXUS landing/login layer alone is not sufficient to secure applications.
-
-A major security principle is:
-
-> Authorization must also be enforced at the application/backend level.
-
-Historical observations showed that protecting only `index.html` could still allow direct navigation to individual app pages.
-
-Therefore:
-
-* UI hiding is not authorization;
-* route guarding alone is not authorization;
-* frontend session checks alone are not authorization;
-* sensitive backend commands must validate trusted sessions and permissions.
-
-Codex must not weaken backend authorization for convenience.
-
----
-
-# 34. FRONTEND SESSION BOOTSTRAP
-
-Applications integrated into NEXUS may require a defined bootstrap order.
-
-A typical concern is:
-
-```text
-Identity/session bootstrap
-→ Authorization
-→ Application initialization
-```
-
-A previous integration bug occurred because application logic initialized before the NEXUS identity layer was properly installed.
-
-When diagnosing startup bugs, Codex must inspect:
-
-* `<script>` ordering;
-* defer/async behavior;
-* module initialization;
-* DOMContentLoaded listeners;
-* bootstrap promises;
-* session registration;
-* authorization completion;
-* legacy initialization.
-
-Do not add arbitrary delays with `setTimeout()` as a substitute for correcting initialization order.
-
----
-
-# 35. SCRIPT LOADING POLICY
-
-Use deterministic script loading.
-
-Avoid race-condition-based initialization.
-
-Where the current architecture uses explicit script tags, maintain predictable dependency order.
-
-Before adding a script, verify:
-
-* where related scripts are loaded;
-* whether the namespace already exists;
-* whether there is a bootstrap loader;
-* whether initialization occurs automatically.
-
----
-
-# 36. SHARED NAMESPACE / STORAGE CONVENTIONS
-
-TAESF/NEXUS development has previously used shared namespace, workspace, and storage abstractions.
-
-Codex must search the repository for existing TAESF/NEXUS globals or namespaces before defining new global variables.
-
-Avoid polluting `window` with duplicate parallel application state.
-
-Prefer the established abstraction.
-
----
-
-# 37. DATA AUTHORITY RULE
-
-For each piece of data, determine its authoritative source.
-
-Examples:
-
-* inventory quantities → AIMS backend;
-* NEXUS session → NEXUS identity/session backend;
-* official ATLAS leave balances → Regional Office source;
-* RRRO master/history → RRRO authoritative registry;
-* configuration → designated settings/config repository.
-
-Do not create a second competing source of truth.
-
----
-
-# 38. AUDITABILITY REQUIREMENT
-
-NEXUS systems support government administrative processes.
-
-Changes affecting official transactions should preserve or improve auditability.
-
-Where applicable, transaction records should contain information such as:
-
-* record ID;
-* transaction ID;
-* actor/account;
-* role;
-* action;
-* previous value;
-* new value;
-* timestamp;
-* source/system;
-* approval state;
-* related document;
-* remarks/reason.
-
-Do not silently mutate finalized government records.
-
----
-
-# 39. GOVERNMENT RECORDS PRINCIPLE
-
-The system should distinguish between:
-
-* operational data;
-* official records;
-* temporary UI state;
-* audit history;
-* reference/configuration data.
-
-Browser storage must not become the authoritative source for official government transactions unless the architecture explicitly provides synchronized persistence.
-
----
-
-# 40. GOOGLE SHEETS SCHEMA RULE
-
-When Google Sheets are used as backend tables:
-
-* inspect existing headers;
-* do not casually rename headers;
-* preserve compatibility;
-* centralize column mappings where possible;
-* perform batch reads/writes;
-* validate expected schemas;
-* log migration transformations;
-* avoid relying on column position if a header mapping already exists.
-
-Schema changes must be intentional and migration-aware.
-
----
-
-# 41. IDENTITY AND RECORD IDENTIFIERS
-
-Use stable record IDs.
-
-Do not use mutable human-readable fields such as employee name, risk title, or item description as the sole identifier.
-
-Where existing system IDs are present, preserve them.
-
-During migrations:
-
-* preserve original source ID;
-* create migration/source mapping if necessary;
-* retain lineage.
-
----
-
-# 42. NO SECRET VALUES IN REPOSITORY
-
-Never commit:
-
-* NEXUS shared secrets;
-* passwords;
-* access tokens;
-* private keys;
-* sensitive Apps Script properties;
-* privileged credentials.
-
-When code expects configuration, use the established environment/configuration mechanism.
-
-If Codex encounters a secret already committed, flag it before propagating it elsewhere.
-
----
-
-# 43. DEVELOPMENT WORKFLOW REQUIRED FROM CODEX
-
-For implementation tasks, Codex must use the following workflow.
-
-## Step 1 — Objective
-
-State the exact change being implemented.
-
-## Step 2 — Files to Modify
-
-List only files verified in the repository.
-
-Example:
-
-```text
-public/apps/ATLAS.html
-backend/ApplicationService.gs
-```
-
-Do not list speculative files.
-
-## Step 3 — Exact Existing Function / Block
-
-Identify the exact existing code being changed.
-
-Examples:
-
-```text
-function initializeAtlas()
-```
-
-or:
-
-```html
-<section id="leaveMonitoring">
-```
-
-## Step 4 — Replacement Scope
-
-Clearly state one of:
-
-```text
-Replace the entire function.
-```
-
-or:
-
-```text
-Replace only the specified block.
-```
-
-or:
-
-```text
-Insert the following immediately after [exact verified code].
-```
-
-## Step 5 — Complete Code
-
-Provide complete copy/paste-ready code.
-
-Do not use:
-
-```text
-// existing code here
-```
-
-inside a replacement block unless the task specifically requires a diff instead of replacement code.
-
-## Step 6 — Exact Paste Location
-
-Specify the exact verified paste point.
-
-## Step 7 — Testing Steps
-
-Provide concrete steps for testing.
-
-## Step 8 — Expected Results
-
-State what should happen when the implementation works.
-
----
-
-# 44. CODEX MAY EDIT DIRECTLY
-
-When Codex is operating with repository write access, it may implement the verified change directly rather than only giving copy/paste instructions.
-
-However, the same discipline still applies.
-
-Before modifying:
-
-1. inspect;
-2. map dependencies;
-3. make the smallest safe change;
-4. review the diff;
-5. test;
-6. report exactly what changed.
-
----
-
-# 45. DO NOT PERFORM UNREQUESTED REFACTORING
-
-Do not refactor unrelated code merely because it appears untidy.
-
-Avoid:
-
-* mass renaming;
-* broad folder restructuring;
-* replacing frameworks;
-* formatting entire files;
-* deleting legacy code unrelated to the task;
-* converting architecture styles without requirement;
-* introducing build systems unnecessarily.
-
-Keep diffs focused.
-
----
-
-# 46. DO NOT DELETE LEGACY CODE UNTIL VERIFIED
-
-When replacing legacy functionality:
-
-```text
-Legacy working behavior
-        ↓
-TAESF replacement
-        ↓
-Integration
-        ↓
-Testing
-        ↓
-Parity verification
-        ↓
-Legacy retirement
-```
-
-Do not reverse the order.
-
----
-
-# 47. TESTING EXPECTATION
-
-Every implementation must identify appropriate tests.
-
-Depending on the module, test:
-
-* successful workflow;
-* invalid input;
-* unauthorized user;
-* insufficient permission;
-* duplicate action;
-* refresh;
-* direct URL access;
-* expired session;
-* backend failure;
-* Apps Script response;
-* Google Sheet update;
-* audit entry;
-* Firebase production behavior.
-
-Do not report a change as complete merely because code compiles.
-
----
-
-# 48. BROWSER DEBUGGING
-
-For frontend bugs, inspect:
-
-```text
-Browser Console
-Network tab
-Application / Storage
-DOM
-Loaded scripts
-Request payload
-Response payload
-HTTP status
-```
-
-Capture the actual error.
-
-Do not infer a backend failure solely from a UI message.
-
----
-
-# 49. APPS SCRIPT DEBUGGING
-
-For backend bugs, inspect:
-
-* Apps Script Executions;
-* request payload;
-* command/action;
-* dispatcher;
+Earlier development reviews identified some modules that were incomplete or not yet fully wired, including areas related to:
+
+* routing;
+* workflow;
+* notifications;
 * authentication;
-* authorization;
-* service;
-* repository;
-* Sheet state;
-* returned JSON;
-* HTTP status;
-* logs.
+* authorization.
 
-Trace the request end-to-end.
+Do not rebuild an apparently incomplete component until the current repository confirms its actual status and intended purpose.
 
 ---
 
-# 50. RESPONSE CONTRACT
+# 31. TITAN AND OTHER NEXUS MODULES
 
-Where a shared API response contract exists, preserve it.
+Other modules historically represented in NEXUS include:
 
-Historical NEXUS/TAESF responses have used fields similar to:
+* TITAN — Toolkit Inventory and Tracking Allocation Network;
+* AMS;
+* ARMMS;
+* ITSM;
+* ORACLE;
+* PSP-PRTS;
+* PROSPER;
+* AFLOW;
+* other active or conceptual modules.
 
-```json
-{
-  "success": true,
-  "code": 200,
-  "status": "success",
-  "framework": "TAESF Backend",
-  "api": "v1",
-  "timestamp": "...",
-  "message": "...",
-  "data": {}
-}
-```
+A filename or portal card does not automatically establish whether a system is:
 
-Inspect actual backend response builders before modifying response format.
+* operational;
+* experimental;
+* conceptual;
+* archived;
+* planned.
 
-Do not casually break clients expecting the existing contract.
+Codex must inspect:
 
----
-
-# 51. BACKWARD COMPATIBILITY
-
-Before modifying a shared backend function or response:
-
-Search the repository for all consumers.
-
-Determine:
-
-* which applications call it;
-* what payload they send;
-* what fields they read;
-* what error handling they expect.
-
-Shared service changes require compatibility review.
+* actual page;
+* NEXUS application registry;
+* route;
+* metadata;
+* frontend code;
+* authentication behavior.
 
 ---
 
-# 52. PERFORMANCE PRINCIPLE
+# 32. ROLE-BASED ACCESS CONTROL
 
-Because Google Apps Script and Google Sheets are involved:
+NEXUS modules must use RBAC.
 
-Avoid:
+Historical ATLAS permission concepts included:
 
 ```text
-getRange() inside large loops
-setValue() repeatedly inside loops
-multiple full-sheet scans per request
-unnecessary SpreadsheetApp.openById calls
+portal access
+entry view
+entry create
+entry edit
+
+OB generate
+OB approve
+
+activity create
+activity edit
+
+todo create
+todo edit
+
+OT create
+OT recommend
+OT approve
+
+trip ticket create
+trip ticket generate
+trip ticket approve
+
+report view
+report export
+
+regional balance view own
+regional balance view all
+
+session view
+admin audit
 ```
 
-Prefer:
+This is historical architectural context.
 
-* batch reads;
-* in-memory maps;
-* batch writes;
-* indexed/mapped lookups;
-* caching only where safe;
-* LockService where concurrency requires it.
+Codex must inspect the current role/permission implementation before modifying permissions.
 
-Correctness and audit integrity remain more important than premature optimization.
+Do not create an independent second permission system inside a module if NEXUS already provides one.
 
 ---
 
-# 53. CONCURRENCY
+# 33. DATA AUTHORITY
 
-Inventory, approvals, numbering, reservations, and similar workflows can be concurrency-sensitive.
+Before changing any feature, determine its source of truth.
 
-Before modifying them, check whether the implementation uses:
+Examples:
+
+```text
+NEXUS identity/session
+→ NEXUS authentication backend
+
+Inventory quantities
+→ AIMS authoritative backend
+
+Official leave balances
+→ designated Regional Office source
+
+RRRO records/history
+→ RRRO authoritative backend
+
+Settings
+→ designated settings/configuration source
+```
+
+Do not create a competing data authority.
+
+---
+
+# 34. GOOGLE SHEETS BACKEND RULES
+
+Several NEXUS systems use Google Sheets as operational data stores.
+
+When modifying backend code:
+
+* inspect actual headers;
+* preserve existing schema compatibility;
+* centralize header/column mappings where possible;
+* use batch reads;
+* use batch writes;
+* avoid repeated `getRange()` calls in large loops;
+* avoid repeated `setValue()` inside large loops;
+* avoid unnecessary full-sheet scans;
+* validate expected schema;
+* preserve IDs;
+* preserve migration lineage;
+* use locking where concurrency matters.
+
+Do not casually rename Google Sheet headers.
+
+---
+
+# 35. CONCURRENCY
+
+The following may be concurrency-sensitive:
+
+* inventory receipt;
+* inventory issue;
+* stock reservation;
+* document numbering;
+* approval transitions;
+* transaction creation.
+
+Inspect whether the backend uses:
 
 ```text
 LockService
 ```
 
-or another concurrency strategy.
+or another concurrency mechanism.
 
-Do not implement document numbering or stock deduction in a way that can produce collisions during simultaneous transactions.
-
----
-
-# 54. ERROR HANDLING
-
-Errors should provide useful operational information without leaking sensitive internals.
-
-Frontend:
-
-* give actionable user messages;
-* preserve technical details in console/logs when appropriate.
-
-Backend:
-
-* return structured errors;
-* log enough information for debugging;
-* avoid exposing secrets, stack traces, or privileged data to unauthorized clients.
+Do not introduce document-number or inventory updates that can produce duplicate or inconsistent records when simultaneous transactions occur.
 
 ---
 
-# 55. APPROVAL WORKFLOWS
+# 36. GOVERNMENT RECORDS / AUDITABILITY
 
-Government workflow states should be enforced.
+NEXUS supports government administrative processes.
 
-A frontend button must not be the only control preventing an unauthorized status transition.
+Official transactions must preserve auditability.
 
-The backend must validate:
+Where applicable, records should retain information such as:
 
-* current state;
-* intended transition;
+* record ID;
+* transaction ID;
 * actor;
+* account;
+* employee;
 * role;
-* permission;
-* required data;
-* required approval;
-* business rules.
+* action;
+* previous value;
+* new value;
+* timestamp;
+* related workflow;
+* source;
+* approval state;
+* remarks/reason.
+
+Do not silently overwrite finalized records.
+
+Prefer append-only history or explicit amendment history where business rules require traceability.
 
 ---
 
-# 56. MAKER-CHECKER-APPROVER PRINCIPLE
+# 37. BROWSER STORAGE
 
-For workflows requiring segregation of duties, preserve maker/checker/approver concepts.
-
-Do not collapse approval responsibilities simply to simplify the UI.
-
-RRRO and other administrative workflows may require this separation.
-
----
-
-# 57. USER EXPERIENCE PRINCIPLE
-
-The applications should remain practical for TESDA personnel who are performing government administrative processes.
-
-Prefer:
-
-* clear statuses;
-* clear button labels;
-* visible progress;
-* useful empty states;
-* readable tables;
-* modal scrolling;
-* actionable errors;
-* confirmation for destructive actions;
-* consistent layouts.
-
-Avoid redesigning stable UI unless the task is specifically UI/UX related.
-
----
-
-# 58. RESPONSIVE BEHAVIOR
-
-When modifying UI, test at minimum:
-
-* normal desktop;
-* smaller desktop/laptop;
-* narrow/mobile viewport where supported.
-
-Do not fix one layout by introducing fixed dimensions that break another.
-
----
-
-# 59. CURRENT DEPLOYMENT CONTEXT
-
-The project repository is already connected to GitHub.
-
-The `public` folder has already been uploaded/deployed as part of the current project.
-
-Codex should therefore begin by inspecting the existing repository rather than asking for the entire source code to be pasted into chat.
-
-The repository is now the working code context.
-
----
-
-# 60. FIRST ACTION FOR CODEX IN A NEW SESSION
-
-When starting work on NEXUS:
-
-### First
-
-Read this file:
-
-```text
-CODEX_HANDOFF.md
-```
-
-### Second
-
-Inspect:
-
-```text
-public/
-```
-
-### Third
-
-Inspect repository configuration relevant to deployment, including where present:
-
-```text
-firebase.json
-.firebaserc
-package.json
-```
-
-### Fourth
-
-Determine which backend source files are contained in the repository and which backend components remain external in Google Apps Script.
-
-### Fifth
-
-Before coding, report the verified architecture relevant to the requested task.
-
----
-
-# 61. CODEX INITIAL REPOSITORY AUDIT
-
-For the first repository audit, produce:
-
-```text
-1. Repository structure
-2. Active production frontend files
-3. NEXUS bootstrap/authentication files
-4. Shared TAESF files
-5. AIMS files
-6. ATLAS files
-7. RRRO/RRMS files
-8. TALDMS files
-9. Firebase configuration
-10. Backend/Apps Script files present in GitHub
-11. Duplicate or backup trees
-12. Dead/unreferenced files
-13. Security concerns
-14. Current deployment architecture
-15. Recommended next implementation target
-```
-
-Do not modify code during this audit unless explicitly instructed.
-
----
-
-# 62. VERIFY SCRIPT DEPENDENCIES
-
-For each primary application, determine exactly which scripts it loads.
-
-Create a map such as:
-
-```text
-index.html
-  ├── script A
-  ├── script B
-  └── script C
-
-AIMS.html
-  ├── nexus bootstrap
-  ├── AIMS integration
-  └── legacy/application scripts
-```
-
-Use actual repository findings.
-
-This is particularly important because initialization order has previously caused NEXUS authorization failures.
-
----
-
-# 63. VERIFY NEXUS APPLICATION REGISTRY
-
-Locate how NEXUS knows about applications.
-
-Determine whether application metadata is:
-
-* hard-coded in `index.html`;
-* stored in JS;
-* fetched from backend;
-* configuration-driven.
-
-Map:
-
-```text
-Application ID
-Display Name
-Route
-Status
-Icon
-Required Permission
-Launch Method
-```
-
-Do not redesign the registry until it has been documented.
-
----
-
-# 64. VERIFY AUTHENTICATION PATH
-
-Trace the complete current authentication sequence.
-
-Expected conceptual flow:
-
-```text
-User
- ↓
-NEXUS Login
- ↓
-NEXUS Session
- ↓
-Portal Authorization
- ↓
-Application Launch
- ↓
-Application Session Validation
- ↓
-Application Permission Validation
- ↓
-Application Bootstrap
-```
-
-Document actual implementation and differences.
-
----
-
-# 65. VERIFY DIRECT-ACCESS SECURITY
-
-Test whether application pages can be accessed directly.
-
-Examples:
-
-```text
-/apps/ATLAS.html
-/AIMS.html
-/TALDMS/
-/RRMS/
-```
-
-Determine:
-
-* whether page loads;
-* whether sensitive data loads;
-* whether backend commands reject unauthorized requests;
-* whether user is redirected;
-* whether NEXUS session is required.
-
-A public HTML shell is not automatically a vulnerability if all protected operations remain server-authorized, but sensitive data must not be exposed.
-
----
-
-# 66. VERIFY FIREBASE CONFIGURATION
-
-Inspect:
-
-```text
-firebase.json
-```
-
-Determine:
-
-* public directory;
-* rewrites;
-* redirects;
-* headers;
-* cache configuration;
-* SPA rules if any.
-
-Do not assume Firebase deploys only `public/` until configuration confirms it.
-
-Historical project behavior indicates `public/`, but current config is authoritative.
-
----
-
-# 67. VERIFY GOOGLE APPS SCRIPT RELATIONSHIP
-
-Determine which applications communicate with Apps Script.
-
-For each endpoint, map:
-
-```text
-Application
-Endpoint
-HTTP Method
-Command/Action
-Authentication Method
-Expected Response
-Backend Project
-```
-
-Do not expose secret values in documentation.
-
----
-
-# 68. VERIFY LOCAL STORAGE / SESSION STORAGE
-
-Search for:
+Search the frontend for:
 
 ```text
 localStorage
@@ -1752,23 +1060,22 @@ sessionStorage
 indexedDB
 ```
 
-Determine what each stored value represents.
+For every stored value, determine whether it is:
 
-Classify values as:
-
-* safe UI preference;
+* UI preference;
 * cache;
 * session metadata;
-* sensitive;
-* authoritative application data.
+* temporary state;
+* sensitive information;
+* authoritative business data.
 
-Flag inappropriate browser-side persistence of sensitive or authoritative records.
+Browser storage should not become the authoritative source for official TESDA administrative records unless explicitly synchronized by the system architecture.
 
 ---
 
-# 69. VERIFY HARDCODED URLs
+# 38. HARDCODED ENDPOINTS
 
-Search the repository for:
+Search for:
 
 ```text
 script.google.com
@@ -1778,293 +1085,374 @@ http://
 https://
 ```
 
-Document important hardcoded endpoints.
+Document significant hardcoded endpoints.
 
 Do not automatically replace them.
 
-Determine whether central configuration already exists.
+Determine first whether:
+
+* the URL is active;
+* it belongs to Apps Script;
+* it belongs to Firebase;
+* a central configuration mechanism already exists;
+* another module depends on it.
 
 ---
 
-# 70. VERIFY DUPLICATE IMPLEMENTATIONS
+# 39. LEGACY PRESERVATION POLICY
 
-Search for multiple implementations of:
+A core development rule is:
+
+> Replace one workflow at a time and preserve legacy functionality until the new implementation is verified.
+
+Preferred migration sequence:
 
 ```text
-authentication
-authorization
-API request wrappers
-session handling
-audit logging
-inventory movement
-document numbering
-employee lookup
-permissions
-modal utilities
-notifications
+Working legacy behavior
+        ↓
+Map dependencies
+        ↓
+Implement TAESF replacement
+        ↓
+Connect one workflow
+        ↓
+Test
+        ↓
+Verify parity
+        ↓
+Retire replaced legacy implementation
 ```
 
-Where duplication exists, document it first.
-
-Do not immediately consolidate it.
+Do not perform large-scale rewrites merely because legacy code is monolithic or visually untidy.
 
 ---
 
-# 71. CURRENT PRIORITY PHILOSOPHY
+# 40. NO UNREQUESTED REFACTORING
 
-The project emphasizes:
+Do not perform unrelated:
 
-> Working system first, controlled modernization second.
+* mass renaming;
+* broad code formatting;
+* folder restructuring;
+* framework replacement;
+* architectural rewrites;
+* cleanup of unrelated functions;
+* removal of legacy blocks;
+* component conversion.
 
-Therefore:
-
-* stabilize operational workflows;
-* integrate safely;
-* test immediately;
-* modernize incrementally;
-* preserve government records;
-* avoid unnecessary rewrites.
+Keep each diff focused on the current task.
 
 ---
 
-# 72. WHEN A BUG IS REPORTED
+# 41. REQUIRED IMPLEMENTATION WORKFLOW
 
-Codex should not immediately patch the first suspicious line.
+For every implementation task, Codex must provide or internally follow this structure.
 
-Use this sequence:
+## 1. Objective
+
+State exactly what is being changed.
+
+## 2. Files to Modify
+
+List only files actually verified in the repository.
+
+## 3. Exact Existing Function / Block
+
+Identify the exact function, class, HTML block, event handler, or CSS section being changed.
+
+## 4. Replacement Scope
+
+Clearly state:
 
 ```text
-Reproduce
-→ Capture error
-→ Trace call
-→ Identify root cause
-→ Inspect dependencies
-→ Implement smallest fix
-→ Test
-→ Regression check
+Replace the entire function.
 ```
 
-If the repository state prevents reproducing the issue, state what evidence is available rather than guessing.
-
----
-
-# 73. WHEN A NEW FEATURE IS REQUESTED
-
-Before implementing:
-
-1. determine target module;
-2. identify current architecture;
-3. identify authoritative data source;
-4. determine required roles/permissions;
-5. identify workflow/state implications;
-6. identify audit requirements;
-7. identify backend persistence;
-8. identify UI integration;
-9. determine compatibility impact;
-10. then implement.
-
----
-
-# 74. WHEN MODIFYING AIMS
-
-Before changing AIMS inventory behavior:
-
-Inspect:
+or:
 
 ```text
-InventoryEngine
-InventoryService
-InventoryMovementService
-InventoryRepository
-ReservationRepository
-InventoryLedgerRepository
-ApplicationService
+Replace only this block.
 ```
 
-or their current equivalents.
-
-Never perform stock mutation directly from UI-only logic if the service layer exists.
-
----
-
-# 75. WHEN MODIFYING ATLAS
-
-Before changing ATLAS:
-
-Inspect:
-
-* current single-page HTML structure;
-* latest patch blocks;
-* NEXUS bootstrap;
-* session logic;
-* backend command calls;
-* migration mappings;
-* permanent employee filtering;
-* RO balance integration;
-* role-based UI.
-
-Avoid restoring deprecated independent leave-application logic.
-
----
-
-# 76. WHEN MODIFYING RRRO
-
-Before changing RRRO:
-
-Inspect:
-
-* Risk Master schema;
-* Action Plan schema;
-* Monitoring schema;
-* Annual Review schema;
-* approval workflow;
-* history/audit implementation;
-* migration metadata;
-* report generation;
-* current RRMS directory architecture.
-
-Preserve permanent-registry principles.
-
----
-
-# 77. WHEN MODIFYING TALDMS
-
-Before implementing TALDMS features:
-
-Determine what has already been completed.
-
-Specifically inspect whether the following are active:
+or:
 
 ```text
-router
-workflow engine
-notification layer
-authentication
-authorization
-storage abstraction
-configuration
-module loader
+Insert immediately after [exact verified code].
 ```
 
-Do not rebuild unfinished-looking files until repository references confirm their intended role.
+## 5. Complete Implementation
+
+When giving code to the user, provide complete copy/paste-ready code.
+
+Do not use placeholders such as:
+
+```text
+// existing code here
+```
+
+inside a replacement block.
+
+When Codex has repository write access, it may apply the verified change directly.
+
+## 6. Exact Location
+
+Identify the exact file and code location.
+
+## 7. Testing
+
+Provide concrete testing steps.
+
+## 8. Expected Result
+
+Explain exactly what successful behavior should look like.
 
 ---
 
-# 78. CODING STYLE
+# 42. CODING WITH REPOSITORY WRITE ACCESS
 
-Follow the existing project's coding conventions whenever they are clear.
+When Codex can directly edit GitHub/local repository files:
 
-Priorities:
+1. inspect first;
+2. identify dependencies;
+3. edit only verified files;
+4. keep changes focused;
+5. inspect the diff;
+6. run available tests/checks;
+7. verify no secrets were introduced;
+8. summarize exactly what changed.
 
-1. consistency with active code;
-2. readability;
-3. deterministic behavior;
-4. maintainability;
-5. auditability;
-6. minimal global state.
-
-Do not impose an unrelated style guide across the repository.
-
----
-
-# 79. COMMENTS
-
-Comments should explain:
-
-* business rules;
-* unusual architectural decisions;
-* compatibility requirements;
-* security rationale;
-* migration reasoning.
-
-Avoid comments that merely restate obvious code.
+Do not modify additional files simply to "clean things up."
 
 ---
 
-# 80. SOURCE CONTROL DISCIPLINE
+# 43. TESTING REQUIREMENT
 
-Before implementing a substantial change:
+Depending on the workflow, test:
+
+* valid operation;
+* invalid input;
+* unauthorized access;
+* insufficient permission;
+* duplicate action;
+* direct URL access;
+* refresh;
+* expired session;
+* backend failure;
+* API response;
+* Google Sheet persistence;
+* audit record creation;
+* approval transition;
+* legacy compatibility;
+* production Firebase behavior.
+
+A page rendering successfully does not prove the workflow is operational.
+
+---
+
+# 44. FRONTEND DEBUGGING
+
+For frontend problems inspect:
+
+```text
+Browser Console
+Network
+Application / Storage
+DOM
+loaded scripts
+request payload
+response payload
+HTTP status
+```
+
+Capture the actual error.
+
+Do not infer a backend failure solely from an error message displayed by the UI.
+
+---
+
+# 45. BACKEND DEBUGGING
+
+When actual Apps Script source becomes available, inspect:
+
+```text
+request
+↓
+endpoint
+↓
+identity/session validation
+↓
+command dispatcher
+↓
+application service
+↓
+domain service
+↓
+repository
+↓
+Google Sheet
+↓
+response builder
+```
+
+Also inspect Apps Script execution logs.
+
+Trace the request from frontend to persistence and back.
+
+---
+
+# 46. BACKWARD COMPATIBILITY
+
+Before changing a shared API, function, response, or NEXUS integration:
+
+Search for all consumers.
+
+Determine:
+
+* who calls it;
+* what payload is sent;
+* which fields are read;
+* what errors are expected;
+* which applications depend on it.
+
+Do not change a shared contract without checking its consumers.
+
+---
+
+# 47. UI / UX PRINCIPLES
+
+NEXUS applications are operational administrative systems.
+
+Prioritize:
+
+* clear status;
+* readable tables;
+* visible controls;
+* usable modal scrolling;
+* actionable errors;
+* confirmation for destructive actions;
+* useful empty states;
+* consistent spacing;
+* sensible responsive behavior.
+
+Do not redesign stable UI unless the task requires it.
+
+---
+
+# 48. SOURCE CONTROL
+
+Before substantial changes:
 
 * identify affected files;
-* keep the diff focused;
-* do not modify generated or backup files;
-* avoid formatting unrelated code.
+* confirm active files;
+* avoid backup copies;
+* avoid unrelated formatting.
 
-After implementation:
+After changes:
 
-* inspect `git diff`;
-* verify no secrets were added;
-* verify no unrelated files changed;
-* summarize changed files.
+```text
+git diff
+```
+
+or equivalent should be reviewed.
+
+Verify:
+
+* no secrets added;
+* no unrelated files modified;
+* no accidental deletion;
+* no duplicate implementation created.
 
 ---
 
-# 81. COMMIT STRATEGY
+# 49. COMMIT STYLE
 
-Prefer focused commits.
-
-Examples:
+Prefer focused commits such as:
 
 ```text
-fix(atlas): enforce NEXUS bootstrap before module initialization
+fix(atlas): enforce NEXUS bootstrap before initialization
 ```
 
 ```text
-feat(rrro): add quarterly monitoring history loader
+fix(aims): route authorization through NEXUS dispatcher
 ```
 
 ```text
-fix(aims): route inventory authorization through TAESF dispatcher
+feat(rrro): add quarterly monitoring history
 ```
 
 ```text
 refactor(taesf): centralize repository error handling
 ```
 
-Do not bundle unrelated module changes into one commit without reason.
+Do not combine unrelated modules in one commit unless the change genuinely spans them.
 
 ---
 
-# 82. PRODUCTION SAFETY
+# 50. DEPLOYMENT DISTINCTION
 
-Before recommending deployment:
+Codex must distinguish between:
 
-Verify:
+```text
+Source changed
+```
 
-* no console-breaking errors;
-* no secret leakage;
-* authentication works;
-* authorization works;
-* backend endpoint works;
-* data writes correctly;
-* audit/history works where applicable;
-* existing workflows still function.
+```text
+Local test passed
+```
 
-Do not recommend production deployment solely because a static page renders correctly.
+```text
+Committed
+```
+
+```text
+Pushed to GitHub
+```
+
+```text
+Firebase deployed
+```
+
+```text
+Apps Script deployed
+```
+
+```text
+Production verified
+```
+
+These are different stages.
+
+Never claim production is fixed unless production has actually been verified.
 
 ---
 
-# 83. DEPLOYMENT REPORT FORMAT
+# 51. DEPLOYMENT REPORT
 
-After a deploy-related implementation, report:
+After implementation, report:
 
 ```text
 Changed Files:
 - ...
 
-Backend Deployment Required:
+Frontend Change:
+- Yes / No
+
+Google Apps Script Backend Change:
 - Yes / No
 
 Firebase Deployment Required:
 - Yes / No
 
-Google Sheet Migration Required:
+Apps Script Deployment Required:
+- Yes / No
+
+Google Sheet Schema/Migration Required:
 - Yes / No
 
 Configuration Change Required:
 - Yes / No
 
-Testing:
+Testing Performed:
 - ...
 
 Expected Production Result:
@@ -2073,135 +1461,381 @@ Expected Production Result:
 
 ---
 
-# 84. NEVER FABRICATE SUCCESS
+# 52. PROJECT DECISION PRIORITY
 
-Codex must distinguish among:
-
-```text
-Code changed
-Code compiles
-Local test passed
-Backend test passed
-Production deployment completed
-Production verification completed
-```
-
-These are not equivalent.
-
-Do not state that production is fixed unless production was actually verified.
-
----
-
-# 85. PROJECT DECISION HIERARCHY
-
-When conflicts arise, use this priority:
+If information conflicts, use this priority:
 
 ```text
 Current explicit user instruction
-↓
+        ↓
 Actual current repository
-↓
-Current official business rule
-↓
-This CODEX_HANDOFF.md
-↓
-Historical/legacy behavior
+        ↓
+Actual current backend source
+        ↓
+Current approved business rule
+        ↓
+CODEX_HANDOFF.md
+        ↓
+Historical implementation
 ```
 
-This document is contextual authority, but it never overrides verified current code or a newer explicit decision.
+This handoff provides context.
+
+It does not override newer verified code or explicit decisions.
 
 ---
 
-# 86. WHAT CODEX SHOULD NOT ASK THE USER TO RE-EXPLAIN
+# 53. WHAT CODEX MUST NOT ASK THE USER TO RE-EXPLAIN
 
 Do not ask the user to explain from scratch:
 
 * what NEXUS is;
+* what TAESF is;
 * what AIMS is;
 * what ATLAS is;
 * what RRRO/RRMS is;
 * what TALDMS is;
-* what TAESF is;
 * why Google Apps Script is used;
 * why Google Sheets are used;
-* whether the public folder is the frontend deployment;
-* the required implementation workflow.
+* why Firebase hosts the frontend;
+* why GitHub currently contains only frontend files;
+* the required implementation workflow;
+* the legacy-preservation policy.
 
-The answers are already documented here.
+This document already establishes those fundamentals.
 
-Ask only when a genuinely new business decision is required and cannot be determined from the repository, this document, or the current task.
+Ask only when a genuinely new business decision or missing source code is required.
 
 ---
 
-# 87. FIRST CODEX RESPONSE EXPECTATION
+# 54. FIRST REPOSITORY AUDIT
 
-After reading this document and inspecting the repository, Codex should respond approximately in this structure:
+Before making the first development change, Codex must perform a **read-only repository audit**.
+
+Inspect the repository root.
+
+Determine:
+
+1. actual repository structure;
+2. primary NEXUS portal file;
+3. actual application/module files;
+4. shared JavaScript/CSS/assets;
+5. authentication/bootstrap scripts;
+6. NEXUS integration scripts;
+7. AIMS frontend implementation;
+8. ATLAS frontend implementation;
+9. RRRO/RRMS frontend implementation;
+10. TALDMS frontend implementation;
+11. TITAN and other modules;
+12. frontend API endpoints;
+13. application registry/routing;
+14. browser storage use;
+15. hardcoded Apps Script/Firebase URLs;
+16. duplicate files;
+17. backup files;
+18. apparently unused files;
+19. security concerns;
+20. initialization-order concerns.
+
+Do not modify files during this audit.
+
+---
+
+# 55. FIRST AUDIT — BACKEND RULE
+
+If TAESF or `.gs` files are not present:
+
+Do NOT report:
+
+> Backend is missing.
+
+Instead report:
+
+> The Google Apps Script / TAESF backend is maintained separately and is outside the scope of the current frontend repository.
+
+Identify only what can be verified from the frontend:
+
+* endpoint;
+* action/command;
+* payload;
+* expected response;
+* session mechanism.
+
+---
+
+# 56. BUILD AN API CONTRACT MAP
+
+During the initial audit, map frontend/backend integration where possible.
+
+Example format:
 
 ```text
-NEXUS repository inspected.
+Application:
+AIMS
 
-Authoritative frontend:
+Frontend File:
 [verified path]
 
-Firebase public directory:
-[verified path]
+Endpoint:
+[verified Apps Script endpoint — redact sensitive values if needed]
 
-NEXUS portal:
-[verified file]
+Method:
+POST
 
-Detected modules:
-[verified modules]
+Action:
+[verified action]
 
-NEXUS authentication/bootstrap:
-[verified files]
+Payload:
+[verified payload structure]
 
-TAESF/shared backend architecture:
-[verified files or external backend status]
+Expected Response:
+[verified structure]
 
-AIMS:
-[current verified structure]
-
-ATLAS:
-[current verified structure]
-
-RRRO/RRMS:
-[current verified structure]
-
-TALDMS:
-[current verified structure]
-
-Important findings:
-[...]
-
-No files modified yet.
+Backend Source:
+External / not available in current repository
 ```
 
-Do not make architectural assumptions before this inspection.
+Repeat for ATLAS, RRRO, TALDMS, and NEXUS where applicable.
 
 ---
 
-# 88. INITIAL TASK AFTER HANDOFF
+# 57. BUILD A SCRIPT DEPENDENCY MAP
 
-The recommended first Codex task is:
+For each major application, determine what scripts are actually loaded.
 
-> Perform a complete read-only repository architecture audit of the current NEXUS GitHub repository. Read `CODEX_HANDOFF.md` first. Inspect the actual `public/` tree and deployment configuration. Map NEXUS, TAESF, AIMS, ATLAS, RRRO/RRMS, TALDMS, authentication, session bootstrap, Firebase configuration, and any Apps Script/backend source included in the repository. Identify duplicate/backup files and current security/integration risks. Do not modify code yet.
+Example:
 
-The purpose is to synchronize Codex's understanding with the **actual current GitHub repository** before further development.
+```text
+AIMS.html
+  ├── [verified shared script]
+  ├── [verified NEXUS bootstrap]
+  ├── [verified AIMS integration]
+  └── [verified application script]
+```
 
----
+Do not use historical filenames without confirming them.
 
-# 89. DEVELOPMENT PRINCIPLE
-
-The central rule for this project is:
-
-> **Inspect first. Understand the existing workflow. Change only what is necessary. Test immediately. Preserve working behavior until the replacement is verified.**
-
-NEXUS is an evolving production administrative ecosystem, not a greenfield demo application.
-
-Treat its operational data, government workflows, authentication, approvals, and audit trail accordingly.
+Initialization order is particularly important because previous NEXUS integration failures were caused by bootstrap sequencing.
 
 ---
 
-# END OF HANDOFF
+# 58. VERIFY APPLICATION REGISTRY
 
-**Codex: Read this file at the beginning of every new NEXUS development context where project history is unavailable. The current repository remains the source of truth for implementation details.**
+Locate how NEXUS defines available applications.
+
+Determine whether application metadata is:
+
+* HTML-hardcoded;
+* JavaScript configuration;
+* JSON;
+* backend-provided;
+* another registry mechanism.
+
+Document, where available:
+
+```text
+Application ID
+Display Name
+Route
+Status
+Icon
+Permission
+Launch Method
+```
+
+Do not redesign this registry during the initial audit.
+
+---
+
+# 59. VERIFY DIRECT ACCESS
+
+Inspect what happens when major app routes are opened directly without normal NEXUS launch context.
+
+Examples may include:
+
+```text
+/AIMS.html
+/apps/ATLAS.html
+/TALDMS/
+/RRMS/
+```
+
+Determine:
+
+* whether page shell loads;
+* whether session is required;
+* whether protected data loads;
+* whether backend requests are blocked;
+* whether redirect occurs.
+
+Do not confuse a publicly downloadable HTML shell with unauthorized backend access.
+
+---
+
+# 60. CURRENT DEVELOPMENT PHILOSOPHY
+
+The project follows this priority:
+
+```text
+Working operational system
+        ↓
+Safe integration
+        ↓
+Verification
+        ↓
+Controlled modernization
+        ↓
+Refactoring after stability
+```
+
+The system supports real TESDA administrative workflows.
+
+Treat production data and workflow integrity accordingly.
+
+---
+
+# 61. FIRST CODEX TASK AFTER READING THIS FILE
+
+Perform a complete **READ-ONLY NEXUS frontend repository architecture audit**.
+
+Read this `CODEX_HANDOFF.md` completely first.
+
+Then inspect the actual repository root.
+
+Do not modify, create, delete, rename, move, refactor, format, or commit any application file during this first task.
+
+Report:
+
+1. verified repository structure;
+2. verified NEXUS portal/entry point;
+3. verified application registry;
+4. NEXUS authentication/session/bootstrap frontend;
+5. AIMS frontend;
+6. ATLAS frontend;
+7. RRRO/RRMS frontend;
+8. TALDMS frontend;
+9. TITAN and other modules;
+10. shared frontend architecture;
+11. script dependency/loading order;
+12. Apps Script endpoints/API contracts visible from frontend;
+13. localStorage/sessionStorage usage;
+14. duplicate/backup/unreferenced files;
+15. security concerns;
+16. initialization/integration risks;
+17. differences between actual repository and this handoff;
+18. frontend areas that require actual backend inspection before modification;
+19. recommended next development target.
+
+For each important finding, provide:
+
+* exact file path;
+* exact function/class/HTML block where possible;
+* supporting reason.
+
+Do not guess about unavailable backend code.
+
+---
+
+# 62. EXPECTED FIRST RESPONSE FROM CODEX
+
+The first response should approximately follow:
+
+```text
+NEXUS repository audit completed.
+
+Repository Scope:
+[verified]
+
+Frontend Root:
+[verified]
+
+NEXUS Portal:
+[verified file]
+
+Applications Detected:
+[...]
+
+Authentication / Session Frontend:
+[...]
+
+AIMS:
+[...]
+
+ATLAS:
+[...]
+
+RRRO / RRMS:
+[...]
+
+TALDMS:
+[...]
+
+Other Modules:
+[...]
+
+API / Apps Script Integrations:
+[...]
+
+Backend Source Status:
+External / not present in this frontend repository
+
+Important Findings:
+[...]
+
+Handoff Discrepancies:
+[...]
+
+Recommended Next Step:
+[...]
+
+No application files were modified.
+```
+
+---
+
+# 63. FUTURE BACKEND ONBOARDING
+
+When the actual TAESF / Apps Script source is later made available to Codex, perform a second **read-only backend audit before implementation**.
+
+Map:
+
+```text
+ApplicationService
+Command Dispatcher
+Identity / Session
+Authorization
+Services
+Repositories
+Audit Service
+Settings
+Inventory Engine
+ATLAS Services
+AIMS Services
+RRRO Services
+TALDMS Services
+Google Sheet Schemas
+API Response Builder
+Locks / Concurrency
+```
+
+Then connect the verified backend implementation to the frontend API contract already mapped during the first audit.
+
+Do not assume historical backend architecture is identical to the current deployed version.
+
+---
+
+# 64. FUNDAMENTAL DEVELOPMENT RULE
+
+The core rule of NEXUS development is:
+
+> **Inspect the actual implementation first. Understand the existing workflow. Identify the authoritative data source. Change only what is necessary. Test immediately. Preserve working behavior until the replacement is verified.**
+
+NEXUS is an evolving production administrative ecosystem.
+
+It is not a greenfield demonstration project.
+
+---
+
+# END OF CODEX HANDOFF
+
+**Codex instruction:** When project history is unavailable, read this file before beginning NEXUS development. Use the repository as the source of truth for frontend implementation and require the actual external Apps Script / TAESF source before making backend changes.
