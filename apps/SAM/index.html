@@ -11595,7 +11595,7 @@ const mockHomeData = {
       id:"BIL-2026-000184",
       title:"CSS NC II · TSF Initial 50%",
       submitted:"August 18, 2026",
-      amount:"₱62,500.00",
+      amount:"₱61,600.00",
       status:"Processing",
       tone:"warning"
     },
@@ -12214,7 +12214,7 @@ const mockModuleData = {
   ],
 
   transactions:[
-    {id:"BIL-2026-000184",rqm:"RQM-2026-ALB-0042",title:"CSS NC II · TSF Initial 50%",amount:"₱62,500.00",status:"Document Review",tone:"warning",queue:"2 of 7",submitted:"August 18, 2026"},
+    {id:"BIL-2026-000184",rqm:"RQM-2026-ALB-0042",title:"CSS NC II · TSF Initial 50%",amount:"₱61,600.00",status:"Document Review",tone:"warning",queue:"2 of 7",submitted:"August 18, 2026"},
     {id:"BIL-2026-000181",rqm:"RQM-2026-ALB-0051",title:"Driving NC II · Training Cost",amount:"₱287,500.00",status:"For Compliance",tone:"danger",queue:"Returned",submitted:"August 17, 2026"},
     {id:"BIL-2026-000176",rqm:"RQM-2026-ALB-0037",title:"BPP NC II · Training Cost Final",amount:"₱240,000.00",status:"Accounting Verification",tone:"warning",queue:"1 of 4",submitted:"August 15, 2026"},
     {id:"BIL-2026-000151",rqm:"RQM-2026-ALB-0037",title:"BPP NC II · TSF Initial 50%",amount:"₱50,000.00",status:"Paid / Closed",tone:"success",queue:"Completed",submitted:"August 4, 2026"}
@@ -12242,6 +12242,80 @@ const esc = value => String(value ?? "")
   .replaceAll("'","&#039;");
 
 const status = (label,tone="") => `<span class="module-mock-status ${esc(tone)}">${esc(label)}</span>`;
+
+const TSF_DAILY_RATE = 160;
+const TSF_APPROVED_DAYS = 35;
+
+const mockTsfBillingScholars = [
+  ...Array.from({length:22},(_,index)=>({
+    name:index===0 ? "Juan Dela Cruz" : `Eligible Scholar ${String(index+1).padStart(2,"0")}`,
+    age:18 + (index % 18),
+    governmentEmployee:false,
+    presentDays:35,
+    absentDays:0
+  })),
+  {name:"Angela Ramos",age:23,governmentEmployee:false,presentDays:15,absentDays:20},
+  {name:"Maria Santos",age:17,governmentEmployee:false,presentDays:35,absentDays:0},
+  {name:"Carlo Reyes",age:34,governmentEmployee:true,presentDays:35,absentDays:0}
+];
+
+function evaluateTsfScholar(scholar){
+  const presentDays = Math.max(0,Number(scholar.presentDays) || 0);
+  const absentDays = Math.max(0,Number(scholar.absentDays) || 0);
+  const recordedDays = presentDays + absentDays;
+  const attendanceRate = recordedDays ? (presentDays / recordedDays) * 100 : 0;
+  const age = Number(scholar.age);
+  const governmentEmployeeValue = String(scholar.governmentEmployee ?? "").trim().toLowerCase();
+  const isGovernmentEmployee = scholar.governmentEmployee === true || ["yes","y","1","true","government"].includes(governmentEmployeeValue);
+
+  let billingStatus = "ELIGIBLE";
+  let reason = "Eligible for TSF";
+
+  if(attendanceRate < 50){
+    billingStatus = "DROPPED";
+    reason = "Attendance below 50%";
+  }else if(Number.isFinite(age) && age <= 17){
+    billingStatus = "TSF_ZERO_MINOR";
+    reason = "Age 17 or below — TSF is ₱0.00";
+  }else if(isGovernmentEmployee){
+    billingStatus = "TSF_ZERO_GOVERNMENT_EMPLOYEE";
+    reason = "Government employee — TSF is ₱0.00";
+  }
+
+  const eligible = billingStatus === "ELIGIBLE";
+  const payableDays = eligible ? Math.min(presentDays,TSF_APPROVED_DAYS) : 0;
+
+  return {
+    ...scholar,
+    presentDays,
+    absentDays,
+    attendanceRate,
+    governmentEmployee:isGovernmentEmployee,
+    billingStatus,
+    reason,
+    eligible,
+    payableDays,
+    netTsf:payableDays * TSF_DAILY_RATE
+  };
+}
+
+const mockTsfBillingResults = mockTsfBillingScholars.map(evaluateTsfScholar);
+
+function formatPeso(value){
+  return new Intl.NumberFormat("en-PH",{
+    style:"currency",
+    currency:"PHP",
+    minimumFractionDigits:2
+  }).format(Number(value) || 0).replace("PHP","₱").trim();
+}
+
+function getBillingTypeAmount(type){
+  const totalEligibleTsf = mockTsfBillingResults.reduce((sum,row)=>sum+row.netTsf,0);
+  if(type.id === "TSF_INITIAL" || type.id === "TSF_FINAL"){
+    return formatPeso(totalEligibleTsf * 0.5);
+  }
+  return type.amount;
+}
 
 function addModuleBanner(selector){
   const host = document.querySelector(selector);
@@ -12292,7 +12366,7 @@ function renderBillingCenter(){
         <button type="button" class="module-mock-select-card" data-mock-billing-type="${esc(row.id)}">
           <div class="module-mock-card-row"><h3>${esc(row.title)}</h3>${status(row.status,row.tone)}</div>
           <p>${esc(row.documents)}</p>
-          <div class="module-mock-card-meta"><div><span>Mock Amount</span><strong>${esc(row.amount)}</strong></div><div><span>Component</span><strong>${esc(row.id)}</strong></div></div>
+          <div class="module-mock-card-meta"><div><span>Mock Amount</span><strong>${esc(getBillingTypeAmount(row))}</strong></div><div><span>Component</span><strong>${esc(row.id)}</strong></div></div>
         </button>
       </article>
     `).join("");
@@ -12300,6 +12374,12 @@ function renderBillingCenter(){
 
   const selectedRqm = mockModuleData.rqms.find(row=>row.id===selectedBillingRqm) || mockModuleData.rqms[0];
   const selectedType = mockModuleData.billingTypes.find(row=>row.id===selectedBillingType) || mockModuleData.billingTypes[0];
+  const selectedAmount = getBillingTypeAmount(selectedType);
+  const droppedScholars = mockTsfBillingResults.filter(row=>row.billingStatus==="DROPPED");
+  const minorScholars = mockTsfBillingResults.filter(row=>row.billingStatus==="TSF_ZERO_MINOR");
+  const governmentEmployees = mockTsfBillingResults.filter(row=>row.billingStatus==="TSF_ZERO_GOVERNMENT_EMPLOYEE");
+  const eligibleScholars = mockTsfBillingResults.filter(row=>row.eligible);
+  const tsfExceptionRows = mockTsfBillingResults.filter(row=>!row.eligible);
   const review = document.getElementById("billingReview");
   if(review){
     review.innerHTML = `
@@ -12309,8 +12389,21 @@ function renderBillingCenter(){
           <div><span>Selected RQM</span><strong>${esc(selectedRqm.id)}</strong></div>
           <div><span>Qualification</span><strong>${esc(selectedRqm.qualification)}</strong></div>
           <div><span>Billing Component</span><strong>${esc(selectedType.title)}</strong></div>
-          <div><span>Mock Amount</span><strong>${esc(selectedType.amount)}</strong></div>
+          <div><span>Billing Amount</span><strong>${esc(selectedAmount)}</strong></div>
         </div>
+        <div class="module-mock-review-grid" style="margin-top:14px">
+          <div><span>TSF Eligible</span><strong>${eligibleScholars.length}</strong></div>
+          <div><span>Dropped Below 50%</span><strong>${droppedScholars.length}</strong></div>
+          <div><span>Age 17 or Below</span><strong>${minorScholars.length}</strong></div>
+          <div><span>Government Employees</span><strong>${governmentEmployees.length}</strong></div>
+        </div>
+        <div class="table-wrap" style="margin-top:14px">
+          <table class="data-table">
+            <thead><tr><th>Scholar</th><th>Age</th><th>Employment</th><th>Attendance</th><th>Billing Result</th><th>Net TSF</th></tr></thead>
+            <tbody>${tsfExceptionRows.map(row=>`<tr><td><strong>${esc(row.name)}</strong></td><td>${esc(row.age)}</td><td>${row.governmentEmployee ? "Government employee" : "Not a government employee"}</td><td>${row.attendanceRate.toFixed(2)}%</td><td>${status(row.billingStatus==="DROPPED" ? "Dropped" : "TSF ₱0.00",row.billingStatus==="DROPPED" ? "danger" : "warning")}<br><small>${esc(row.reason)}</small></td><td><strong>₱0.00</strong></td></tr>`).join("")}</tbody>
+          </table>
+        </div>
+        <div class="module-mock-alert"><strong>TSF rules:</strong> attendance below 50% = Dropped; otherwise, age 17 or below = TSF ₱0.00; government employee = TSF ₱0.00. Exactly 50% attendance is not dropped. These rules change the TSF amount only; the Training Cost component remains unchanged.</div>
         <div class="module-mock-alert warning">Test mode: Final submission is intercepted and will not create a billing transaction.</div>
       </div>`;
   }
@@ -12460,7 +12553,7 @@ function renderAllowanceAttendance(){
       <tr><td>Aug. 16, 2026</td><td>Angela Ramos</td><td>7:58 AM</td><td>—</td><td>—</td><td>—</td><td>Pending</td><td>${status("Needs Evidence","warning")}</td><td><button type="button" class="text-btn">Validate</button></td></tr>`;
   }
 
-  const allowanceSummary = {scholars:"25",reports:"12/35",pending:"3",review:"2",projected:"₱43,520.00"};
+  const allowanceSummary = {scholars:"25",reports:"12/35",pending:"3",review:"2",projected:"₱38,400.00"};
   Object.entries(allowanceSummary).forEach(([key,value])=>{
     document.querySelectorAll(`[data-allow-summary="${key}"]`).forEach(node=>node.textContent=value);
   });
@@ -12472,21 +12565,23 @@ function renderAllowanceAttendance(){
   const allowanceIssues = document.getElementById("allowanceIssues");
   if(allowanceIssues){
     allowanceIssues.hidden = false;
-    allowanceIssues.innerHTML = "<strong>Mock validation issues:</strong> 3 pending attendance logs; 2 records below the required daily duration; 23 future training days not yet reported.";
+    allowanceIssues.innerHTML = "<strong>Mock billing rules applied:</strong> attendance below 50% is Dropped; age 17 or below has TSF ₱0.00; government employees have TSF ₱0.00. Pending logs and time-review items must still be resolved.";
   }
   const allowanceBody = document.getElementById("allowanceTableBody");
   if(allowanceBody){
     allowanceBody.innerHTML = `
-      <tr><td>Juan Dela Cruz</td><td>12</td><td>0</td><td>0</td><td>0</td><td>23</td><td>34%</td><td>₱5,600.00</td><td>₱1,920.00</td><td>₱3,680.00</td><td>${status("On Track","success")}</td></tr>
-      <tr><td>Maria Santos</td><td>11</td><td>0</td><td>1</td><td>0</td><td>23</td><td>31%</td><td>₱5,600.00</td><td>₱1,760.00</td><td>₱3,840.00</td><td>${status("Pending Log","warning")}</td></tr>
-      <tr><td>Carlo Reyes</td><td>10</td><td>2</td><td>0</td><td>0</td><td>23</td><td>29%</td><td>₱5,600.00</td><td>₱1,600.00</td><td>₱4,000.00</td><td>${status("With Absence","warning")}</td></tr>
-      <tr><td>Angela Ramos</td><td>11</td><td>0</td><td>0</td><td>1</td><td>23</td><td>31%</td><td>₱5,600.00</td><td>₱1,760.00</td><td>₱3,840.00</td><td>${status("Time Review","danger")}</td></tr>`;
+      <tr><td>Juan Dela Cruz<br><small>Age 24 · Not a government employee</small></td><td>12</td><td>0</td><td>0</td><td>0</td><td>23</td><td>100.00%</td><td>₱5,600.00</td><td>₱1,920.00</td><td>₱3,680.00</td><td>${status("TSF Eligible","success")}</td></tr>
+      <tr><td>Maria Santos<br><small>Age 17 · Not a government employee</small></td><td>12</td><td>0</td><td>0</td><td>0</td><td>23</td><td>100.00%</td><td>₱0.00</td><td>₱0.00</td><td>₱0.00</td><td>${status("TSF ₱0 · Age ≤17","warning")}</td></tr>
+      <tr><td>Carlo Reyes<br><small>Age 34 · Government employee</small></td><td>10</td><td>2</td><td>0</td><td>0</td><td>23</td><td>83.33%</td><td>₱0.00</td><td>₱0.00</td><td>₱0.00</td><td>${status("TSF ₱0 · Gov't Employee","warning")}</td></tr>
+      <tr><td>Angela Ramos<br><small>Age 23 · Not a government employee</small></td><td>5</td><td>7</td><td>0</td><td>0</td><td>23</td><td>41.67%</td><td>₱0.00</td><td>₱0.00</td><td>₱0.00</td><td>${status("Dropped · Below 50%","danger")}</td></tr>`;
   }
   const payroll = document.getElementById("payrollPreviewBody");
   if(payroll){
     payroll.innerHTML = `
-      <tr><td>1</td><td>Juan Dela Cruz</td><td>12</td><td>0</td><td>₱160.00</td><td><strong>₱1,920.00</strong></td></tr>
-      <tr><td>2</td><td>Carlo Reyes</td><td>10</td><td>2</td><td>₱160.00</td><td><strong>₱1,600.00</strong></td></tr>`;
+      <tr><td>1</td><td>Juan Dela Cruz<br><small>TSF eligible</small></td><td>12</td><td>0</td><td>₱160.00</td><td><strong>₱1,920.00</strong></td></tr>
+      <tr><td>2</td><td>Maria Santos<br><small>Age 17 or below</small></td><td>0</td><td>0</td><td>₱0.00</td><td><strong>₱0.00</strong></td></tr>
+      <tr><td>3</td><td>Carlo Reyes<br><small>Government employee</small></td><td>0</td><td>2</td><td>₱0.00</td><td><strong>₱0.00</strong></td></tr>
+      <tr><td>4</td><td>Angela Ramos<br><small>Dropped: attendance below 50%</small></td><td>0</td><td>7</td><td>₱0.00</td><td><strong>₱0.00</strong></td></tr>`;
   }
 
   const reportReady = document.getElementById("reportReadyState");
