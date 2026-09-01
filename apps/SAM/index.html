@@ -6,6 +6,9 @@
 <meta name="description" content="NEXUS TVET Provider Scholarship and Billing Portal">
 <title>NEXUS Provider Portal | TESDA Albay</title>
 
+<link rel="icon" type="image/png" href="../../Logo.png">
+<link rel="shortcut icon" type="image/png" href="../../Logo.png">
+
 <link rel="stylesheet" href="CSS/app.css">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
@@ -390,9 +393,11 @@
 
 .school-profile-letterhead{
   width:100%;
+  max-width:980px;
+  margin:0 auto;
   display:grid;
   grid-template-columns:76px 1fr 76px;
-  gap:12px;
+  gap:18px;
   align-items:center;
   text-align:center;
 }
@@ -12233,6 +12238,61 @@ const mockModuleData = {
 let selectedBillingRqm = mockModuleData.rqms[0].id;
 let selectedBillingType = mockModuleData.billingTypes[0].id;
 let selectedTrackingId = mockModuleData.transactions[0].id;
+let selectedValidationRecordId = null;
+
+const mockValidationRecords = [
+  {
+    id:"VAL-MARIA-20260817",
+    reportId:"BSRS-CSS-2026-0817",
+    scholarNo:"SCH-2026-0042-002",
+    date:"Aug. 17, 2026",
+    scholar:"Maria Santos",
+    bsrsIn:"08:02",
+    bsrsOut:"",
+    finalIn:"08:02",
+    finalOut:"17:01",
+    resolution:"PRESENT",
+    source:"MANUAL_ATTENDANCE_SHEET",
+    reason:"BSRS Time Out was not captured; completed using the signed manual attendance sheet.",
+    supportingReference:"Manual Attendance Sheet – August 17, 2026, page 1",
+    validatedBy:"Ana Marie D. Lopez",
+    saved:true
+  },
+  {
+    id:"VAL-CARLO-20260817",
+    reportId:"BSRS-CSS-2026-0817",
+    scholarNo:"SCH-2026-0042-003",
+    date:"Aug. 17, 2026",
+    scholar:"Carlo Reyes",
+    bsrsIn:"",
+    bsrsOut:"",
+    finalIn:"",
+    finalOut:"",
+    resolution:"ABSENT",
+    source:"MANUAL_ATTENDANCE_SHEET",
+    reason:"No BSRS or supporting attendance record was submitted for the training day.",
+    supportingReference:"Manual Attendance Sheet – August 17, 2026, page 1",
+    validatedBy:"Ana Marie D. Lopez",
+    saved:true
+  },
+  {
+    id:"VAL-ANGELA-20260816",
+    reportId:"BSRS-CSS-2026-0816",
+    scholarNo:"SCH-2026-0042-004",
+    date:"Aug. 16, 2026",
+    scholar:"Angela Ramos",
+    bsrsIn:"07:58",
+    bsrsOut:"",
+    finalIn:"",
+    finalOut:"",
+    resolution:"PRESENT",
+    source:"MANUAL_ATTENDANCE_SHEET",
+    reason:"",
+    supportingReference:"",
+    validatedBy:"Ana Marie D. Lopez",
+    saved:false
+  }
+];
 
 const esc = value => String(value ?? "")
   .replaceAll("&","&amp;")
@@ -12315,6 +12375,138 @@ function getBillingTypeAmount(type){
     return formatPeso(totalEligibleTsf * 0.5);
   }
   return type.amount;
+}
+
+function formatMockAttendanceTime(value){
+  if(!value) return "—";
+  const [hourValue,minute="00"] = String(value).split(":");
+  const hour = Number(hourValue);
+  if(!Number.isFinite(hour)) return esc(value);
+  const period = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour % 12 || 12;
+  return `${displayHour}:${minute} ${period}`;
+}
+
+function syncMockValidationResolutionFields(){
+  const resolution = document.getElementById("validationResolution")?.value;
+  const isAbsent = resolution === "ABSENT";
+  ["manualTimeIn","manualTimeOut"].forEach(id=>{
+    const input = document.getElementById(id);
+    if(!input) return;
+    input.disabled = isAbsent;
+    if(isAbsent) input.value = "";
+  });
+}
+
+function closeMockValidationEditor(){
+  const modal = document.getElementById("validationModal");
+  if(modal) modal.hidden = true;
+  selectedValidationRecordId = null;
+  document.body.style.removeProperty("overflow");
+}
+
+function openMockValidationEditor(recordId){
+  const record = mockValidationRecords.find(row=>row.id===recordId);
+  const modal = document.getElementById("validationModal");
+  if(!record || !modal) return;
+
+  selectedValidationRecordId = record.id;
+  const setValue = (id,value)=>{
+    const field = document.getElementById(id);
+    if(field) field.value = value ?? "";
+  };
+
+  const title = document.getElementById("validationModalTitle");
+  if(title) title.textContent = record.saved ? "Edit Attendance Validation" : "Validate Attendance";
+  const summary = document.getElementById("validationSourceSummary");
+  if(summary) summary.textContent = `${record.date} · ${record.scholar} · ${record.reportId}`;
+
+  setValue("validationReportId",record.reportId);
+  setValue("validationScholarNo",record.scholarNo);
+  setValue("validationResolution",record.resolution);
+  setValue("validationSource",record.source);
+  setValue("manualTimeIn",record.finalIn);
+  setValue("manualTimeOut",record.finalOut);
+  setValue("validationReason",record.reason);
+  setValue("supportingReference",record.supportingReference);
+  setValue("validatedBy",record.validatedBy);
+
+  const errors = document.getElementById("validationModalErrors");
+  if(errors){
+    errors.hidden = true;
+    errors.innerHTML = "";
+  }
+
+  syncMockValidationResolutionFields();
+  modal.hidden = false;
+  document.body.style.overflow = "hidden";
+  window.setTimeout(()=>document.getElementById("validationResolution")?.focus(),0);
+}
+
+function saveMockValidationEditor(){
+  const record = mockValidationRecords.find(row=>row.id===selectedValidationRecordId);
+  if(!record) return;
+
+  const resolution = document.getElementById("validationResolution")?.value || "PRESENT";
+  const finalIn = document.getElementById("manualTimeIn")?.value || "";
+  const finalOut = document.getElementById("manualTimeOut")?.value || "";
+  const reason = document.getElementById("validationReason")?.value.trim() || "";
+  const supportingReference = document.getElementById("supportingReference")?.value.trim() || "";
+  const validatedBy = document.getElementById("validatedBy")?.value.trim() || "";
+  const errors = [];
+
+  if(resolution === "PRESENT" && (!finalIn || !finalOut)){
+    errors.push("Manual Time In and Manual Time Out are required when the final status is Present.");
+  }
+  if(resolution === "PRESENT" && finalIn && finalOut && finalOut <= finalIn){
+    errors.push("Manual Time Out must be later than Manual Time In.");
+  }
+  if(!reason) errors.push("Reason / Validation Remarks is required.");
+  if(!validatedBy) errors.push("Validated By is required.");
+
+  const errorPanel = document.getElementById("validationModalErrors");
+  if(errors.length){
+    if(errorPanel){
+      errorPanel.hidden = false;
+      errorPanel.innerHTML = `<strong>Please correct the following:</strong><ul>${errors.map(message=>`<li>${esc(message)}</li>`).join("")}</ul>`;
+    }
+    return;
+  }
+
+  record.resolution = resolution;
+  record.source = document.getElementById("validationSource")?.value || "MANUAL_ATTENDANCE_SHEET";
+  record.finalIn = resolution === "ABSENT" ? "" : finalIn;
+  record.finalOut = resolution === "ABSENT" ? "" : finalOut;
+  record.reason = reason;
+  record.supportingReference = supportingReference;
+  record.validatedBy = validatedBy;
+  record.saved = true;
+
+  closeMockValidationEditor();
+  renderAllowanceAttendance();
+  showMockAction(`${record.scholar}'s attendance validation was updated in test mode.`);
+}
+
+function renderMockValidationQueue(){
+  const validationBody = document.getElementById("validationQueueBody");
+  if(!validationBody) return;
+
+  validationBody.innerHTML = mockValidationRecords.map(record=>{
+    const finalStatus = record.saved ? (record.resolution === "ABSENT" ? "Absent" : "Present") : "Pending";
+    const validationLabel = !record.saved ? "Needs Evidence" : record.resolution === "ABSENT" ? "Confirmed" : "Manual Validated";
+    const tone = record.saved ? "success" : "warning";
+    return `<tr>
+      <td>${esc(record.date)}</td>
+      <td><strong>${esc(record.scholar)}</strong></td>
+      <td>${formatMockAttendanceTime(record.bsrsIn)}</td>
+      <td>${formatMockAttendanceTime(record.bsrsOut)}</td>
+      <td>${formatMockAttendanceTime(record.finalIn)}</td>
+      <td>${formatMockAttendanceTime(record.finalOut)}</td>
+      <td>${esc(finalStatus)}</td>
+      <td>${status(validationLabel,tone)}</td>
+      <td><button type="button" class="text-btn" data-mock-edit-validation="${esc(record.id)}">${record.saved ? "Edit Validation" : "Validate"}</button></td>
+    </tr>`;
+  }).join("");
 }
 
 function addModuleBanner(selector){
@@ -12536,36 +12728,42 @@ function renderAllowanceAttendance(){
       <tr><td>3</td><td>Carlo Reyes</td><td>—</td><td>—</td><td>—</td><td>${status("No Log","danger")}</td><td>Absent</td><td>Manual attendance required</td></tr>`;
   }
 
-  const validationSummary = {records:"300",bsrs:"285",manual:"8",absent:"4",pending:"3"};
+  const savedPresentCount = mockValidationRecords.filter(row=>row.saved && row.resolution==="PRESENT").length;
+  const savedAbsentCount = mockValidationRecords.filter(row=>row.saved && row.resolution==="ABSENT").length;
+  const visiblePendingCount = mockValidationRecords.filter(row=>!row.saved).length;
+  const totalPendingCount = 2 + visiblePendingCount;
+  const validationSummary = {
+    records:"300",
+    bsrs:"285",
+    manual:String(7 + savedPresentCount),
+    absent:String(3 + savedAbsentCount),
+    pending:String(totalPendingCount)
+  };
   Object.entries(validationSummary).forEach(([key,value])=>{
     document.querySelectorAll(`[data-val-summary="${key}"]`).forEach(node=>node.textContent=value);
   });
   const validationState = document.getElementById("validationReadyState");
   if(validationState){
     validationState.className = "readiness pending";
-    validationState.textContent = "3 attendance records remain pending validation before final allowance computation.";
+    validationState.textContent = totalPendingCount
+      ? `${totalPendingCount} attendance record${totalPendingCount===1 ? " remains" : "s remain"} pending validation before final allowance computation.`
+      : "All attendance exceptions are resolved. Allowance computation may proceed.";
   }
-  const validationBody = document.getElementById("validationQueueBody");
-  if(validationBody){
-    validationBody.innerHTML = `
-      <tr><td>Aug. 17, 2026</td><td>Maria Santos</td><td>8:02 AM</td><td>—</td><td>8:02 AM</td><td>5:01 PM</td><td>Present</td><td>${status("Manual Validated","success")}</td><td><button type="button" class="text-btn">View Evidence</button></td></tr>
-      <tr><td>Aug. 17, 2026</td><td>Carlo Reyes</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Absent</td><td>${status("Confirmed","success")}</td><td><button type="button" class="text-btn">View Record</button></td></tr>
-      <tr><td>Aug. 16, 2026</td><td>Angela Ramos</td><td>7:58 AM</td><td>—</td><td>—</td><td>—</td><td>Pending</td><td>${status("Needs Evidence","warning")}</td><td><button type="button" class="text-btn">Validate</button></td></tr>`;
-  }
+  renderMockValidationQueue();
 
-  const allowanceSummary = {scholars:"25",reports:"12/35",pending:"3",review:"2",projected:"₱38,400.00"};
+  const allowanceSummary = {scholars:"25",reports:"12/35",pending:String(totalPendingCount),review:"2",projected:"₱38,400.00"};
   Object.entries(allowanceSummary).forEach(([key,value])=>{
     document.querySelectorAll(`[data-allow-summary="${key}"]`).forEach(node=>node.textContent=value);
   });
   const allowanceState = document.getElementById("allowanceReadyState");
   if(allowanceState){
     allowanceState.className = "readiness pending";
-    allowanceState.textContent = "Projected allowance is available. Resolve 3 pending logs and 2 time-review items before finalization.";
+    allowanceState.textContent = `Projected allowance is available. Resolve ${totalPendingCount} pending log${totalPendingCount===1 ? "" : "s"} and 2 time-review items before finalization.`;
   }
   const allowanceIssues = document.getElementById("allowanceIssues");
   if(allowanceIssues){
     allowanceIssues.hidden = false;
-    allowanceIssues.innerHTML = "<strong>Mock billing rules applied:</strong> attendance below 50% is Dropped; age 17 or below has TSF ₱0.00; government employees have TSF ₱0.00. Pending logs and time-review items must still be resolved.";
+    allowanceIssues.innerHTML = `<strong>Mock billing rules applied:</strong> attendance below 50% is Dropped; age 17 or below has TSF ₱0.00; government employees have TSF ₱0.00. ${totalPendingCount} pending attendance log${totalPendingCount===1 ? "" : "s"} and 2 time-review items must still be resolved.`;
   }
   const allowanceBody = document.getElementById("allowanceTableBody");
   if(allowanceBody){
@@ -12627,7 +12825,7 @@ function renderAllowanceAttendance(){
 
   document.querySelectorAll("[data-workflow-step]").forEach((button,index)=>{
     const state = button.querySelector(".step-state");
-    if(state) state.textContent = index===2 ? "3 Pending" : index===3 ? "Projected" : index===4 ? "For Review" : "Mock Ready";
+    if(state) state.textContent = index===2 ? `${totalPendingCount} Pending` : index===3 ? "Projected" : index===4 ? "For Review" : "Mock Ready";
   });
 }
 
@@ -12806,6 +13004,35 @@ function openMockWorkflowStep(step){
 
 document.addEventListener("DOMContentLoaded",()=>{
   document.addEventListener("click",event=>{
+    const validationAction = event.target.closest("[data-mock-edit-validation]");
+    if(validationAction){
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      openMockValidationEditor(validationAction.dataset.mockEditValidation);
+      return;
+    }
+
+    if(event.target.closest("#btnSaveValidation")){
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      saveMockValidationEditor();
+      return;
+    }
+
+    if(event.target.closest("#btnCloseValidationModal,#btnCancelValidation")){
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      closeMockValidationEditor();
+      return;
+    }
+
+    if(event.target.id==="validationModal"){
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      closeMockValidationEditor();
+      return;
+    }
+
     const rqm = event.target.closest("[data-mock-rqm]");
     if(rqm){
       selectedBillingRqm = rqm.dataset.mockRqm;
@@ -12897,6 +13124,13 @@ document.addEventListener("DOMContentLoaded",()=>{
     renderBillingCenter();
   });
   document.getElementById("costSearch")?.addEventListener("input",event=>renderCosts(event.target.value));
+  document.getElementById("validationResolution")?.addEventListener("change",syncMockValidationResolutionFields);
+  document.addEventListener("keydown",event=>{
+    if(event.key==="Escape" && !document.getElementById("validationModal")?.hidden){
+      event.preventDefault();
+      closeMockValidationEditor();
+    }
+  });
   ["bsrsFiles","onlineDocumentFile","misFile"].forEach(id=>{
     document.getElementById(id)?.addEventListener("change",event=>handleMockFileSelection(event.target));
   });
